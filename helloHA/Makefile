@@ -1,5 +1,5 @@
 # name of your application
-export PROJECT = helloRIOT
+export PROJECT = helloHA
 
 # If no BOARD is found in the environment, use this default:
 export BOARD ?= iot-lab_M3
@@ -66,6 +66,6 @@ ifneq (,$(filter native,$(BOARD)))
 	USEMODULE += random
 endif
 
-export INCLUDES += -I${RIOTBASE}/core/include/ -I${RIOTBASE}/sys/include/ -I${RIOTBASE}/drivers/include/
+export INCLUDES += -I${RIOTBASE}/core/include/ -I${RIOTBASE}/sys/include/ -I${RIOTBASE}/drivers/include/ -I${CURDIR}
 
 include $(RIOTBASE)/Makefile.include

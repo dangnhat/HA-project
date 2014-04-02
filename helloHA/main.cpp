@@ -6,7 +6,7 @@ int main (void){
 	
 	while (1){
 		MB1_RGB_red.toggle ();
-		delay_ms (1000)
+		delay_ms (1000);
 	}
 	
 	return 0;
