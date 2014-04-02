@@ -24,4 +24,31 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>RIOT</name>
+			<type>2</type>
+			<location>/home/dangnhat/RIOT-working/RIOT</location>
+		</link>
+		<link>
+			<name>STM32F10x_StdPeriph_Lib_V3.5.0</name>
+			<type>2</type>
+			<location>/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0</location>
+		</link>
+		<link>
+			<name>thirdparty_boards</name>
+			<type>2</type>
+			<location>/home/dangnhat/RIOT-working/thirdparty_boards</location>
+		</link>
+		<link>
+			<name>tpcpu-cortex_common</name>
+			<type>2</type>
+			<location>/home/dangnhat/RIOT-working/thirdparty_cpu/cortex_common</location>
+		</link>
+		<link>
+			<name>tpcpu-stm32f103rey6</name>
+			<type>2</type>
+			<location>/home/dangnhat/RIOT-working/thirdparty_cpu/stm32f103rey6</location>
+		</link>
+	</linkedResources>
 </projectDescription>
