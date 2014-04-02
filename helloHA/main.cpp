@@ -8,6 +8,8 @@ int main (void){
 	while (1){
 		MB1_RGB_red.toggle ();
 		delay_ms (1000);
+		MB1_RGB_blue.toggle ();
+		delay_ms (1000);
 	}
 	
 	return 0;
