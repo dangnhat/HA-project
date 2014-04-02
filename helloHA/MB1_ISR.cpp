@@ -314,6 +314,7 @@ void TIM6_IRQHandler (void){
     return;
 }
 
+/*
 void USART1_IRQHandler (void){
     uint8_t a_count;
 
@@ -322,14 +323,14 @@ void USART1_IRQHandler (void){
             USART1_subISR_table[a_count] ();
         }
     }
-
+*/
     /**< clear IT flag */
-    USART_ClearITPendingBit  (USART1, USART_IT_RXNE);
+/*    USART_ClearITPendingBit  (USART1, USART_IT_RXNE);
     USART_ClearITPendingBit  (USART1, USART_IT_CTS);
     USART_ClearITPendingBit  (USART1, USART_IT_LBD);
     USART_ClearITPendingBit  (USART1, USART_IT_TC);
 
     return;
 }
-
+*/
 

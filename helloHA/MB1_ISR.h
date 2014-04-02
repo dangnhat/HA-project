@@ -64,7 +64,7 @@ extern "C" {
 /* ISRs */
 //void SysTick_Handler (void);
 void TIM6_IRQHandler (void);
-void USART1_IRQHandler (void);
+//void USART1_IRQHandler (void);
 
 #ifdef __cplusplus
 }
