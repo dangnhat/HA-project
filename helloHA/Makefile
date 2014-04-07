@@ -27,6 +27,10 @@ export RIOTBOARD ?= $(CURDIR)/../../thirdparty_boards
 # Change this to 0 show compiler invocation lines by default:
 export QUIET ?= 1
 
+#epxort VPATH and SRCLOC
+export VPATH = MBoard1-libs
+export SRCLOC = VPATH
+
 # Modules to include:
 
 USEMODULE += posix
@@ -66,6 +70,6 @@ ifneq (,$(filter native,$(BOARD)))
 	USEMODULE += random
 endif
 
-export INCLUDES += -I${RIOTBASE}/core/include/ -I${RIOTBASE}/sys/include/ -I${RIOTBASE}/drivers/include/ -I${CURDIR}
+export INCLUDES += -I${RIOTBASE}/core/include/ -I${RIOTBASE}/sys/include/ -I${RIOTBASE}/drivers/include/ -I${CURDIR} -I${CURDIR}/MBoard1-libs
 
 include $(RIOTBASE)/Makefile.include
