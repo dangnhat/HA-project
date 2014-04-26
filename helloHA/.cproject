@@ -3,7 +3,47 @@
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804" moduleId="org.eclipse.cdt.core.settings" name="Default">
-				<externalSettings/>
+				<externalSettings>
+					<externalSetting>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../thirdparty_cpu/stm32f103rey6/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/CoreSupport"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/STM32F10x_StdPeriph_Driver/inc"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../thirdparty_boards/iot-lab_M3/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/quad_math"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/cc110x"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/cc110x_ng"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/posix/pthread/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/posix/pnet/include/sys"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/posix/pnet/include/netinet"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/posix/pnet/include/arpa"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/posix/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/transport_layer/destiny"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/routing/rpl"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/network_layer/sixlowpan/border"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/network_layer/sixlowpan"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/include/sixlowpan"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/include/destiny"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/include/ccn_lite/util"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/include/ccn_lite/test_data"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/include/ccn_lite"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/ccn_lite/util"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/include/radio"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/net/ccn_lite"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/include/crypto"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/sys/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/include/cc110x_ng"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/include/cc110x"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/include/at86rf231"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/cc2420/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/drivers/at86rf231/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/dist/tools/linux-border_router"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT/core/include"/>
+						<entry flags="RESOLVED" kind="includePath" name="/home/dangnhat/RIOT-working/HA-project/helloHA/../../RIOT"/>
+					</externalSetting>
+				</externalSettings>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -93,43 +133,43 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.229798630" name="Cross ARM GNU Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.567389091" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1346518069" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/core/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/dist/tools/linux-border_router"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/at86rf231/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc110x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc110x_ng"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc2420/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/at86rf231"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/cc110x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/cc110x_ng"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include/crypto"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include/radio"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/ccn_lite"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/ccn_lite/util"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite/test_data"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite/util"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/destiny"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/sixlowpan"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/network_layer/sixlowpan"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/network_layer/sixlowpan/border"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/routing/rpl"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/transport_layer/destiny"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/arpa"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/netinet"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/sys"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pthread/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/quad_math"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_boards/iot-lab_M3/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/STM32F10x_StdPeriph_Driver/inc"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/CoreSupport"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/stm32f103rey6/include"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/core/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/dist/tools/linux-border_router&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/at86rf231/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc2420/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/at86rf231&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/cc110x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/cc110x_ng&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include/crypto&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/ccn_lite&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include/radio&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/ccn_lite/util&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite/test_data&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite/util&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/destiny&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/sixlowpan&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/network_layer/sixlowpan&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/network_layer/sixlowpan/border&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/routing/rpl&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/transport_layer/destiny&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/arpa&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/netinet&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/sys&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pthread/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc110x_ng&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc110x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/quad_math&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_boards/iot-lab_M3/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/STM32F10x_StdPeriph_Driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/CoreSupport&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/stm32f103rey6/include&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1125693592" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STDPERIPH_DRIVER"/>
@@ -138,43 +178,43 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.394987877" name="Cross ARM C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2088057371" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/core/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/dist/tools/linux-border_router"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/at86rf231/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc110x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc110x_ng"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc2420/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/at86rf231"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/cc110x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/cc110x_ng"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include/crypto"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include/radio"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/ccn_lite"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/ccn_lite/util"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite/test_data"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite/util"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/destiny"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/sixlowpan"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/network_layer/sixlowpan"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/network_layer/sixlowpan/border"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/routing/rpl"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/transport_layer/destiny"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/arpa"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/netinet"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/sys"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pthread/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/quad_math"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_boards/iot-lab_M3/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/STM32F10x_StdPeriph_Driver/inc"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/CoreSupport"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/stm32f103rey6/include"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/core/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/dist/tools/linux-border_router&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/at86rf231/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc110x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc110x_ng&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc2420/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/at86rf231&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/cc110x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/cc110x_ng&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include/crypto&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include/radio&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/ccn_lite&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/ccn_lite/util&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite/test_data&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite/util&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/destiny&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/network_layer/sixlowpan&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/sixlowpan&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/network_layer/sixlowpan/border&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/routing/rpl&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/transport_layer/destiny&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/arpa&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/netinet&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/sys&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pthread/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/quad_math&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_boards/iot-lab_M3/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/STM32F10x_StdPeriph_Driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/CoreSupport&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/stm32f103rey6/include&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.391444686" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STDPERIPH_DRIVER"/>
@@ -183,43 +223,43 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.771777631" name="Cross ARM C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1690662852" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/core/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/dist/tools/linux-border_router"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/at86rf231/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc110x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc110x_ng"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/cc2420/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/at86rf231"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/cc110x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/drivers/include/cc110x_ng"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include/crypto"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/include/radio"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/ccn_lite"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/ccn_lite/util"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite/test_data"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/ccn_lite/util"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/destiny"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/include/sixlowpan"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/network_layer/sixlowpan"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/network_layer/sixlowpan/border"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/routing/rpl"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/net/transport_layer/destiny"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/arpa"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/netinet"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pnet/include/sys"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/posix/pthread/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/RIOT/sys/quad_math"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_boards/iot-lab_M3/include"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/STM32F10x_StdPeriph_Driver/inc"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/CoreSupport"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x"/>
-									<listOptionValue builtIn="false" value="/home/dangnhat/RIOT-working/thirdparty_cpu/stm32f103rey6/include"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/core/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/dist/tools/linux-border_router&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/at86rf231/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc110x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc110x_ng&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/cc2420/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/at86rf231&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/cc110x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/drivers/include/cc110x_ng&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include/crypto&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/include/radio&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/ccn_lite&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/ccn_lite/util&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite/test_data&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/ccn_lite/util&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/destiny&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/include/sixlowpan&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/network_layer/sixlowpan&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/network_layer/sixlowpan/border&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/routing/rpl&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/net/transport_layer/destiny&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/arpa&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/netinet&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pnet/include/sys&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/posix/pthread/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../RIOT/sys/quad_math&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_boards/iot-lab_M3/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/STM32F10x_StdPeriph_Driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/CoreSupport&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../thirdparty_cpu/stm32f103rey6/include&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.587438503" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STDPERIPH_DRIVER"/>

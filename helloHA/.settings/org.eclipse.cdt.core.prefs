@@ -1,7 +1,7 @@
 eclipse.preferences.version=1
 environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/RIOT-base/delimiter=\:
-environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/RIOT-base/operation=append
-environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/RIOT-base/value=${PWD}/../../RIOT
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/RIOT-base/operation=replace
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/RIOT-base/value=PWD/../../RIOT
 environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/append=true
 environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/appendContributed=true
 environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1554563804/thirdparty_boards-base/delimiter=\:

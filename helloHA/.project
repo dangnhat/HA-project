@@ -28,27 +28,27 @@
 		<link>
 			<name>RIOT</name>
 			<type>2</type>
-			<location>/home/dangnhat/RIOT-working/RIOT</location>
+			<locationURI>PARENT-2-PROJECT_LOC/RIOT</locationURI>
 		</link>
 		<link>
 			<name>STM32F10x_StdPeriph_Lib_V3.5.0</name>
 			<type>2</type>
-			<location>/home/dangnhat/RIOT-working/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0</location>
+			<locationURI>PARENT-2-PROJECT_LOC/thirdparty_cpu/STM32F10x_StdPeriph_Lib_V3.5.0</locationURI>
 		</link>
 		<link>
 			<name>thirdparty_boards</name>
 			<type>2</type>
-			<location>/home/dangnhat/RIOT-working/thirdparty_boards</location>
+			<locationURI>PARENT-2-PROJECT_LOC/thirdparty_boards</locationURI>
 		</link>
 		<link>
 			<name>tpcpu-cortex_common</name>
 			<type>2</type>
-			<location>/home/dangnhat/RIOT-working/thirdparty_cpu/cortex_common</location>
+			<locationURI>PARENT-2-PROJECT_LOC/thirdparty_cpu/cortex_common</locationURI>
 		</link>
 		<link>
 			<name>tpcpu-stm32f103rey6</name>
 			<type>2</type>
-			<location>/home/dangnhat/RIOT-working/thirdparty_cpu/stm32f103rey6</location>
+			<locationURI>PARENT-2-PROJECT_LOC/thirdparty_cpu/stm32f103rey6</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

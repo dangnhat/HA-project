@@ -22,10 +22,10 @@ export RIOTBOARD ?= $(CURDIR)/../../thirdparty_boards
 # Uncomment this to enable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
 # development process:
-#CFLAGS += -DDEVELHELP
+CFLAGS += -DDEVELHELP
 
 # Change this to 0 show compiler invocation lines by default:
-export QUIET ?= 1
+export QUIET ?= 0
 
 #VPATH and SRCLOC
 SRCLOC = MBoard1-libs/
