@@ -1,5 +1,5 @@
 # name of your application
-export PROJECT = helloHA
+export APPLICATION ?= hello_HA
 
 # If no BOARD is found in the environment, use this default:
 export BOARD ?= iot-lab_M3
@@ -22,7 +22,7 @@ export RIOTBOARD ?= $(CURDIR)/../../thirdparty_boards
 # Uncomment this to enable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
 # development process:
-CFLAGS += -DDEVELHELP
+# CFLAGS += -DDEVELHELP
 
 # Change this to 0 show compiler invocation lines by default:
 export QUIET ?= 0
@@ -32,45 +32,19 @@ SRCLOC = MBoard1-libs/
 INCLOC = MBoard1-libs/
 VPATH = $(SRCLOC)
 
-# Modules to include:
+#HA specific flags
+CXXEXFLAGS += -fno-exceptions -fno-rtti -std=gnu++11
+CFLAGS += -ffunction-sections -fdata-sections
+LINKFLAGS += -Wl,--gc-sections
 
+# Modules to include:
 USEMODULE += posix
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += vtimer
-USEMODULE += auto_init
-ifneq (,$(filter msb-430,$(BOARD)))
-	USEMODULE += sht11
-endif
-ifneq (,$(filter msb-430h,$(BOARD)))
-	USEMODULE += sht11
-	USEMODULE += cc110x_ng
-endif
-ifneq (,$(filter chronos,$(BOARD)))
-	USEMODULE += cc110x_ng
-endif
-ifneq (,$(filter wsn430-v1_3b,$(BOARD)))
-	USEMODULE += cc110x_ng
-endif
-ifneq (,$(filter msba2,$(BOARD)))
-	USEMODULE += sht11
-	USEMODULE += ltc4150
-	USEMODULE += rtc
-	USEMODULE += mci
-	USEMODULE += cc110x_ng
-	USEMODULE += config
-	USEMODULE += random
-endif
-ifneq (,$(filter native,$(BOARD)))
-	USEMODULE += ltc4150
-	USEMODULE += rtc
-	USEMODULE += nativenet
-	USEMODULE += transceiver
-	USEMODULE += config
-	USEMODULE += random
-endif
+USEMODULE += defaulttransceiver
 
-export INCLUDES += -I${RIOTBASE}/core/include/ -I${RIOTBASE}/sys/include/ -I${RIOTBASE}/drivers/include/ $(addprefix -I${CURDIR}/, $(INCLOC))
+export INCLUDES += $(addprefix -I${CURDIR}/, $(INCLOC))
 
 include $(RIOTBASE)/Makefile.include
