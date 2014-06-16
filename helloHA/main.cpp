@@ -42,100 +42,102 @@ static radio_packet_t p;
 
 static uint32_t sending_delay = SENDING_DELAY;
 
-void sender(char *count);
-void print_buffer(char *unused);
-void switch2rx(char *unused);
-void powerdown(char *unused);
-void set_delay(char *delay);
+void sender(int, char**);
+void print_buffer(int, char**);
+void switch2rx(int, char**);
+void powerdown(int, char**);
+void set_delay(int, char**);
 #ifdef DBG_IGNORE
-void ignore(char *addr);
+void ignore(int, char**);
 #endif
 
-//shell_t shell;
-//const shell_command_t sc[] = {
-//    {"on", "", switch2rx},
-//    {"off", "", powerdown},
-//    {"snd", "", sender},
-//    {"delay", "", set_delay},
-//    {"buffer", "", print_buffer},
-//#ifdef DBG_IGNORE
-//    {"ign", "ignore node", ignore},
-//#endif
-///*    {NULL, NULL, NULL}};*/
-//    };
+shell_t shell;
+const shell_command_t sc[] = {
+    {"on", "", switch2rx},
+    {"off", "", powerdown},
+    {"snd", "", sender},
+    {"delay", "", set_delay},
+    {"buffer", "", print_buffer},
+#ifdef DBG_IGNORE
+    {"ign", "ignore node", ignore},
+#endif
+    {NULL, NULL, NULL}};
 
-//void shell_runner(void) {
-//    shell_init(&shell, sc, UART0_BUFSIZE, uart0_readc, uart0_putc);
-//    posix_open(uart0_handler_pid, 0);
-//    shell_run(&shell);
-//}
+void shell_runner(void) {
+    shell_init(&shell, sc, UART0_BUFSIZE, uart0_readc, uart0_putc);
+    posix_open(uart0_handler_pid, 0);
+    shell_run(&shell);
+}
 
-//void sender(char *count) {
-//    unsigned int c, i;
+void sender(int argc, char **argv) {
+    unsigned int c, i;
+    char *count;
+    count = argv[1];
 
-//    mesg.type = SND_PKT;
-//    mesg.content.ptr = (char*) &tcmd;
+    mesg.type = SND_PKT;
+    mesg.content.ptr = (char*) &tcmd;
 
-//    tcmd.transceivers = TRANSCEIVER_CC1100;
-//    tcmd.data = &p;
+    tcmd.transceivers = TRANSCEIVER_CC1100;
+    tcmd.data = &p;
 
-//    p.length = CC1100_MAX_DATA_LENGTH;
-//    p.dst = 0;
+    p.length = CC1100_MAX_DATA_LENGTH;
+    p.dst = 0;
 
-//    c = atoi(count + strlen("snd "));
-//    for (i = 0; i < c; i++) {
-//        puts(".");
-//        p.data = snd_buffer[i % SND_BUFFER_SIZE];
-//        msg_send(&mesg, transceiver_pid, 1);
-//        vtimer_usleep(sending_delay);
-//    }
-//}
+    c = atoi(count + strlen("snd "));
+    for (i = 0; i < c; i++) {
+        puts(".");
+        p.data = snd_buffer[i % SND_BUFFER_SIZE];
+        msg_send(&mesg, transceiver_pid, 1);
+        vtimer_usleep(sending_delay);
+    }
+}
 
-//void print_buffer(char *unused) {
-//    uint8_t i;
-//    extern radio_packet_t transceiver_buffer[];
-//    for (i = 0; i < TRANSCEIVER_BUFFER_SIZE; i++) {
-//        printf("[%u] %u # %u # %u\n", i, transceiver_buffer[i].processing, transceiver_buffer[i].length, transceiver_buffer[i].data[i]);
-//    }
-//    extern rx_buffer_t cc110x_rx_buffer[];
-//    for (i = 0; i < TRANSCEIVER_BUFFER_SIZE; i++) {
-//        printf("[%u] %u # %u \n", i, cc110x_rx_buffer[i].packet.length, cc110x_rx_buffer[i].packet.data[i]);
-//    }
-//}
+void print_buffer(int argc, char **argv) {
+    uint8_t i;
+    extern radio_packet_t transceiver_buffer[];
+    for (i = 0; i < TRANSCEIVER_BUFFER_SIZE; i++) {
+        printf("[%u] %u # %u # %u\n", i, transceiver_buffer[i].processing, transceiver_buffer[i].length, transceiver_buffer[i].data[i]);
+    }
+    extern rx_buffer_t cc110x_rx_buffer[];
+    for (i = 0; i < TRANSCEIVER_BUFFER_SIZE; i++) {
+        printf("[%u] %u # %u \n", i, cc110x_rx_buffer[i].packet.length, cc110x_rx_buffer[i].packet.data[i]);
+    }
+}
 
-//void switch2rx(char *unused) {
-//    mesg.type = SWITCH_RX;
-//    mesg.content.ptr = (char*) &tcmd;
+void switch2rx(int argc, char** argv) {
+    mesg.type = SWITCH_RX;
+    mesg.content.ptr = (char*) &tcmd;
 
-//    tcmd.transceivers = TRANSCEIVER_CC1100;
-//    puts("Turning transceiver on");
-//    if (msg_send(&mesg, transceiver_pid, 1)) {
-//        puts("\tsuccess");
-//    }
-//}
+    tcmd.transceivers = TRANSCEIVER_CC1100;
+    puts("Turning transceiver on");
+    if (msg_send(&mesg, transceiver_pid, 1)) {
+        puts("\tsuccess");
+    }
+}
 
-//void powerdown(char *unused) {
-//    mesg.type = POWERDOWN;
-//    mesg.content.ptr = (char*) &tcmd;
+void powerdown(int argc, char** argv) {
+    mesg.type = POWERDOWN;
+    mesg.content.ptr = (char*) &tcmd;
 
-//    tcmd.transceivers = TRANSCEIVER_CC1100;
-//    puts("Turning transceiver off");
-//    if (msg_send(&mesg, transceiver_pid, 1)) {
-//        puts("\tsuccess");
-//    }
-//}
+    tcmd.transceivers = TRANSCEIVER_CC1100;
+    puts("Turning transceiver off");
+    if (msg_send(&mesg, transceiver_pid, 1)) {
+        puts("\tsuccess");
+    }
+}
 
-//void set_delay(char *delay) {
-//    uint32_t d;
+void set_delay(int argc, char** argv) {
+    uint32_t d;
+    char *delay = argv[1];
 
-//    d = atoi(delay + strlen("delay "));
-//    if (strlen(delay) > strlen("delay ")) {
-//        sending_delay = d;
-//    }
-//    else {
-//        puts("Usage:\tdelay <µs>");
-//    }
-//}
+    d = atoi(delay + strlen("delay "));
+    if (strlen(delay) > strlen("delay ")) {
+        sending_delay = d;
+    }
+    else {
+        puts("Usage:\tdelay <µs>");
+    }
+}
 
 #ifdef DBG_IGNORE
 void ignore(char *addr) {
@@ -197,7 +199,7 @@ int main(void) {
     for (i = 0; i < SND_BUFFER_SIZE; i++) { 
         memset(snd_buffer[i], i, CC1100_MAX_DATA_LENGTH);
     }
- //   thread_create(shell_stack_buffer, SHELL_STACK_SIZE, PRIORITY_MAIN-1, CREATE_STACKTEST, shell_runner, "shell");
+    thread_create(shell_stack_buffer, SHELL_STACK_SIZE, PRIORITY_MAIN-1, CREATE_STACKTEST, shell_runner, "shell");
     radio_pid = thread_create(radio_stack_buffer, RADIO_STACK_SIZE, PRIORITY_MAIN-2, CREATE_STACKTEST, radio, "radio");
     transceiver_init(TRANSCEIVER_CC1100);
     transceiver_start();
