@@ -37,6 +37,8 @@
 <includepath>${ProjDirPath}/../../../RIOT/boards/mboard_1/include</includepath>
 <includepath>${ProjDirPath}/../../../RIOT/cpu/stm32f1/include</includepath>
 <includepath>${ProjDirPath}/../../../RIOT/cpu/cortex-m3_common/include</includepath>
+<includepath>${ProjDirPath}/../../libs/STM32F10x_StdPeriph_Driver/inc</includepath>
+<includepath>${ProjDirPath}/../../libs/MBoard1-libs</includepath>
 
 </language>
 <language name="C Source File">
@@ -75,6 +77,8 @@
 <includepath>${ProjDirPath}/../../../RIOT/boards/mboard_1/include</includepath>
 <includepath>${ProjDirPath}/../../../RIOT/cpu/stm32f1/include</includepath>
 <includepath>${ProjDirPath}/../../../RIOT/cpu/cortex-m3_common/include</includepath>
+<includepath>${ProjDirPath}/../../libs/STM32F10x_StdPeriph_Driver/inc</includepath>
+<includepath>${ProjDirPath}/../../libs/MBoard1-libs</includepath>
 
 </language>
 <language name="C++ Source File">
@@ -113,6 +117,8 @@
 <includepath>${ProjDirPath}/../../../RIOT/boards/mboard_1/include</includepath>
 <includepath>${ProjDirPath}/../../../RIOT/cpu/stm32f1/include</includepath>
 <includepath>${ProjDirPath}/../../../RIOT/cpu/cortex-m3_common/include</includepath>
+<includepath>${ProjDirPath}/../../libs/STM32F10x_StdPeriph_Driver/inc</includepath>
+<includepath>${ProjDirPath}/../../libs/MBoard1-libs</includepath>
 
 </language>
 <language name="Object File">
