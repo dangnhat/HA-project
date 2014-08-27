@@ -5,9 +5,7 @@
 
 extern "C" {
 #include "transceiver.h"
-#include "shell.h"
 #include "board_uart0.h"
-#include "posix_io.h"
 #include "thread.h"
 #include "board.h"
 #include "hwtimer.h"
@@ -16,159 +14,236 @@ extern "C" {
 #include "cc110x_ng.h"
 }
 
-#define SHELL_STACK_SIZE    (KERNEL_CONF_STACKSIZE_DEFAULT + KERNEL_CONF_STACKSIZE_PRINTF)
-#define RADIO_STACK_SIZE    (KERNEL_CONF_STACKSIZE_DEFAULT)
+#include "MB1_System.h"
+#include "rgb.h"
+#include "ledw.h"
 
-#ifdef MODULE_MSP430_COMMON
-#define SND_BUFFER_SIZE     (10)
-#define RCV_BUFFER_SIZE     (32)
-#else
-#define SND_BUFFER_SIZE     (100)
+/* definitions */
+#define RECV_HANDLER_STACK_SIZE    (KERNEL_CONF_STACKSIZE_DEFAULT + KERNEL_CONF_STACKSIZE_PRINTF)
 #define RCV_BUFFER_SIZE     (64)
-#endif
 
-#define SENDING_DELAY       (5 * 1000)
+#define NODE_ID	(1)
 
-char shell_stack_buffer[SHELL_STACK_SIZE];
-char radio_stack_buffer[RADIO_STACK_SIZE];
+typedef enum: uint8_t {
+	set_rgb_on = 0x01,
+	set_rgb_off = 0x02,
+	set_rgb_value = 0x03, // 3 values follow
+	blink_rgb = 0x04,
+	toggle_rgb = 0x05,
+	set_ledw_on = 0x06,
+	set_ledw_off = 0x07,
+	set_ledw_value = 0x08, // 1 value follows
+	blink_ledw = 0x09,
+	toggle_ledw = 0x0A,
+} command_t;
 
-uint8_t snd_buffer[SND_BUFFER_SIZE][CC1100_MAX_DATA_LENGTH];
+const char command_string[][128] {
+	"",
+	"set_rgb_on",
+	"set_rgb_off",
+	"set_rgb_value",
+	"blink_rgb",
+	"toggle_rgb",
+	"set_ledw_on",
+	"set_ledw_off",
+	"set_ledw_value",
+	"blink_ledw",
+	"toggle_ledw",
+};
 
-msg_t msg_q[RCV_BUFFER_SIZE];
+/* RGB color */
+const uint8_t RGBColors [15][3] = {
+	{0, 0, 0}, // black
+	{255, 0, 0}, // red
+	{0, 255, 0}, // green
+	{0, 0, 255}, // blue
+	{255, 255, 0}, // yellow
+	{0, 255, 255}, // aqua
+	{255, 0, 255}, // magenta
+	{192, 192, 192}, // silver
+	{128, 128, 128}, // gray
+	{128, 0, 0}, // maroon
+	{128, 128, 0}, // olive
+	{0, 128, 0}, // green
+	{128, 0, 128}, //purple
+	{0, 128, 128}, // teal
+	{0, 0, 128} // navy
+};
 
+/* global vars */
 static msg_t mesg;
 static transceiver_command_t tcmd;
 static radio_packet_t p;
 
-static uint32_t sending_delay = SENDING_DELAY;
+static RGB_c led_rgb;
+static LEDW_c ledw;
 
-void sender(int, char**);
-void print_buffer(int, char**);
-void switch2rx(int, char**);
-void powerdown(int, char**);
-void set_delay(int, char**);
-#ifdef DBG_IGNORE
-void ignore(int, char**);
-#endif
+static bool rgb_state = 0;
+static uint8_t ledw_duty = 0;
 
-shell_t shell;
-const shell_command_t sc[] = {
-    {"on", "", switch2rx},
-    {"off", "", powerdown},
-    {"snd", "", sender},
-    {"delay", "", set_delay},
-    {"buffer", "", print_buffer},
-#ifdef DBG_IGNORE
-    {"ign", "ignore node", ignore},
-#endif
-    {NULL, NULL, NULL}};
+static int taskled_pid;
 
-void shell_runner(void) {
-    shell_init(&shell, sc, UART0_BUFSIZE, uart0_readc, uart0_putc);
-    posix_open(uart0_handler_pid, 0);
-    shell_run(&shell);
+/* Send data buffer */
+uint8_t send_data_buffer[CC1100_MAX_DATA_LENGTH];
+
+/* recv_handler stack */
+char recv_handler_stack_buffer[RECV_HANDLER_STACK_SIZE];
+
+/* taskled_stack */
+char taskled_stack[KERNEL_CONF_STACKSIZE_PRINTF];
+
+/* recv_handler queue */
+msg_t msg_q[RCV_BUFFER_SIZE];
+
+void recv_handler(void);
+
+static bool blink_led = false;
+void taskled(void);
+
+int main(void) {
+    int recv_handler_pid;
+    uint8_t color_id = 0;
+    uint8_t ledw_value = 0;
+
+    MB1_system_init();
+
+    recv_handler_pid = thread_create(recv_handler_stack_buffer, RECV_HANDLER_STACK_SIZE, PRIORITY_MAIN-2, CREATE_STACKTEST, recv_handler, "Receiving handler");
+    transceiver_init(TRANSCEIVER_CC1100);
+    transceiver_start();
+    transceiver_register(TRANSCEIVER_CC1100, recv_handler_pid);
+
+    taskled_pid = thread_create(taskled_stack, KERNEL_CONF_STACKSIZE_PRINTF, PRIORITY_MAIN-1, CREATE_WOUT_YIELD, taskled, "Task blink led");
+
+    /* get btn and send data */
+
+    msg_t rep;
+
+    while (1) {
+    	if(MB1_usrBtn0.pressedKey_get() == Btn_ns::newKey) {
+    		/* send data */
+    		mesg.type = SND_PKT;
+			mesg.content.ptr = (char*) &tcmd;
+
+			tcmd.transceivers = TRANSCEIVER_CC1100;
+			tcmd.data = &p;
+
+			p.length = 1;
+			p.dst = 0;
+
+			#if (NODE_ID == 1)
+			send_data_buffer[0] = toggle_rgb;
+			#else
+			send_data_buffer[0] = toggle_ledw;
+			#endif
+			p.data = send_data_buffer;
+
+			msg_send_receive(&mesg, &rep, transceiver_pid);
+			printf("rep, transceiver_id %d, type %d\n", rep.sender_pid, rep.type);
+    	}
+
+    	if(MB1_usrBtn0.pressedKey_get() == Btn_ns::newLongKey) {
+			/* send data */
+			mesg.type = SND_PKT;
+			mesg.content.ptr = (char*) &tcmd;
+
+			tcmd.transceivers = TRANSCEIVER_CC1100;
+			tcmd.data = &p;
+
+			p.length = 1;
+			p.dst = 0;
+
+			#if (NODE_ID == 1)
+			send_data_buffer[0] = blink_rgb;
+			#else
+			send_data_buffer[0] = blink_ledw;
+			#endif
+			p.data = send_data_buffer;
+
+			msg_send_receive(&mesg, &rep, transceiver_pid);
+			printf("rep, transceiver_id %d, type %d\n", rep.sender_pid, rep.type);
+
+			while (MB1_usrBtn0.isStillLongPressed() == true) {
+				;
+			}
+
+			/* send off command */
+			#if (NODE_ID == 1)
+			send_data_buffer[0] = set_rgb_off;
+			#else
+			send_data_buffer[0] = set_ledw_off;
+			#endif
+
+			msg_send_receive(&mesg, &rep, transceiver_pid);
+			printf("rep, transceiver_id %d, type %d\n", rep.sender_pid, rep.type);
+		}
+
+    	if(MB1_usrBtn1.pressedKey_get() == Btn_ns::newKey) {
+			/* send data */
+			mesg.type = SND_PKT;
+			mesg.content.ptr = (char*) &tcmd;
+
+			tcmd.transceivers = TRANSCEIVER_CC1100;
+			tcmd.data = &p;
+
+			p.dst = 0;
+
+			#if (NODE_ID == 1)
+			p.length = 4;
+			send_data_buffer[0] = set_rgb_value;
+			send_data_buffer[1] = RGBColors[color_id][0];
+			send_data_buffer[2] = RGBColors[color_id][1];
+			send_data_buffer[3] = RGBColors[color_id][2];
+			color_id = (color_id + 1) % 15;
+			printf("%d\n", color_id);
+
+			#else
+			p.length = 2;
+			send_data_buffer[0] = set_ledw_value;
+			send_data_buffer[1] = ledw_value;
+			ledw_value = 1;
+			#endif
+
+			p.data = send_data_buffer;
+
+			msg_send_receive(&mesg, &rep, transceiver_pid);
+			printf("rep, transceiver_id %d, type %d\n", rep.sender_pid, rep.type);
+		}
+    }// end while
 }
 
-void sender(int argc, char **argv) {
-    unsigned int c, i;
-    char *count;
-    count = argv[1];
-
-    mesg.type = SND_PKT;
-    mesg.content.ptr = (char*) &tcmd;
-
-    tcmd.transceivers = TRANSCEIVER_CC1100;
-    tcmd.data = &p;
-
-    p.length = CC1100_MAX_DATA_LENGTH;
-    p.dst = 0;
-
-    c = atoi(count + strlen("snd "));
-    for (i = 0; i < c; i++) {
-        puts(".");
-        p.data = snd_buffer[i % SND_BUFFER_SIZE];
-        msg_send(&mesg, transceiver_pid, 1);
-        vtimer_usleep(sending_delay);
-    }
-}
-
-void print_buffer(int argc, char **argv) {
-    uint8_t i;
-    extern radio_packet_t transceiver_buffer[];
-    for (i = 0; i < TRANSCEIVER_BUFFER_SIZE; i++) {
-        printf("[%u] %u # %u # %u\n", i, transceiver_buffer[i].processing, transceiver_buffer[i].length, transceiver_buffer[i].data[i]);
-    }
-    extern rx_buffer_t cc110x_rx_buffer[];
-    for (i = 0; i < TRANSCEIVER_BUFFER_SIZE; i++) {
-        printf("[%u] %u # %u \n", i, cc110x_rx_buffer[i].packet.length, cc110x_rx_buffer[i].packet.data[i]);
-    }
-}
-
-void switch2rx(int argc, char** argv) {
-    mesg.type = SWITCH_RX;
-    mesg.content.ptr = (char*) &tcmd;
-
-    tcmd.transceivers = TRANSCEIVER_CC1100;
-    puts("Turning transceiver on");
-    if (msg_send(&mesg, transceiver_pid, 1)) {
-        puts("\tsuccess");
-    }
-}
-
-void powerdown(int argc, char** argv) {
-    mesg.type = POWERDOWN;
-    mesg.content.ptr = (char*) &tcmd;
-
-    tcmd.transceivers = TRANSCEIVER_CC1100;
-    puts("Turning transceiver off");
-    if (msg_send(&mesg, transceiver_pid, 1)) {
-        puts("\tsuccess");
-    }
-}
-
-void set_delay(int argc, char** argv) {
-    uint32_t d;
-    char *delay = argv[1];
-
-    d = atoi(delay + strlen("delay "));
-    if (strlen(delay) > strlen("delay ")) {
-        sending_delay = d;
-    }
-    else {
-        puts("Usage:\tdelay <µs>");
-    }
-}
-
-#ifdef DBG_IGNORE
-void ignore(char *addr) {
-    uint16_t a;
-    mesg.type = DBG_IGN;
-    mesg.content.ptr = (char*) &tcmd;
-
-    tcmd.transceivers = TRANSCEIVER_CC1100;
-    tcmd.data = &a;
-    a = atoi(delay + strlen("ign "));
-    if (strlen(addr) > strlen("ign ")) {
-        printf("msg_q: %hu/%hu/%lu Transceiver PID: %i (%p), rx_buffer_next: %u\n", 
-                msg_q[63].sender_pid, msg_q[63].type, msg_q[63].content.value, transceiver_pid, &transceiver_pid, rx_buffer_next);
-        printf("sending to transceiver (%u): %u\n", transceiver_pid, (*(uint8_t*)tcmd.data));
-        msg_send(&mesg, transceiver_pid, 1);
-    }
-    else {
-        puts("Usage:\tign <addr>");
-    }
-}
-#endif
-
-void radio(void) {
+void recv_handler(void) {
     msg_t m;
     radio_packet_t *p;
-    uint8_t i;
+    uint8_t count;
+
+    /* init rgb */
+	#if (NODE_ID == 0)
+    led_rgb.Start();
+	#else
+    ledw.Start();
+    ledw.Increase_Duty();
+    ledw.Increase_Duty();
+
+    ledw_duty = (ledw_duty + 2) % 10;
+	#endif
+
+    delay_ms(300);
+
+	#if (NODE_ID == 0)
+    led_rgb.SetColor(0, 0, 0);
+	#else
+    for (count = ledw_duty; count <= 10; count++) {
+    	ledw.Increase_Duty();
+    }
+    ledw_duty = 0;
+	#endif
+
 
     msg_init_queue(msg_q, RCV_BUFFER_SIZE);
 
     while (1) {
         msg_receive(&m);
+
         if (m.type == PKT_PENDING) {
             p = (radio_packet_t*) m.content.ptr;
             printf("Packet waiting, process %p...\n", p);
@@ -178,11 +253,90 @@ void radio(void) {
             printf("\tLQI:\t%u\n", p->lqi);
             printf("\tRSSI:\t%u\n", p->rssi);
 
-            for (i = 0; i < p->length; i++) {
-                printf("%02X ", p->data[i]);
-            }
             p->processing--;
-            printf("\n");
+
+            /* process command */
+            printf("Received command %s\n", command_string[p->data[0]]);
+
+            switch (p->data[0]) {
+            case set_rgb_on:
+            	led_rgb.SetColor(255, 255, 255);
+            	rgb_state = 1;
+            	break;
+
+            case set_rgb_off:
+            	led_rgb.SetColor(0, 0, 0);
+            	rgb_state = 0;
+
+            	blink_led = false;
+            	break;
+
+            case set_rgb_value:
+            	printf("Values %d %d %d\n", p->data[1], p->data[2], p->data[3]);
+            	led_rgb.SetColor(p->data[1], p->data[2], p->data[3]);
+            	break;
+
+            case blink_rgb:
+            	blink_led = true;
+            	thread_wakeup(taskled_pid);
+            	break;
+
+            case toggle_rgb:
+            	if (rgb_state == 0) {
+            		led_rgb.SetColor(255, 255, 255);
+            		rgb_state = 1;
+            	}
+            	else {
+            		led_rgb.SetColor(0, 0, 0);
+            		rgb_state = 0;
+            	}
+            	break;
+
+            case set_ledw_on:
+//            	ledw.Start();
+//            	ledw_state = 1;
+            	break;
+
+            case set_ledw_off:
+            	for (count = ledw_duty; count <= 10; count++) {
+					ledw.Increase_Duty();
+				}
+				ledw_duty = 0;
+
+				blink_led = false;
+            	break;
+
+            case set_ledw_value:
+            	printf("Inc Value %d\n", p->data[1]);
+            	for (count = 0; count < p->data[1]; count++) {
+            		ledw.Increase_Duty();
+
+            		ledw_duty = (ledw_duty + 1) % 10;
+            	}
+            	break;
+
+            case blink_ledw:
+            	blink_led = true;
+				thread_wakeup(taskled_pid);
+            	break;
+
+            case toggle_ledw:
+            	if (ledw_duty == 0) {
+
+            		ledw.Increase_Duty();
+					ledw.Increase_Duty();
+
+					ledw_duty = (ledw_duty + 2) % 10;
+            	}
+            	else {
+            		for (count = ledw_duty; count <= 10; count++) {
+						ledw.Increase_Duty();
+					}
+					ledw_duty = 0;
+            	}
+            	break;
+
+            }
         }
         else if (m.type == ENOBUFFER) {
             puts("Transceiver buffer full");
@@ -193,20 +347,38 @@ void radio(void) {
     }
 }
 
-int main(void) {
-    int radio_pid;
-    uint8_t i;
-    for (i = 0; i < SND_BUFFER_SIZE; i++) { 
-        memset(snd_buffer[i], i, CC1100_MAX_DATA_LENGTH);
-    }
-    thread_create(shell_stack_buffer, SHELL_STACK_SIZE, PRIORITY_MAIN-1, CREATE_STACKTEST, shell_runner, "shell");
-    radio_pid = thread_create(radio_stack_buffer, RADIO_STACK_SIZE, PRIORITY_MAIN-2, CREATE_STACKTEST, radio, "radio");
-    transceiver_init(TRANSCEIVER_CC1100);
-    transceiver_start();
-    transceiver_register(TRANSCEIVER_CC1100, radio_pid);
-   
-   while (1) {
-//       LED_GREEN_TOGGLE;
-       hwtimer_wait(1000 * 1000);
-   }
+void taskled (void) {
+	uint16_t count;
+
+	while (1) {
+		if (blink_led == true) {
+			#if (NODE_ID == 0)
+			if (rgb_state == 0) {
+				led_rgb.SetColor(255, 255, 255);
+				rgb_state = 1;
+			}
+			else {
+				led_rgb.SetColor(0, 0, 0);
+				rgb_state = 0;
+			}
+			#else
+			if (ledw_duty == 0) {
+				ledw.Increase_Duty();
+				ledw.Increase_Duty();
+				ledw_duty = (ledw_duty + 2) % 10;
+			}
+			else {
+				for (count = ledw_duty; count <= 10; count++) {
+					ledw.Increase_Duty();
+				}
+				ledw_duty = 0;
+			}
+			#endif
+
+			delay_ms(200);
+		}
+		else {
+			thread_sleep();
+		}
+	}
 }

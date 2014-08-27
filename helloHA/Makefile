@@ -28,8 +28,8 @@ export RIOTBOARD ?= $(CURDIR)/../../thirdparty_boards
 export QUIET ?= 0
 
 #VPATH and SRCLOC
-SRCLOC = MBoard1-libs/
-INCLOC = MBoard1-libs/
+SRCLOC = MBoard1-libs/ TuLib/Src/
+INCLOC = MBoard1-libs/ TuLib/Inc/
 VPATH = $(SRCLOC)
 
 #HA specific flags
@@ -44,6 +44,7 @@ USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += vtimer
 USEMODULE += defaulttransceiver
+USEMODULE += auto_init
 
 export INCLUDES += $(addprefix -I${CURDIR}/, $(INCLOC))
 
