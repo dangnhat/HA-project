@@ -51,10 +51,7 @@ INCLOC = ../../libs/MBoard1-libs ../../libs/STM32F10x_StdPeriph_Driver/inc
 export CPPMIX =1
 
 # RIOT's usemodules (auto_init is one of default modules)
-USEMODULES += auto_init
-USEMODULES += defaulttransceiver
-USEMODULES += vtimer
-USEMODULES += config
+export USEMODULE += vtimer
 
 # If you want to add some extra flags when compile c++ files, add these flags
 # to CXXEXFLAGS variable
@@ -64,7 +61,7 @@ export LINKFLAGS += -Wl,--gc-sections
 
 #----------------------- HA project config processing -------------------------#
 # Collect ha modules
-export USEMODULES += $(notdir $(SRCLOC))
+export USEMODULE += $(notdir $(SRCLOC))
 export DIRS += $(SRCLOC)
 
 # Add include header to RIOT's INCLUDES
