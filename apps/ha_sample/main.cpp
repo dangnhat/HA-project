@@ -44,73 +44,75 @@ char threadA_stack[KERNEL_CONF_STACKSIZE_MAIN];
 void *threadA_func(void *arg);
 
 /* main */
-int main() {
+int main()
+{
 
-	/* Init MBoard-1 system */
-	MB1_system_init();
+    /* Init MBoard-1 system */
+    MB1_system_init();
 
-	printf("\n************ RIOT, C++ and MBoard-1 demo program ***********\n");
-	printf("\n");
+    printf("\n************ RIOT, C++ and MBoard-1 demo program ***********\n");
+    printf("\n");
 
-	/* create thread A */
-	thread_create(threadA_stack, sizeof(threadA_stack), 0, CREATE_WOUT_YIELD,
-			threadA_func, NULL, "thread A");
+    /* create thread A */
+    thread_create(threadA_stack, sizeof(threadA_stack), 0, CREATE_WOUT_YIELD,
+            threadA_func, NULL, "thread A");
 
-	printf("******** Hello, you're in thread %s ********\n",
-			thread_getname(thread_getpid()));
-	printf("We'll test C++ class and methods here!\n");
+    printf("******** Hello, you're in thread %s ********\n",
+            thread_getname(thread_getpid()));
+    printf("We'll test C++ class and methods here!\n");
 
-	cpp_class cpp_obj;
-	printf("\n-= Test overloading functions =-\n");
-	cpp_obj.say_hello();
-	cpp_obj.say_hello(42);
-	cpp_obj.say_hello(3.141592f);
+    cpp_class cpp_obj;
+    printf("\n-= Test overloading functions =-\n");
+    cpp_obj.say_hello();
+    cpp_obj.say_hello(42);
+    cpp_obj.say_hello(3.141592f);
 
-	printf("\n-= Test namespace =-\n");
-	printf("typing std::vector is obsolete when 'using namespace std;'\n");
-	vector<int> vInts;
-	vInts.push_back(1);
-	vInts.push_back(3);
-	vInts.push_back(2);
-	printf("The vector vInts has been filled with %d numbers.\n", vInts.size());
+    printf("\n-= Test namespace =-\n");
+    printf("typing std::vector is obsolete when 'using namespace std;'\n");
+    vector<int> vInts;
+    vInts.push_back(1);
+    vInts.push_back(3);
+    vInts.push_back(2);
+    printf("The vector vInts has been filled with %d numbers.\n", vInts.size());
 
-	printf("\n-= Test iterator =-\n");
-	printf("The content of vInts = { ");
+    printf("\n-= Test iterator =-\n");
+    printf("The content of vInts = { ");
 
-	for (vector<int>::iterator it = vInts.begin(); it != vInts.end(); ++it) {
-		printf("%d ", *(it));
-	}
+    for (vector<int>::iterator it = vInts.begin(); it != vInts.end(); ++it) {
+        printf("%d ", *(it));
+    }
 
-	printf("}\n");
+    printf("}\n");
 
-	return 0;
+    return 0;
 }
 
 /* thread A function implemetation */
-void *threadA_func(void *) {
-	int day = 13, month = 6, year = 2014;
-	int ret_day;
-	char day_of_week_table[][32] = { "Sunday", "Monday", "Tuesday", "Wednesday",
-			"Thursday", "Friday", "Saturday" };
+void *threadA_func(void *)
+{
+    int day = 13, month = 6, year = 2014;
+    int ret_day;
+    char day_of_week_table[][32] = { "Sunday", "Monday", "Tuesday", "Wednesday",
+            "Thursday", "Friday", "Saturday" };
 
-	printf("\n******** Hello, now you're in %s ********\n",
-			thread_getname(thread_getpid()));
-	printf("We'll test some C functions here!\n");
+    printf("\n******** Hello, now you're in %s ********\n",
+            thread_getname(thread_getpid()));
+    printf("We'll test some C functions here!\n");
 
-	printf("\n-= hello function =-\n");
-	hello();
+    printf("\n-= hello function =-\n");
+    hello();
 
-	printf("\n-= day_of_week function =-\n");
+    printf("\n-= day_of_week function =-\n");
 
-	printf("day %d, month %d, year %d is ", day, month, year);
+    printf("day %d, month %d, year %d is ", day, month, year);
 
-	ret_day = day_of_week(day, month, year);
-	if (ret_day >= 0) {
-		printf("%s\n", day_of_week_table[ret_day]);
-	}
+    ret_day = day_of_week(day, month, year);
+    if (ret_day >= 0) {
+        printf("%s\n", day_of_week_table[ret_day]);
+    }
 
-	printf(
-			"\nThis demo ends here, press Ctrl-C to exit (if you're on native)!\n");
+    printf(
+            "\nThis demo ends here, press Ctrl-C to exit (if you're on native)!\n");
 
-	return NULL;
+    return NULL;
 }
