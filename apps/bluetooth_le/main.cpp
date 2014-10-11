@@ -41,7 +41,6 @@ uint8_t				attBuf[MAX_MSGBUF_SIZE];
 
 
 
-
 /* main */
 int main() {
 	/* Initial MBoard-1 system */
@@ -58,7 +57,7 @@ int main() {
 
 		if(newKey == MB1_usrBtn0.pressedKey_get()){
 			MB1_Led_green.toggle();	//DEBUG
-			/* Set BLE device discoveryable */
+			/* Set BLE device discoverable */
 			ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
 		}
 
