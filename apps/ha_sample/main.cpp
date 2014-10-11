@@ -99,7 +99,7 @@ int main(void)
     MB1_system_init();
 
     recv_handler_pid = thread_create(recv_handler_stack_buffer,
-    RECV_HANDLER_STACK_SIZE, PRIORITY_MAIN - 2, CREATE_WOUT_YIELD, recv_handler,
+    RECV_HANDLER_STACK_SIZE, PRIORITY_MAIN - 2, 0, recv_handler,
     NULL, "Receiving handler");
     transceiver_init(TRANSCEIVER_CC1100);
     transceiver_start();
