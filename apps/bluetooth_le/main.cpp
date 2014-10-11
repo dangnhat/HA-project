@@ -18,6 +18,32 @@ extern "C" {
 
 #include "MB1_System.h"
 
+<<<<<<< HEAD
+#include "ble_transaction.h" //used by ANH
+
+using namespace Btn_ns;
+
+using namespace std;
+
+/*******************************************************************************
+ * Variables & Data Buffer
+ *
+ ******************************************************************************/
+uint8_t 			rxBuf[MAX_BUF_SIZE]		= "\0";	// hold usart3 rx data
+uint8_t 			index					= 0;
+ble_serv_stt_s 		BTFlags;
+uint8_t 			msgBuf[]				=  "This is default data of BLE112A";
+uint8_t				attBuf[MAX_MSGBUF_SIZE];
+
+
+/*******************************************************************************
+ * Private Functions
+ *
+ ******************************************************************************/
+
+/* thread's stack */
+char threadA_stack[KERNEL_CONF_STACKSIZE_MAIN];
+=======
 /* definitions */
 #define RECV_HANDLER_STACK_SIZE    (KERNEL_CONF_STACKSIZE_DEFAULT + KERNEL_CONF_STACKSIZE_PRINTF)
 #define RCV_BUFFER_SIZE     (64)
@@ -131,12 +157,21 @@ int main(void)
             send_data_buffer[0] = toggle_ledw;
 #endif
             p.data = send_data_buffer;
+>>>>>>> master
 
             msg_send_receive(&mesg, &rep, transceiver_pid);
             printf("rep, transceiver_id %d, type %d\n", rep.sender_pid,
                     rep.type);
         }
 
+<<<<<<< HEAD
+/* main */
+int main() {
+	/* Initial MBoard-1 system */
+	MB1_system_init();
+	/* Initial BLE interface */
+	ble_init();
+=======
         if (MB1_usrBtn0.pressedKey_get() == Btn_ns::newLongKey) {
             printf("UsrBtn0::newLongKey\n");
             /* send data */
@@ -145,10 +180,13 @@ int main(void)
 
             tcmd.transceivers = TRANSCEIVER_CC1100;
             tcmd.data = &p;
+>>>>>>> master
 
             p.length = 1;
             p.dst = 0;
 
+<<<<<<< HEAD
+=======
 #if (NODE_ID == 1)
             send_data_buffer[0] = blink_rgb;
 #else
@@ -181,10 +219,30 @@ int main(void)
             /* send data */
             mesg.type = SND_PKT;
             mesg.content.ptr = (char*) &tcmd;
+>>>>>>> master
 
             tcmd.transceivers = TRANSCEIVER_CC1100;
             tcmd.data = &p;
 
+<<<<<<< HEAD
+//	while(BTFlags.ready != 0x01){
+//
+//	}
+//	ble_cmd_attributes_write(0x000b, 0, 31, msgBuf);
+	while(1){
+
+		if(newKey == MB1_usrBtn0.pressedKey_get()){
+			MB1_Led_green.toggle();	//DEBUG
+			/* Set BLE device discoveryable */
+			ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
+		}
+
+		if(newKey == MB1_usrBtn1.pressedKey_get()){
+			ble_cmd_attributes_write(0x000b, 0, 31, msgBuf);
+		}
+
+	}
+=======
             p.dst = 0;
 
 #if (NODE_ID == 1)
@@ -210,6 +268,7 @@ int main(void)
                     rep.type);
         }
     } // end while
+>>>>>>> master
 }
 
 void* recv_handler(void*)
