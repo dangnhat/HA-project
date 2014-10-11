@@ -35,7 +35,27 @@ extern "C" {
 #include "cpp_class.h"
 #include "MB1_System.h"
 
+#include "ble_transaction.h" //used by ANH
+
+using namespace Btn_ns;
+
 using namespace std;
+
+/*******************************************************************************
+ * Variables & Data Buffer
+ *
+ ******************************************************************************/
+uint8_t 			rxBuf[MAX_BUF_SIZE]		= "\0";	// hold usart3 rx data
+uint8_t 			index					= 0;
+ble_serv_stt_s 		BTFlags;
+uint8_t 			msgBuf[]				=  "This is default data of BLE112A";
+uint8_t				attBuf[MAX_MSGBUF_SIZE];
+
+
+/*******************************************************************************
+ * Private Functions
+ *
+ ******************************************************************************/
 
 /* thread's stack */
 char threadA_stack[KERNEL_CONF_STACKSIZE_MAIN];
@@ -45,45 +65,34 @@ void *threadA_func(void *arg);
 
 /* main */
 int main() {
-
-	/* Init MBoard-1 system */
+	/* Initial MBoard-1 system */
 	MB1_system_init();
+	/* Initial BLE interface */
+	ble_init();
 
 	printf("\n************ RIOT, C++ and MBoard-1 demo program ***********\n");
 	printf("\n");
 
-	/* create thread A */
-	thread_create(threadA_stack, sizeof(threadA_stack), 0, CREATE_WOUT_YIELD,
-			threadA_func, NULL, "thread A");
-
-	printf("******** Hello, you're in thread %s ********\n",
-			thread_getname(thread_getpid()));
-	printf("We'll test C++ class and methods here!\n");
-
-	cpp_class cpp_obj;
-	printf("\n-= Test overloading functions =-\n");
-	cpp_obj.say_hello();
-	cpp_obj.say_hello(42);
-	cpp_obj.say_hello(3.141592f);
-
-	printf("\n-= Test namespace =-\n");
-	printf("typing std::vector is obsolete when 'using namespace std;'\n");
-	vector<int> vInts;
-	vInts.push_back(1);
-	vInts.push_back(3);
-	vInts.push_back(2);
-	printf("The vector vInts has been filled with %d numbers.\n", vInts.size());
-
-	printf("\n-= Test iterator =-\n");
-	printf("The content of vInts = { ");
-
-	for (vector<int>::iterator it = vInts.begin(); it != vInts.end(); ++it) {
-		printf("%d ", *(it));
-	}
 
 	printf("}\n");
 
-	return 0;
+//	while(BTFlags.ready != 0x01){
+//
+//	}
+//	ble_cmd_attributes_write(0x000b, 0, 31, msgBuf);
+	while(1){
+
+		if(newKey == MB1_usrBtn0.pressedKey_get()){
+			MB1_Led_green.toggle();	//DEBUG
+			/* Set BLE device discoveryable */
+			ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
+		}
+
+		if(newKey == MB1_usrBtn1.pressedKey_get()){
+			ble_cmd_attributes_write(0x000b, 0, 31, msgBuf);
+		}
+
+	}
 }
 
 /* thread A function implemetation */
