@@ -34,6 +34,5 @@
 #define CC110x_MISO_LOW_RETRY        (100)        // max. retries for MISO to go low
 #define CC110x_MISO_LOW_COUNT        (2700)        // loop count (timeout ~ 500 us) to wait
 
-
 #endif //__CC110X_DRIVER_H
 

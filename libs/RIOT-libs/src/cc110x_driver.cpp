@@ -72,7 +72,6 @@ static void nss_init(void)
 
 void cc110x_spi_init(void)
 {
-//    printf("spi init\n");
     nss_init();
 
     SPI_ns::SPI_params_t params_struct;
@@ -99,13 +98,13 @@ uint8_t cc110x_txrx(uint8_t value)
 void cc110x_spi_cs(void)
 {
     SPI_SELECT();
-    printf("nss cs: %d\n", GPIO_ReadInputDataBit(SPI_PORT, NSS_PIN));
+//    printf("cs: %d\n", GPIO_ReadInputDataBit(SPI_PORT, NSS_PIN));
 }
 
 void cc110x_spi_unselect(void)
 {
     SPI_UNSELECT();
-    printf("nss uncs: %d\n", GPIO_ReadInputDataBit(SPI_PORT, NSS_PIN));
+//    printf("cus: %d\n", GPIO_ReadInputDataBit(SPI_PORT, NSS_PIN));
 }
 
 void cc110x_spi_select(void)
@@ -175,12 +174,12 @@ static void gdo_init_interrupt(void)
     MB1_EXTI11.exti_init(&params_struct);
 
     MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_EXTI7, &cc110x_gdo0_irq);
-    MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_EXTI11,  &cc110x_gdo2_irq);
+    MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_EXTI11, &cc110x_gdo2_irq);
 }
 
 void cc110x_init_interrupts(void)
 {
     gdo_init_interrupt();
-    printf("init interrupt\n");
+//    printf("init int\n");
 }
 

@@ -99,16 +99,15 @@ int main(void)
     MB1_system_init();
 
     recv_handler_pid = thread_create(recv_handler_stack_buffer,
-            RECV_HANDLER_STACK_SIZE, PRIORITY_MAIN - 2, CREATE_WOUT_YIELD,
-            recv_handler, NULL, "Receiving handler");
+    RECV_HANDLER_STACK_SIZE, PRIORITY_MAIN - 2, CREATE_WOUT_YIELD, recv_handler,
+    NULL, "Receiving handler");
     transceiver_init(TRANSCEIVER_CC1100);
     transceiver_start();
     cc110x_reconfig();
     transceiver_register(TRANSCEIVER_CC1100, recv_handler_pid);
 
     taskled_pid = thread_create(taskled_stack, KERNEL_CONF_STACKSIZE_PRINTF,
-            PRIORITY_MAIN - 1, CREATE_WOUT_YIELD, taskled, NULL,
-            "Task blink led");
+    PRIORITY_MAIN - 1, CREATE_WOUT_YIELD, taskled, NULL, "Task blink led");
 
     /* get btn and send data */
     msg_t rep;
