@@ -2,7 +2,7 @@
 APPLICATION = ha_sample
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= mboard_1
+BOARD ?= mboard-1
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../../../RIOT
