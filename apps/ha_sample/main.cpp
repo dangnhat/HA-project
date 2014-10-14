@@ -12,11 +12,10 @@ extern "C" {
 #include "vtimer.h"
 #include "msg.h"
 #include "cc110x_ng.h"
-
-#include "cc110x_reconfig.h"
 }
 
 #include "MB1_System.h"
+#include "cc110x_reconfig.h"
 
 /* definitions */
 #define RECV_HANDLER_STACK_SIZE    (KERNEL_CONF_STACKSIZE_DEFAULT + KERNEL_CONF_STACKSIZE_PRINTF)
