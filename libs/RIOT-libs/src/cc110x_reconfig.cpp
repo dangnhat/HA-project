@@ -10,12 +10,14 @@
  * @ingroup     mboard1
  * @{
  *
- * @file        cc110x_reconfig.c
+ * @file        cc110x_reconfig.cpp
  * @brief       Re-configure ouput power (PATABLE) and frequency carrier for MBoard1.
  *
  * @author      Hien Van Nguyen <nvhien1992@gmail.com>
  */
+extern "C" {
 #include "cc110x_ng.h"
+}
 #include "cc110x_reconfig.h"
 
 #define PA_INDEX_DEFAULT	(4)
