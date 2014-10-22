@@ -3,34 +3,56 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+extern "C" {
+#include "vtimer.h"
+}
+
 #include "MB1_System.h"
+#include "switch_driver.h"
+#include "on_off_bulb_driver.h"
+#include "button_driver.h"
+#include "dimmer_driver.h"
 
-#define AVG_SLOPE 5
-#define V25 1750
-
-using namespace adc_ns;
-
+void sw_worker(void);
+//on_off_bulb_instance bulb1;
 int main(void)
 {
+    timex_t time;
     MB1_system_init();
 
-    ADC_TempSensorVrefintCmd(ENABLE);
-    adc_params_t adc_params;
+//    switch_instance sw1;
+//    config_params_t params;
+//    params.device_port = port_B;
+//    params.device_pin = 7;
+//    sw1.gpio_dev_worker = &sw_worker;
+//    sw1.device_configure(&params);
+//
+//    params.device_port = port_C;
+//    params.device_pin = 11;
+//    bulb1.device_configure(&params);
 
-    adc_params.adc = adc1;
-    adc_params.adc_mode = independent;
-    adc_params.conv_mode = continuous_mode;
-    adc_params.channel_type = regular_channel;
-    adc_params.data_access = dma_request;
-    adc_params.option = no_option;
-    adc_params.adc_sample_time = ADC_SampleTime_41Cycles5;
-    MB1_ADC1_IN16.adc_init(&adc_params);
+    dimmer_instance dimmer1;
+    config_params_t params;
+    params.device_port = port_C;
+    params.device_pin = 0;
+    params.adc_x = adc1;
+    params.adc_channel = ADC_Channel_10;
+    dimmer1.device_configure(&params);
 
-    uint16_t adc_value = MB1_ADC1_IN16.adc_convert();
+    uint8_t dimmer_percent = 0;
+    while(1) {
+        dimmer_percent = dimmer1.get_percent();
+        printf("dimmer: %d\%\n", dimmer_percent);
+        time.seconds = 1;
+        vtimer_sleep(time);
+    }
+}
 
-    uint16_t t0C = ((V25 - adc_value)/AVG_SLOPE + 25);
-
-    printf("temp: %d%c\n", t0C, 176);
-
-    while(1);
+void sw_worker(void) {
+//    printf("sw_worker\n");
+//    if(bulb1.bulb_get_state()) {
+//        bulb1.bulb_turn_off();
+//    }else {
+//        bulb1.bulb_turn_on();
+//    }
 }
