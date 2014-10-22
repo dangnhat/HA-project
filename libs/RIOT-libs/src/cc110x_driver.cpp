@@ -171,13 +171,15 @@ static void gdo_init_interrupt(void)
     gpio_ns::gpio_params_t params_struct;
 
     /* Initialize interrupt GDO0 */
-    params_struct.port = gpio_ns::port_C;
+    params_struct.port = GDO0_PORT_SRC;
     params_struct.pin = GDO0_PIN_SRC;
+    params_struct.gpio_speed = gpio_ns::speed_10MHz;
     params_struct.mode = gpio_ns::in_floating;
     gdo0->gpio_init(&params_struct);
     gdo0->exti_init(gpio_ns::rising_edge);
 
     /* Initialize interrupt GDO2 */
+    params_struct.port = GDO2_PORT_SRC;
     params_struct.pin = GDO2_PIN_SRC;
     gdo2->gpio_init(&params_struct);
     gdo2->exti_init(gpio_ns::falling_edge);

@@ -20,11 +20,13 @@
 
 #include "MB1_System.h"
 
-#define GDO0_PIN_SRC    7
-#define GDO2_PIN_SRC    11
+#define GDO0_PORT_SRC   (gpio_ns::port_C)
+#define GDO2_PORT_SRC   (gpio_ns::port_C)
+#define GDO0_PIN_SRC    (7)
+#define GDO2_PIN_SRC    (11)
 
-#define	SPI_PORT        GPIOA
-#define	NSS_PIN         GPIO_Pin_4
+#define	SPI_PORT        (GPIOA)
+#define	NSS_PIN         (GPIO_Pin_4)
 
 #define CC110x_MISO_LOW_RETRY        (100)        // max. retries for MISO to go low
 #define CC110x_MISO_LOW_COUNT        (2700)        // loop count (timeout ~ 500 us) to wait
