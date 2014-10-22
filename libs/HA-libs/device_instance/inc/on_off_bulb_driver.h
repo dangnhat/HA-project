@@ -8,8 +8,7 @@
 #ifndef __HA_ON_OFF_BULB_DRIVER_H_
 #define __HA_ON_OFF_BULB_DRIVER_H_
 
-#include "GPIO_devices.h"
-#include "device_param.h"
+#include "GPIO_device.h"
 
 using namespace dev_param_ns;
 
