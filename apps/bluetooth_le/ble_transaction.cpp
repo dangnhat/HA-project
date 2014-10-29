@@ -8,6 +8,8 @@
 #include "ble_transaction.h"
 #include "MB1_System.h"
 #include <stdio.h>
+#include <msg.h>
+
 
 void USART3_RxInit()
 {
@@ -27,17 +29,25 @@ void ble_init()
 {
 	USART3_RxInit();
 	bglib_output = &sendBTMessage;
+	MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_USART3, usart3_receive);
+
+	//reset device
+	ble_cmd_system_reset(0);
+	ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
+	ble_cmd_sm_set_bondable_mode(1);
 }
 
-void isr_usart3()
+void usart3_receive()
 {
+//	msg_t 					*usartMsg;
 	USART_ClearFlag(USART3, USART_FLAG_RXNE);
 //	printf("%02x \n", MB1_USART3.Get_ISR()); //DEBUG
-	rxBuf[index++] = MB1_USART3.Get_ISR();
-	if(index == (rxBuf[1]+4)){	//END of packet
-		index = 0;
-//		printf("$\n");
-		receiveBTMessage();		// Parse data from packet
+	rxBuf[idxBuf++] = MB1_USART3.Get_ISR();
+
+
+	if((idxBuf > 1) && (idxBuf == (rxBuf[1]+4))){	//END of packet
+		idxBuf = 0;
+		receiveBTMessage();							// Parse data from packet
 	}
 }
 
@@ -94,9 +104,9 @@ void receiveBTMessage()
 	if(!BTMessage)
 	{
 		//handle error here
-		printf("Don't match any msg header \n");
+		printf("wtf\n");
 		//Disable interrupt usart3
-		USART_ITConfig(USART3, USART_FLAG_RXNE, DISABLE);
+//		USART_ITConfig(USART3, USART_FLAG_RXNE, DISABLE);
 		return;
 	}
 	//call the handler for the received message, passing in the received payload data

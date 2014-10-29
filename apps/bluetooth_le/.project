@@ -26,24 +26,14 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>BGLib</name>
-			<type>2</type>
-			<location>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</location>
-		</link>
-		<link>
-			<name>MBoard1-libs</name>
-			<type>2</type>
-			<locationURI>PARENT-2-PROJECT_LOC/libs/MBoard1-libs</locationURI>
-		</link>
-		<link>
 			<name>RIOT</name>
 			<type>2</type>
 			<locationURI>PARENT-3-PROJECT_LOC/RIOT</locationURI>
 		</link>
 		<link>
-			<name>STM32F10x_StdPeriph_Driver</name>
+			<name>libs</name>
 			<type>2</type>
-			<locationURI>PARENT-2-PROJECT_LOC/libs/STM32F10x_StdPeriph_Driver</locationURI>
+			<location>/home/dangnhat/RIOT-working/HA-project/libs</location>
 		</link>
 	</linkedResources>
 </projectDescription>

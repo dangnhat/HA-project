@@ -22,8 +22,9 @@ extern "C" {
 #define MAX_MSGBUF_SIZE		256
 
 extern uint8_t rxBuf[MAX_BUF_SIZE];
-extern uint8_t index;
+extern uint8_t idxBuf;
 extern uint8_t attBuf[MAX_MSGBUF_SIZE];
+extern int16_t usart_rec_pid;
 
 struct ble_serv_stt_s{
 	uint8_t	ready;
@@ -32,7 +33,7 @@ struct ble_serv_stt_s{
 
 void	USART3_RxInit(void);
 void	ble_init(void);
-void	isr_usart3(void);
+void	usart3_receive(void);
 void	sendBTMessage(uint8_t len1, uint8_t* data1, uint16_t len2, uint8_t* data2);
 void	receiveBTMessage(void);
 

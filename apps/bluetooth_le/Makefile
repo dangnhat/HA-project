@@ -1,8 +1,8 @@
 # name of your application
-APPLICATION = ha_sample
+APPLICATION = bluetooth_le
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= mboard_1
+BOARD ?= mboard-1
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../../../RIOT
@@ -47,13 +47,13 @@ BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 red
 #----------------------- HA project configuration -----------------------------#
 # Location for source files and include headers (don't add / in the end)
 SRCLOC = ../../libs/MBoard1-libs ../../libs/STM32F10x_StdPeriph_Driver/src \
-../../libs/misc ../../libs/RIOT-libs/src
+../../libs/misc ../../libs/RIOT-libs/src ../../libs/BGLib
 INCLOC = ../../libs/MBoard1-libs ../../libs/STM32F10x_StdPeriph_Driver/inc \
-../../libs/misc ../../libs/RIOT-libs/inc
+../../libs/misc ../../libs/RIOT-libs/inc ../../libs/BGLib
 export CPPMIX =1
 
 # RIOT's usemodules (auto_init is one of default modules)
-export USEMODULE += vtimer defaulttransceiver
+export USEMODULE += vtimer
 
 # If you want to add some extra flags when compile c++ files, add these flags
 # to CXXEXFLAGS variable

@@ -33,9 +33,9 @@ void isr_usart3()
 {
 	USART_ClearFlag(USART3, USART_FLAG_RXNE);
 //	printf("%02x \n", MB1_USART3.Get_ISR()); //DEBUG
-	rxBuf[index++] = MB1_USART3.Get_ISR();
-	if(index == (rxBuf[1]+4)){	//END of packet
-		index = 0;
+	rxBuf[idxBuf++] = MB1_USART3.Get_ISR();
+	if(idxBuf == (rxBuf[1]+4)){	//END of packet
+		idxBuf = 0;
 //		printf("$\n");
 		receiveBTMessage();		// Parse data from packet
 	}

@@ -47,10 +47,10 @@ void ble_default(const void *v)
 //	printf("--- system reset ---\n");
 //}
 
-void ble_rsp_system_hello(const void *nul)
-{
-	printf("-- system hello --\n");
-}
+//void ble_rsp_system_hello(const void *nul)
+//{
+//	printf("-- system hello --\n");
+//}
 
 void ble_rsp_system_address_get(const struct ble_msg_system_address_get_rsp_t *msg)
 {

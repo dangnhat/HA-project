@@ -22,7 +22,7 @@ extern "C" {
 #define MAX_MSGBUF_SIZE		256
 
 extern uint8_t rxBuf[MAX_BUF_SIZE];
-extern uint8_t index;
+extern uint8_t idxBuf;
 extern uint8_t attBuf[MAX_MSGBUF_SIZE];
 
 struct ble_serv_stt_s{
