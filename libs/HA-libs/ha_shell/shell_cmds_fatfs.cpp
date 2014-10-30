@@ -18,10 +18,6 @@
 #include "MB1_System.h"
 
 /*------------------- Const and Definitions ----------------------------------*/
-/* TODO: move this fat fs initialization code to HA system init */
-/* 10ms or 1ms timer is required for FAT FS */
-const ISRMgr_ns::ISR_t timer_1ms = ISRMgr_ns::ISRMgr_TIM6;
-
 const char default_drive_path[] = "0:/";
 
 const char ls_usage[] = "Usage:\n"
@@ -43,10 +39,6 @@ void mount(int argc, char** argv)
 {
     FRESULT fres;
 
-    /* assign timer for FAT FS */
-    /* TODO: move this fat fs initialization code to HA system init */
-    MB1_ISRs.subISR_assign(timer_1ms, disk_timerproc_1ms);
-
     fres = f_mount(&fatfs, default_drive_path, 1);
     if (fres != FR_OK) {
         print_ferr(fres);
@@ -64,10 +56,6 @@ void umount(int argc, char** argv)
     if (fres != FR_OK) {
         print_ferr(fres);
     }
-
-    /* remove timer */
-    /* TODO: move this fat fs initialization code to HA system init */
-    MB1_ISRs.subISR_remove(timer_1ms, disk_timerproc_1ms);
 
     printf("FAT FS is umounted from %s\n", default_drive_path);
 }
