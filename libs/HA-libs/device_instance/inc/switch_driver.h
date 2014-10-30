@@ -16,9 +16,8 @@ class switch_instance: public gpio_dev_class {
 public:
     switch_instance(void);
 
-    void device_configure(config_params_t *config_params);
-    void switch_set_state(bool is_turn_on);
-    bool switch_state(void);
+    void device_configure(gpio_config_params_t *config_params);
+    bool get_switch_status(void);
 private:
     bool is_turn_on;
 };

@@ -7,24 +7,21 @@
  */
 #include "switch_driver.h"
 
+const bool switch_active = true;
+
 switch_instance::switch_instance(void) :
         gpio_dev_class(true)
 {
     this->is_turn_on = false;
 }
 
-void switch_instance::device_configure(config_params_t *config_params)
+void switch_instance::device_configure(gpio_config_params_t *gpio_config_params)
 {
-    gpio_dev_configure(config_params->device_port, config_params->device_pin);
-    gpio_dev_int_both_edge();
+    gpio_dev_configure(gpio_config_params->device_port,
+            gpio_config_params->device_pin);
 }
 
-void switch_instance::switch_set_state(bool turn_on)
-{
-    this->is_turn_on = turn_on;
-}
-
-bool switch_instance::switch_state(void)
+bool switch_instance::get_switch_status(void)
 {
     return this->is_turn_on;
 }

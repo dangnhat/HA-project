@@ -20,27 +20,27 @@ protected:
     adc_dev_class(void);
 
     /**
-     * @brief
+     * @brief Initialize GPIO and ADC on the given port/pin.
      *
-     * @param[in]
-     * @param[in]
-     * @param[in]
-     * @param[in]
+     * @param[in] port      The port has a functional ADC.
+     * @param[in] pin       The pin has a functional ADC.
+     * @param[in] adc_x     Chosen ADC (ADC1, ADC2 or ADC3).
+     * @param[in] channel   The specified channel on the chosen ADC.
      */
     void adc_dev_configure(port_t port, uint8_t pin, adc_t adc_x,
             uint8_t channel);
 
     /**
-     * @brief
+     * @brief Set up the sampling time.
      *
-     * @param[in]
+     * @param[in] sample_time The sampling time in cycles.
      */
     void adc_dev_sampling_time_setup(uint8_t sample_time);
 
     /**
-     * @brief
+     * @brief Get converted adc value.
      *
-     * @return
+     * @return Converted ADC value.
      */
     uint16_t adc_dev_get_value(void);
 private:

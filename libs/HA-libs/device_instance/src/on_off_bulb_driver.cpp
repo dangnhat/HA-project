@@ -13,8 +13,9 @@ on_off_bulb_instance::on_off_bulb_instance(void) :
     this->is_turn_on = false;
 }
 
-void on_off_bulb_instance::device_configure(config_params_t *config_params) {
-    gpio_dev_configure(config_params->device_port, config_params->device_pin);
+void on_off_bulb_instance::device_configure(gpio_config_params_t *gpio_config_params)
+{
+    gpio_dev_configure(gpio_config_params->device_port, gpio_config_params->device_pin);
     bulb_turn_off();
 }
 
@@ -28,6 +29,15 @@ void on_off_bulb_instance::bulb_turn_off(void)
 {
     this->is_turn_on = false;
     gpio_dev_off();
+}
+
+void on_off_bulb_instance::bulb_toggle(void)
+{
+    if (this->is_turn_on) {
+        bulb_turn_off();
+    } else {
+        bulb_turn_on();
+    }
 }
 
 bool on_off_bulb_instance::bulb_get_state(void)

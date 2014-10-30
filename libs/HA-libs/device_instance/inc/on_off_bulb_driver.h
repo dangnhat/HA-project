@@ -16,9 +16,10 @@ class on_off_bulb_instance: public gpio_dev_class {
 public:
     on_off_bulb_instance(void);
 
-    void device_configure(config_params_t *config_params);
+    void device_configure(gpio_config_params_t *gpio_config_params);
     void bulb_turn_on(void);
     void bulb_turn_off(void);
+    void bulb_toggle(void);
     bool bulb_get_state(void);
 private:
     bool is_turn_on;

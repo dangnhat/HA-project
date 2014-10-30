@@ -14,7 +14,7 @@ class dimmer_instance: private adc_dev_class {
 public:
     dimmer_instance(void);
 
-    void device_configure(config_params_t *config_params);
+    void device_configure(adc_config_params_t *adc_config_params);
     uint8_t get_percent(void);
 private:
 };

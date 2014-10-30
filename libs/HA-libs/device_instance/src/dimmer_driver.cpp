@@ -12,10 +12,10 @@ dimmer_instance::dimmer_instance(void)
 
 }
 
-void dimmer_instance::device_configure(config_params_t *config_params)
+void dimmer_instance::device_configure(adc_config_params_t *adc_config_params)
 {
-    adc_dev_configure(config_params->device_port, config_params->device_pin,
-            config_params->adc_x, config_params->adc_channel);
+    adc_dev_configure(adc_config_params->device_port, adc_config_params->device_pin,
+            adc_config_params->adc_x, adc_config_params->adc_channel);
 }
 
 uint8_t dimmer_instance::get_percent(void)

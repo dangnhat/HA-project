@@ -18,9 +18,21 @@ namespace dev_param_ns {
 typedef struct {
     port_t device_port;
     uint8_t device_pin;
+} gpio_config_params_t;
+
+typedef struct {
+    port_t device_port;
+    uint8_t device_pin;
     adc_t adc_x;
     uint8_t adc_channel;
-} config_params_t;
+} adc_config_params_t;
+
+typedef struct {
+    port_t device_port;
+    uint8_t device_pin;
+    pwm_timer_t timer_x;
+    uint8_t pwm_channel;
+} pwm_config_params_t;
 }
 
 #endif //__HA_DEVICE_COMMON_H_

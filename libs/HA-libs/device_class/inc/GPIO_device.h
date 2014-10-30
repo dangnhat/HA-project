@@ -10,16 +10,17 @@
 
 #include "device_common.h"
 
+using namespace dev_param_ns;
 using namespace ISRMgr_ns;
 
 class gpio_dev_class: private gpio {
-public:
+protected:
     /**
      * @brief The callback function that will be assign into exti handler. It must be none-null.
      *  Assign a function pointer to it before calling gpio_dev_configure() method.
      */
     void (*gpio_dev_worker)(void);
-protected:
+
     /**
      * @brief Constructor.
      *
@@ -28,7 +29,7 @@ protected:
     gpio_dev_class(bool input_device);
 
     /**
-     * @brief
+     * @brief Initialize GPIO.
      *
      * @param[in] port
      * @param[in] pin
@@ -36,29 +37,31 @@ protected:
     void gpio_dev_configure(port_t port, uint8_t pin);
 
     /**
-     * @brief
+     * @brief Initialize EXTI in falling-rising edge mode.
      */
     void gpio_dev_int_both_edge(void);
 
     /**
-     * @brief
+     * @brief Initialize EXTI in rising edge mode.
      */
     void gpio_dev_int_rising_edge(void);
 
     /**
-     * @brief
+     * @brief Initialize EXTI in falling edge mode.
      */
     void gpio_dev_int_falling_edge(void);
 
     /**
-     * @brief
+     * @brief Set output = 1 (=VCC) on output device;
      */
     void gpio_dev_on(void);
 
     /**
-     * @brief
+     * @brief Set output = 0 (=GND) on output device;
      */
     void gpio_dev_off(void);
+
+    uint8_t gpio_dev_read(void);
 private:
     bool in_dev;
     uint8_t exti_type;
