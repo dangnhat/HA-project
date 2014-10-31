@@ -1,11 +1,11 @@
 /**
- * @file button_driver.cpp
+ * @file button_switch_driver.cpp
  * @author  Nguyen Van Hien <nvhien1992@gmail.com>, HLib MBoard team.
  * @version 1.0
  * @date 20-10-2014
  * @brief This is source file for button device instance in HA system.
  */
-#include "button_driver.h"
+#include "button_switch_driver.h"
 
 using namespace btn_sw_ns;
 
@@ -32,13 +32,10 @@ button_switch_instance::button_switch_instance(btn_or_sw_t type) :
     hold_time_count = 0;
 
     if (this->dev_type == btn) {
-        current_status = no_pressed;
+        current_status = btn_no_pressed;
     } else {
         current_status = sw_off;
     }
-//    is_pressed = false;
-//    is_hold = false;
-//    is_on = false;
 
     this->assign_btn_sw();
 }
@@ -59,15 +56,20 @@ btn_sw_status_t button_switch_instance::get_status(void)
 {
     btn_sw_status_t status = current_status;
 
-    if (this->dev_type == btn) {
-        if (current_status == pressed) {
-            current_status = no_pressed;
-        }
-    } else {
-        current_status = no_pressed;
+    if (current_status == btn_pressed) {
+        current_status = btn_no_pressed;
     }
 
     return status;
+}
+
+void button_switch_instance::btn_sw_processing(void)
+{
+    if (this->dev_type == btn) {
+        button_processing();
+    }else {
+        switch_processing();
+    }
 }
 
 void button_switch_instance::button_processing(void)
@@ -81,8 +83,7 @@ void button_switch_instance::button_processing(void)
     if (hold_time_count != 0) {
         hold_time_count--;
         if (hold_time_count == 0) { //time out, button is hold.
-//            is_hold = true;
-            current_status = on_hold;
+            current_status = btn_on_hold;
         }
     }
 
@@ -98,10 +99,10 @@ void button_switch_instance::button_processing(void)
             }
 
             if (new_state_reg_1 == !btn_sw_active_state) { //change from active->inactive
-                if (hold_time_count > 0) {
-                    current_status = pressed;
-                } else {
-                    current_status = no_pressed;
+                if (hold_time_count > 0) {  //button is pressed
+                    current_status = btn_pressed;
+                } else {    //button is un-hold
+                    current_status = btn_no_pressed;
                 }
                 hold_time_count = 0;
             }
@@ -134,17 +135,14 @@ void button_switch_instance::switch_processing(void)
     } // end if()
 }
 
-void btn_callback_timer_isr(void)
+void btn_sw_callback_timer_isr(void)
 {
     time_cycle_count = (time_cycle_count + 1) % btn_sw_sampling_time_cycle;
 
     if (time_cycle_count == (btn_sw_sampling_time_cycle - 1)) {
         for (int i = 0; i < max_btn_sw; i++) {
             if (btn_sw_table[i] != NULL) {
-                btn_sw_table[i]->button_processing();
-                if (btn_sw_table[i]->get_status() != no_pressed) {
-
-                }
+                btn_sw_table[i]->btn_sw_processing();
             }
         }
     }
@@ -168,7 +166,7 @@ void button_switch_instance::remove_btn_sw(void)
     }
 }
 
-void btn_table_init(void)
+void btn_sw_table_init(void)
 {
     for (int i = 0; i < max_btn_sw; i++) {
         btn_sw_table[i] = NULL;
