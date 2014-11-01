@@ -7,7 +7,7 @@
  */
 #include "GPIO_device.h"
 
-ISRMgr *isr_mgr = &MB1_ISRs;
+ISRMgr *isr_mgr_ptr = &MB1_ISRs;
 
 gpio_dev_class::gpio_dev_class(bool input_device)
 {
@@ -45,22 +45,22 @@ void gpio_dev_class::gpio_dev_configure(port_t port, uint8_t pin)
 void gpio_dev_class::gpio_dev_int_both_edge(void)
 {
     exti_init(both_edge);
-    isr_mgr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
+    isr_mgr_ptr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
 }
 
 void gpio_dev_class::gpio_dev_int_rising_edge(void)
 {
     exti_init(rising_edge);
-    isr_mgr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
+    isr_mgr_ptr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
 }
 
 void gpio_dev_class::gpio_dev_int_falling_edge(void)
 {
     exti_init(falling_edge);
-    isr_mgr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
+    isr_mgr_ptr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
 }
 
 uint8_t gpio_dev_class::gpio_dev_read(void)
 {
-    gpio_read();
+    return gpio_read();
 }
