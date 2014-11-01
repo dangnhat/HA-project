@@ -8,15 +8,50 @@
 #ifndef __HA_DIMMER_DRIVER_H_
 #define __HA_DIMMER_DRIVER_H_
 
+/* 0 if want to get value manually */
+#define AUTO_UPDATE (1)
+
+#if AUTO_UPDATE
+#define SND_MSG (1)
+#if SND_MSG
+extern "C" {
+#include "msg.h"
+#include "thread.h"
+}
+enum {
+    DIM_MSG
+};
+#endif //SND_MSG
+#endif //AUTO_UPDATE
+
 #include "ADC_device.h"
 
 class dimmer_instance: private adc_dev_class {
 public:
     dimmer_instance(void);
+    ~dimmer_instance(void);
 
     void device_configure(adc_config_params_t *adc_config_params);
     uint8_t get_percent(void);
+#if AUTO_UPDATE
+    uint8_t dimmer_processing(void);
+    bool is_over_delta_thres(void);
+#endif
 private:
+#if AUTO_UPDATE
+    uint8_t new_value_1 = 0;
+    uint8_t new_value_2 = 0;
+    uint8_t new_value_3 = 0;
+    uint8_t old_value;
+    bool is_over;
+
+    void assign_dimmer(void);
+    void remove_dimmer(void);
+#endif
 };
+
+#if AUTO_UPDATE
+void dimmer_callback_timer_isr(void);
+#endif
 
 #endif //__HA_DIMMER_DRIVER_H_
