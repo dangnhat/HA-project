@@ -27,6 +27,11 @@ const shell_command_t shell_commands[] = {
     {"umount", "Unmount FAT FS", umount},
     {"ls", "List directory contents", ls},
     {"cat", "Concatenate files and print on the standard output", cat},
+    {"touch", "Change file timestamp", touch},
+    {"rm", "Remove files or directories", rm},
+    {"mkdir", "Make directories", mkdir},
+    {"cd", "Change working directory", cd},
+    {"pwd", "Print name of current/working directory", pwd},
 
     /* time cmds */
     {"date", "Print or set the system date and time", date},

@@ -52,7 +52,7 @@ void ls(int argc, char** argv);
 void cat(int argc, char** argv);
 
 /**
- * @brief   Create empty file or truncate an existing file.
+ * @brief   Change timestamp of an existing file.
  *
  * @details Usage: touch [file]
  *
@@ -120,12 +120,5 @@ void cd(int argc, char** argv);
  * @param[in] argv  Arguments
  */
 void pwd(int argc, char** argv);
-
-/**
- * @brief   Print help for fat fs commands.
- *
- * @details Should be called in another shell command.
- */
-void fatfs_phelp(void);
 
 #endif /* SHELL_CMDS_FATFS_H_ */
