@@ -59,9 +59,9 @@ echo "* Version: 1.0, Date: 12-Oct-2014                                  *"
 echo "********************************************************************"
 echo
 echo "*** Configured parameters ***"
+echo "	HA libs folder: $HA_LIBS_ABS_ROOT"
 echo "	RIOT root folder: $RIOT_ABS_ROOT"
 echo "	RIOT board: $RIOT_BOARD"
-echo "	HA libs folder: $HA_LIBS_ABS_ROOT"
 echo "	Defined symbols: $DEFINED_SYMS"
 echo "	Output file: $OUTFILE"
 echo
@@ -82,14 +82,14 @@ touch $TEMP_FILE
 echo
 echo "*** Finding header files in ... ***"
 
+echo "	$HA_LIBS_ABS_ROOT"
+find $HA_LIBS_ABS_ROOT -name "*.h" -printf "%h\n"|sort -u >> $TEMP_FILE
+
 echo "	$RIOT_ABS_ROOT (except boards and tests)"
 echo "	$RIOT_ABS_ROOT/boards/$RIOT_BOARD"
 find $RIOT_ABS_ROOT -type d \( -path */boards -o -path */tests \) \
 -prune -o -type f -name '*.h' |sed 's#\(.*\)/.*#\1#' |sort -u >> $TEMP_FILE
 find $RIOT_ABS_ROOT/boards/$RIOT_BOARD -name "*.h" -printf "%h\n"|sort -u >> $TEMP_FILE
-
-echo "	$HA_LIBS_ABS_ROOT"
-find $HA_LIBS_ABS_ROOT -name "*.h" -printf "%h\n"|sort -u >> $TEMP_FILE
 
 echo "" >> $TEMP_FILE
 
