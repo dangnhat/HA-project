@@ -17,7 +17,7 @@
 const ISRMgr_ns::ISR_t timer_1ms = ISRMgr_ns::ISRMgr_TIM6;
 
 /*------------------- Functions ----------------------------------------------*/
-void ha_system_init(netdev_t netdev) {
+void ha_system_init(ha_ns::netdev_t netdev) {
 
     /* Init MB1_system */
     MB1_system_init();

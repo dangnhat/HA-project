@@ -34,10 +34,14 @@ extern "C" {
 #include "ff.h"
 
 /* Typedefs */
+namespace ha_ns {
+
 typedef enum: uint8_t {
     node = 0,
     cc = 1,
 } netdev_t;
+
+}
 
 /*------------------- Functions ----------------------------------------------*/
 /**
@@ -47,6 +51,6 @@ typedef enum: uint8_t {
  *
  * @param[in]   netdev, type of device in the HA network. This could be node or cc.
  */
-void ha_system_init(netdev_t netdev);
+void ha_system_init(ha_ns::netdev_t netdev);
 
 #endif /* HA_SYSTEM_H_ */
