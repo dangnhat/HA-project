@@ -61,6 +61,7 @@ INCLOC += ../../libs/misc
 INCLOC += ../../libs/RIOT-libs/inc
 INCLOC += ../../libs/FATFileSystem/src
 INCLOC += ../../libs/HA-libs/ha_shell
+INCLOC += ../../libs/HA-libs/common_def
 
 export CPPMIX =1
 

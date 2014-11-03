@@ -8,7 +8,7 @@
 int main(void)
 {
     /* Init HA System */
-    ha_system_init(cc);
+    ha_system_init(ha_ns::cc);
 
     ha_shell_irun();
 
