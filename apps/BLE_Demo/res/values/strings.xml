@@ -27,5 +27,6 @@
     <string name="menu_stop">Stop</string>
     <string name="txtShow">fdgdsfghj</string>
     <string name="btnSend">Send</string>
+    <string name="deviceName">Device</string>
 
 </resources>

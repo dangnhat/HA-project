@@ -122,6 +122,12 @@ public class BluetoothLeService extends Service {
             broadcastUpdate(ACTION_DATA_NOTIFY, characteristic);
 //            Log.i("Notify", "New data");
         }
+        
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, 
+        									BluetoothGattCharacteristic characteristic, int status) {
+        	broadcastUpdate(ACTION_DATA_WRITE, characteristic);
+        };
      
     };
 

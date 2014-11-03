@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
+    
+    <ImageView
+        android:id="@+id/devIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/device_value_bg"
+        android:src="@drawable/inknon" />
+
+    <TextView
+        android:id="@+id/devName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/devIcon"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="16dp"
+        android:layout_toRightOf="@+id/devIcon"
+        android:text="@string/deviceName"
+        android:textSize="16sp" />
+
+   
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:orientation="vertical" >
+
+        <SeekBar
+            android:id="@+id/dimBar"
+            android:layout_width="120dip"
+            android:layout_height="wrap_content"
+            android:thumb="@drawable/seek_thumb"
+            android:progressDrawable="@color/cyan"
+            android:progress="50" />
+        
+         <TextView
+             android:id="@+id/devVal"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:gravity="center_horizontal"
+             android:textSize="16sp"
+             android:textColor="@color/cyan"
+             android:text="On" />
+
+    </LinearLayout>
+
+</RelativeLayout>

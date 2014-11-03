@@ -12,7 +12,7 @@ public final class DeviceTypeDef {
 	public static final int PIR_SENSOR 		= 0x07;
 	// device output
 	public static final int ON_OFF_BULB 	= 0x41;
-	public static final int LEVEL_BULD 		= 0x42;
+	public static final int LEVEL_BULB		= 0x42;
 	public static final int RGB_LED 		= 0x43;
 	public static final int MOTOR			= 0x44;
 }
