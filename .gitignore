@@ -1,5 +1,6 @@
 .cproject
 .settings
+.project
 *\ Default.launch
 
 cscope.out
