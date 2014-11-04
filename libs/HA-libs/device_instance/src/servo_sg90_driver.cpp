@@ -42,3 +42,8 @@ void servo_sg90_instance::set_angle(uint8_t angle)
     pulse_width = angle * delta_pulse + pos_0_degree;
     pwm_dev_level_setup(pulse_width);
 }
+
+uint8_t servo_sg90_instance::get_angle(void)
+{
+    return this->angle;
+}
