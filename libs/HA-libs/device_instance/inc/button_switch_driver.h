@@ -39,8 +39,9 @@ typedef enum {
 } btn_or_sw_t;
 
 #if SND_MSG
-enum {
-    BTN_SW_MSG
+enum
+    : uint16_t {
+        BTN_SW_MSG
 };
 #endif
 }
@@ -51,8 +52,7 @@ public:
     ~button_switch_instance(void);
 
     void device_configure(gpio_config_params_t *gpio_config_params);
-    btn_sw_ns::btn_sw_status_t get_status(void);
-    bool is_changed_status(void);
+    btn_sw_ns::btn_sw_status_t get_status(void);bool is_changed_status(void);
     void btn_sw_processing(void);
 private:
     btn_sw_ns::btn_or_sw_t dev_type;

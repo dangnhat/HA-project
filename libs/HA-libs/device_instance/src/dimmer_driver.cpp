@@ -7,11 +7,13 @@
  */
 #include "dimmer_driver.h"
 
+using namespace dimmer_ns;
+
 #if AUTO_UPDATE
 /* configurable variables */
 const static uint8_t max_dimmer_dev = 16; //max num of dimmers = 16
 const static uint8_t delta_threshold = 2; //delta = 2%;
-const static uint16_t dimmer_sampling_time_cycle = 100; //sampling every 100ms
+const static uint16_t dimmer_sampling_time_cycle = 10; //sampling every 100ms (tim6_period = 10ms)
 
 /* internal variables */
 #if SND_MSG
@@ -96,14 +98,14 @@ bool dimmer_instance::is_over_delta_thres(void)
 
 static void dimmer_table_init(void)
 {
-    for (int i = 0; i < max_dimmer_dev; i++) {
+    for (uint8_t i = 0; i < max_dimmer_dev; i++) {
         dimmer_table[i] = NULL;
     }
 }
 
 void dimmer_instance::assign_dimmer(void)
 {
-    for (int i = 0; i < max_dimmer_dev; i++) {
+    for (uint8_t i = 0; i < max_dimmer_dev; i++) {
         if (dimmer_table[i] == NULL) {
             dimmer_table[i] = this;
             pid_table[i] = thread_getpid();
@@ -114,7 +116,7 @@ void dimmer_instance::assign_dimmer(void)
 
 void dimmer_instance::remove_dimmer(void)
 {
-    for (int i = 0; i < max_dimmer_dev; i++) {
+    for (uint8_t i = 0; i < max_dimmer_dev; i++) {
         if (dimmer_table[i] == this) {
             dimmer_table[i] = NULL;
             pid_table[i] = KERNEL_PID_UNDEF; //redundant
@@ -128,13 +130,13 @@ void dimmer_callback_timer_isr(void)
     time_cycle_count = (time_cycle_count + 1) % dimmer_sampling_time_cycle;
 
     if (time_cycle_count == (dimmer_sampling_time_cycle - 1)) {
-        for (int i = 0; i < max_dimmer_dev; i++) {
+        for (uint8_t i = 0; i < max_dimmer_dev; i++) {
             if (dimmer_table[i] != NULL) {
                 uint8_t new_value = dimmer_table[i]->dimmer_processing();
 #if SND_MSG
                 if (dimmer_table[i]->is_over_delta_thres()) {
                     msg_t msg;
-                    msg.type = DIM_MSG;
+                    msg.type = DIMMER_MSG;
                     msg.content.value = new_value;
                     msg_send(&msg, pid_table[i], false);
                 }

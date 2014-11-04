@@ -12,7 +12,7 @@ using namespace btn_sw_ns;
 /* configurable variables */
 const static uint8_t max_btn_sw = 16;
 const static uint8_t btn_sw_active_state = 0;
-const static uint8_t btn_sw_sampling_time_cycle = 10;
+const static uint8_t btn_sw_sampling_time_cycle = 2; //sampling every 20ms (tim6_period = 10ms)
 const static uint16_t btn_hold_time = 100;
 
 /* button&switch table and pid table */
@@ -156,7 +156,7 @@ void button_switch_instance::switch_processing(void)
 
 void button_switch_instance::assign_btn_sw(void)
 {
-    for (int i = 0; i < max_btn_sw; i++) {
+    for (uint8_t i = 0; i < max_btn_sw; i++) {
         if (btn_sw_table[i] == NULL) {
             btn_sw_table[i] = this;
 #if SND_MSG
@@ -169,7 +169,7 @@ void button_switch_instance::assign_btn_sw(void)
 
 void button_switch_instance::remove_btn_sw(void)
 {
-    for (int i = 0; i < max_btn_sw; i++) {
+    for (uint8_t i = 0; i < max_btn_sw; i++) {
         if (btn_sw_table[i] == this) {
             btn_sw_table[i] = NULL;
 #if SND_MSG
@@ -182,7 +182,7 @@ void button_switch_instance::remove_btn_sw(void)
 
 static void btn_sw_table_init(void)
 {
-    for (int i = 0; i < max_btn_sw; i++) {
+    for (uint8_t i = 0; i < max_btn_sw; i++) {
         btn_sw_table[i] = NULL;
     }
 }
@@ -192,7 +192,7 @@ void btn_sw_callback_timer_isr(void)
     time_cycle_count = (time_cycle_count + 1) % btn_sw_sampling_time_cycle;
 
     if (time_cycle_count == (btn_sw_sampling_time_cycle - 1)) {
-        for (int i = 0; i < max_btn_sw; i++) {
+        for (uint8_t i = 0; i < max_btn_sw; i++) {
             if (btn_sw_table[i] != NULL) {
                 btn_sw_table[i]->btn_sw_processing();
 #if SND_MSG
