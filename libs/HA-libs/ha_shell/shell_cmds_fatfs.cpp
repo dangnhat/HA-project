@@ -57,10 +57,9 @@ const char pwd_usage[] = "Usage:\n"
 const uint16_t PWD_MAX_PATH_LEN = 256;
 
 /*------------------- Global var for FAT FS ----------------------------------*/
-FATFS fatfs;
+static FATFS fatfs;
 
 /*------------------- Static functions ---------------------------------------*/
-static void print_ferr(FRESULT res);
 static void parse_fdate(WORD fdate, uint16_t &year, uint8_t &month, uint8_t &day);
 static void parse_ftime(WORD ftime, uint8_t &hour, uint8_t &min, uint8_t &sec);
 
@@ -446,8 +445,8 @@ void pwd(int argc, char** argv) {
     printf("%s\n", path);
 }
 
-/*------------------- Static functions implementation ------------------------*/
-static void print_ferr(FRESULT res)
+/*----------------------------------------------------------------------------*/
+void print_ferr(FRESULT res)
 {
     switch (res) {
     case FR_OK:
@@ -516,7 +515,7 @@ static void print_ferr(FRESULT res)
     }
 }
 
-/*----------------------------------------------------------------------------*/
+/*------------------- Static functions implementation ------------------------*/
 static void parse_fdate(WORD fdate, uint16_t &year, uint8_t &month, uint8_t &day)
 {
     year = ((uint16_t) fdate >> 9) + 1980;

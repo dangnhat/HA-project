@@ -23,8 +23,8 @@ extern "C" {
 /*********************** Config interface *************************************/
 const shell_command_t shell_commands[] = {
     /* FAT FS cmds */
-    {"mount", "Mount FAT FS", mount},
-    {"umount", "Unmount FAT FS", umount},
+    /* {"mount", "Mount FAT FS", mount}, HA_system_init will mount FAT FS */
+    /* {"umount", "Unmount FAT FS", umount}, */
     {"ls", "List directory contents", ls},
     {"cat", "Concatenate files and print on the standard output", cat},
     {"touch", "Change file timestamp", touch},

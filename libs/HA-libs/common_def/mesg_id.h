@@ -13,7 +13,7 @@
 
 namespace ha_ns {
 
-enum mesg_type_e: uint16_t {
+enum mesg_type_e: uint16_t { /* in GFF format */
     SET_DEV_VAL = 0x0000,
     SET_NUM_OF_DEVS = 0x0001,
     SET_DEV_WITH_INDEXS = 0x0002,

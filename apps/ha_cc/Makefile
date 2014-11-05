@@ -53,6 +53,7 @@ SRCLOC += ../../libs/misc
 SRCLOC += ../../libs/RIOT-libs/src
 SRCLOC += ../../libs/FATFileSystem/src
 SRCLOC += ../../libs/HA-libs/ha_shell
+SRCLOC += sixlowpan
 
 INCLOC += ../../libs/HA-libs
 INCLOC += ../../libs/MBoard1-libs
@@ -62,6 +63,7 @@ INCLOC += ../../libs/RIOT-libs/inc
 INCLOC += ../../libs/FATFileSystem/src
 INCLOC += ../../libs/HA-libs/ha_shell
 INCLOC += ../../libs/HA-libs/common_def
+INCLOC += sixlowpan
 
 export CPPMIX =1
 

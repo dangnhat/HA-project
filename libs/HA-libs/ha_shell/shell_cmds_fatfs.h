@@ -9,6 +9,8 @@
 #ifndef SHELL_CMDS_FATFS_H_
 #define SHELL_CMDS_FATFS_H_
 
+#include "ff.h"
+
 /**
  * @brief   Mount physical drive to default logical drive (0:/).
  *
@@ -120,5 +122,12 @@ void cd(int argc, char** argv);
  * @param[in] argv  Arguments
  */
 void pwd(int argc, char** argv);
+
+/**
+ * @brief   Print error of FAT file system module.
+ *
+ * @param[in] res  result of FAT operation.
+ */
+void print_ferr(FRESULT res);
 
 #endif /* SHELL_CMDS_FATFS_H_ */

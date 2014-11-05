@@ -19,6 +19,9 @@
 #ifndef HA_SYSTEM_H_
 #define HA_SYSTEM_H_
 
+#include <stdio.h>
+#include <stdint.h>
+
 /* RIOT's includes */
 extern "C" {
 #include "thread.h"
@@ -32,6 +35,8 @@ extern "C" {
 /* HA libs includes */
 #include "ha_shell.h"
 #include "ff.h"
+#include "device_id.h"
+#include "mesg_id.h"
 
 /* Typedefs */
 namespace ha_ns {
