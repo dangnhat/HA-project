@@ -8,6 +8,7 @@
 #ifndef __HA_DEVICE_HANDLER_H_
 #define __HA_DEVICE_HANDLER_H_
 
+#include "ha_node_msg_id.h"
 #include "button_switch_driver.h"
 #include "on_off_bulb_driver.h"
 #include "level_bulb_driver.h"
@@ -18,13 +19,15 @@
 
 void* end_point_handler(void* arg);
 
-void button_handler(void);
-void switch_handler(void);
-void on_off_bulb_handler(void);
-void level_bulb_handler(void);
-void rgb_led_handler(void);
-void dimmer_handler(void);
-void servo_sg90_handler(void);
-void sensor_linear_handler(void);
+void button_handler(uint32_t dev_id);
+void switch_handler(uint32_t dev_id);
+void on_off_bulb_handler(uint32_t dev_id);
+void level_bulb_handler(uint32_t dev_id);
+void rgb_led_handler(uint32_t dev_id);
+void dimmer_handler(uint32_t dev_id);
+void servo_sg90_handler(uint32_t dev_id);
+void sensor_linear_handler(uint32_t dev_id);
+
+int get_file_name_from_dev_id(uint32_t dev_id, char* file_name);
 
 #endif //__HA_DEVICE_HANDLER_H_

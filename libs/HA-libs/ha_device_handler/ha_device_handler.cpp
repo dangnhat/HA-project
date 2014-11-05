@@ -9,7 +9,14 @@ extern "C" {
 #include "msg.h"
 }
 #include <stdio.h>
+#include <stdlib.h>
 #include "ha_device_handler.h"
+#include "ff.h"
+#include "device_id.h"
+#include "mesg_id.h"
+
+static uint8_t get_configuration_common(uint32_t dev_id, uint8_t* buff,
+        float* fl_buff, uint8_t offset, uint8_t size_buff, bool is_float);
 
 void* end_point_handler(void* arg)
 {
@@ -19,184 +26,254 @@ void* end_point_handler(void* arg)
     /* Initialize msg queue */
     msg_init_queue(msg_q, queue_size);
 
-//    msg_t msg;
+    msg_t msg;
     while (1) {
-//        msg_receive(&msg);
-//        if (msg.type == 1) {
-//            switch(msg.content.value) {
-//            case 0x01:
-//                break;
-//            case 0x02:
-//                break;
-//            case 0x03:
-//                break;
-//            case 0x04:
-//                break;
-//            default:
-//                break;
-//            }
-//        }
-//        button_handler();
-//        switch_handler();
-        dimmer_handler();
+        msg_receive(&msg);
+        if (msg.type == ha_node_ns::NEW_DEVICE) {
+            switch (msg.content.value & 0xFF) {
+            case ha_ns::SWITCH:
+                switch_handler(msg.content.value);
+                break;
+            case ha_ns::BUTTON:
+                button_handler(msg.content.value);
+                break;
+            case ha_ns::DIMMER:
+                dimmer_handler(msg.content.value);
+                break;
+            case ha_ns::SENSOR_GEN:
+                sensor_linear_handler(msg.content.value);
+                break;
+            case ha_ns::ON_OFF_BULB:
+                on_off_bulb_handler(msg.content.value);
+                break;
+            case ha_ns::LEVEL_BULB:
+                level_bulb_handler(msg.content.value);
+                break;
+            case ha_ns::RGB_LED:
+                rgb_led_handler(msg.content.value);
+                break;
+            case ha_ns::SERVO_SG90:
+                servo_sg90_handler(msg.content.value);
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     return NULL;
 }
 
-void button_handler(void)
+void button_handler(uint32_t dev_id)
 {
-    /* read configuration of button */
+    uint8_t num_line = 2;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
+
+    gpio_config_params_t gpio_params;
+    gpio_params.device_port = (port_t) config_buff[0];
+    gpio_params.device_pin = config_buff[1];
 
     /* create and configure button instance */
     button_switch_instance btn(btn_sw_ns::btn);
-    gpio_config_params_t btn_params;
-    btn_params.device_port = port_A;
-    btn_params.device_pin = 1;
-    btn.device_configure(&btn_params);
+    btn.device_configure(&gpio_params);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
-        if (msg.type == btn_sw_ns::BTN_SW_MSG) {
-            switch (msg.content.value) {
-            case btn_sw_ns::btn_no_pressed:
-                printf("no pressed\n");
-                break;
-            case btn_sw_ns::btn_pressed:
-                printf("pressed\n");
-                break;
-            case btn_sw_ns::btn_on_hold:
-                printf("on hold\n");
-                break;
-            default:
-                break;
-            }
+        switch (msg.type) {
+        case btn_sw_ns::BTN_SW_MSG:
+            break;
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
         }
     }
 }
 
-void switch_handler(void)
+void switch_handler(uint32_t dev_id)
 {
-    /* read configuration of switch */
+    uint8_t num_line = 2;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
+
+    gpio_config_params_t gpio_params;
+    gpio_params.device_port = (port_t) config_buff[0];
+    gpio_params.device_pin = config_buff[1];
 
     /* create and configure switch instance */
     button_switch_instance sw(btn_sw_ns::sw);
-    gpio_config_params_t sw_params;
-    sw_params.device_port = port_A;
-    sw_params.device_pin = 1;
-    sw.device_configure(&sw_params);
+    sw.device_configure(&gpio_params);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
-        if (msg.type == btn_sw_ns::BTN_SW_MSG) {
-            switch (msg.content.value) {
-            case btn_sw_ns::sw_on:
-                printf("sw on\n");
-                break;
-            case btn_sw_ns::sw_off:
-                printf("sw off\n");
-                break;
-            default:
-                break;
-            }
+        switch (msg.type) {
+        case btn_sw_ns::BTN_SW_MSG:
+            break;
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
         }
     }
 }
 
-void on_off_bulb_handler(void)
+void on_off_bulb_handler(uint32_t dev_id)
 {
-    /* read configuration of on-off bulb */
+    uint8_t num_line = 2;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
+
+    gpio_config_params_t gpio_params;
+    gpio_params.device_port = (port_t) config_buff[0];
+    gpio_params.device_pin = config_buff[1];
 
     /* create and configure on-off bulb instance */
     on_off_bulb_instance on_off_bulb;
-    gpio_config_params_t gpio_params;
-    gpio_params.device_port = port_B;
-    gpio_params.device_pin = 7;
     on_off_bulb.device_configure(&gpio_params);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
-        if (msg.type == btn_sw_ns::BTN_SW_MSG) {
-            switch (msg.content.value) {
-            case btn_sw_ns::sw_on:
-                printf("sw on\n");
-                break;
-            case btn_sw_ns::sw_off:
-                printf("sw off\n");
-                break;
-            default:
-                break;
-            }
+        switch (msg.type) {
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
         }
     }
 }
 
-void dimmer_handler(void)
+void dimmer_handler(uint32_t dev_id)
 {
-    /* read configuration of dimmer from flash */
+    uint8_t num_line = 2;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
+
+    adc_config_params_t adc_params;
+    adc_params.device_port = (port_t) config_buff[0];
+    adc_params.device_pin = config_buff[1];
+    adc_params.adc_x = (adc_t) config_buff[2];
+    adc_params.adc_channel = config_buff[3];
 
     /* create and configure dimmer instance */
     dimmer_instance dimmer;
-    adc_config_params_t adc_params;
-    adc_params.device_port = port_C;
-    adc_params.device_pin = 0;
-    adc_params.adc_x = adc1;
-    adc_params.adc_channel = ADC_Channel_10;
     dimmer.device_configure(&adc_params);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
-        if (msg.type == dimmer_ns::DIMMER_MSG) {
-            printf("percent dimmer: %d\n", (uint8_t) msg.content.value);
+        switch (msg.type) {
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
         }
     }
 }
 
-void level_bulb_handler(void)
+void level_bulb_handler(uint32_t dev_id)
 {
-    /* read configuration of level bulb from flash */
+    uint8_t num_line = 2;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
+
+    pwm_config_params_t pwm_params;
+    pwm_params.device_port = (port_t) config_buff[0];
+    pwm_params.device_pin = config_buff[1];
+    pwm_params.timer_x = (pwm_timer_t) config_buff[2];
+    pwm_params.pwm_channel = config_buff[3];
 
     /* create and configure level bulb instance */
     level_bulb_instance level_bulb;
-    pwm_config_params_t lv_bulb_params;
-    lv_bulb_params.device_port = port_A;
-    lv_bulb_params.device_pin = 1;
-    lv_bulb_params.timer_x = gp_timer5;
-    lv_bulb_params.pwm_channel = 2;
-    level_bulb.device_configure(&lv_bulb_params);
+    level_bulb.device_configure(&pwm_params);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
+        switch (msg.type) {
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
+        }
     }
 }
 
-void servo_sg90_handler(void)
+void servo_sg90_handler(uint32_t dev_id)
 {
-    /* read configuration of servo sg90 from flash */
+    uint8_t num_line = 2;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
+
+    pwm_config_params_t pwm_params;
+    pwm_params.device_port = (port_t) config_buff[0];
+    pwm_params.device_pin = config_buff[1];
+    pwm_params.timer_x = (pwm_timer_t) config_buff[2];
+    pwm_params.pwm_channel = config_buff[3];
 
     /* create and configure servo sg90 instance */
     servo_sg90_instance sg90;
-    pwm_config_params_t servo_params;
-    servo_params.device_port = port_A;
-    servo_params.device_pin = 1;
-    servo_params.timer_x = gp_timer5;
-    servo_params.pwm_channel = 2;
-    sg90.device_configure(&servo_params);
+    sg90.device_configure(&pwm_params);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
+        switch (msg.type) {
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
+        }
     }
 }
 
-void sensor_linear_handler(void)
+void sensor_linear_handler(uint32_t dev_id)
 {
-    /* read configuration of linear sensor from flash */
+    uint8_t num_line = 2;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
 
     /* create and configure linear sensor instance */
     sensor_linear_instance sensor_linear;
@@ -210,40 +287,102 @@ void sensor_linear_handler(void)
     msg_t msg;
     while (1) {
         msg_receive(&msg);
+        switch (msg.type) {
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
+        }
     }
 }
 
-void rgb_led_handler(void)
+void rgb_led_handler(uint32_t dev_id)
 {
-    /* read configuration of rgb-led from flash */
+    uint8_t num_line = 12;
+    uint8_t config_buff[num_line];
+    if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
+            < num_line) {
+        return;
+    }
+
+    pwm_config_params_t red_pwm_params;
+    red_pwm_params.device_port = (port_t) config_buff[0];
+    red_pwm_params.device_pin = config_buff[1];
+    red_pwm_params.timer_x = (pwm_timer_t) config_buff[2];
+    red_pwm_params.pwm_channel = config_buff[3];
+
+    pwm_config_params_t green_pwm_params;
+    green_pwm_params.device_port = (port_t) config_buff[0];
+    green_pwm_params.device_pin = config_buff[1];
+    green_pwm_params.timer_x = (pwm_timer_t) config_buff[2];
+    green_pwm_params.pwm_channel = config_buff[3];
+
+    pwm_config_params_t blue_pwm_params;
+    blue_pwm_params.device_port = (port_t) config_buff[0];
+    blue_pwm_params.device_pin = config_buff[1];
+    blue_pwm_params.timer_x = (pwm_timer_t) config_buff[2];
+    blue_pwm_params.pwm_channel = config_buff[3];
 
     /* create and configure rgb-led instance */
     rgb_instance rgb_led;
-
-    pwm_config_params_t red_pwm_params;
-    pwm_config_params_t green_pwm_params;
-    pwm_config_params_t blue_pwm_params;
-
-    red_pwm_params.device_port = port_B;
-    red_pwm_params.device_pin = 7;
-    red_pwm_params.timer_x = gp_timer4;
-    red_pwm_params.pwm_channel = 2;
-
-    green_pwm_params.device_port = port_B;
-    green_pwm_params.device_pin = 8;
-    green_pwm_params.timer_x = gp_timer4;
-    green_pwm_params.pwm_channel = 3;
-
-    blue_pwm_params.device_port = port_B;
-    blue_pwm_params.device_pin = 9;
-    blue_pwm_params.timer_x = gp_timer4;
-    blue_pwm_params.pwm_channel = 4;
     rgb_led.device_configure(&red_pwm_params, &green_pwm_params,
             &blue_pwm_params);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
-
+        switch (msg.type) {
+        case ha_node_ns::SEND_ALIVE:
+            break;
+        case ha_node_ns::NEW_DEVICE:
+            msg_send_to_self(&msg);
+            return;
+        default:
+            break;
+        }
     }
+}
+
+int get_file_name_from_dev_id(uint32_t dev_id, char* file_name)
+{
+    uint8_t endpoint_id = (dev_id >> 8) & 0xFF;
+    return snprintf(file_name, sizeof(file_name), "%x", endpoint_id);
+}
+
+uint8_t get_configuration_common(uint32_t dev_id, uint8_t* buff, float* fl_buff,
+        uint8_t offset, uint8_t size_buff, bool is_float)
+{
+    char f_name[3];
+    get_file_name_from_dev_id(dev_id, f_name);
+
+    FIL fil;
+    if (f_open(&fil, f_name, FA_READ)) {
+        return 0;
+    }
+
+    if (offset > 0) {
+        if (offset > fil.fsize) {
+            return 0;
+        }
+        f_lseek(&fil, offset);
+    }
+
+    char line[16];
+    uint8_t num_read_line;
+    for (num_read_line = 0; num_read_line < size_buff; num_read_line++) {
+        if (f_gets(line, sizeof(line), &fil)) {
+            if (is_float) {
+                fl_buff[num_read_line] = strtof(line, NULL);
+            } else {
+                buff[num_read_line] = strtol(line, NULL, 10);
+            }
+        } else {
+            break;
+        }
+    }
+
+    return num_read_line;
 }
