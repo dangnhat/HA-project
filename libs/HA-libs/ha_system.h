@@ -37,12 +37,14 @@ extern "C" {
 #include "ff.h"
 #include "device_id.h"
 #include "mesg_id.h"
+#include "ha_device_handler.h"
 
 /* Typedefs */
 namespace ha_ns {
 
-typedef enum: uint8_t {
-    node = 0,
+typedef enum
+    : uint8_t {
+        node = 0,
     cc = 1,
 } netdev_t;
 
