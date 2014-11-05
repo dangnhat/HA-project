@@ -23,10 +23,20 @@
 
 namespace ha_ns {
 
-enum device_type_e: uint8_t {
-    BUTTON = 0, /* TODO: Need to be changed by Hien */
+enum device_type_e
+    : uint8_t {
+        SWITCH = 0x01,
+    BUTTON = 0x02,
+    DIMMER = 0x03,
+    SENSOR_GEN = 0x04,
+
+    ON_OFF_BULB = 0x41,
+    LEVEL_BULB = 0x42,
+    RGB_LED = 0x43,
+    SERVO_SG90 = 0x44
 };
 
-};
+}
+;
 
 #endif /* DEVICE_ID_H_ */
