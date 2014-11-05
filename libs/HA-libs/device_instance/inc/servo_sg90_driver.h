@@ -16,6 +16,7 @@ public:
 
     void device_configure(pwm_config_params_t *pwm_config_params);
     void set_angle(uint8_t angle);
+    uint8_t get_angle(void);
 private:
     uint8_t angle;
 };
