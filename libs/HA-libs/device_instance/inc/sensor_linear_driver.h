@@ -14,7 +14,7 @@ class sensor_linear_instance: private adc_dev_class {
 public:
     sensor_linear_instance(void);
 
-    void device_config(adc_config_params_t *adc_config_params);
+    void device_configure(adc_config_params_t *adc_config_params);
     uint32_t get_value(void);
 private:
 };
