@@ -12,7 +12,7 @@ sensor_linear_instance::sensor_linear_instance(void)
 
 }
 
-void sensor_linear_instance::device_config(
+void sensor_linear_instance::device_configure(
         adc_config_params_t *adc_config_params)
 {
     adc_dev_configure(adc_config_params->device_port,
