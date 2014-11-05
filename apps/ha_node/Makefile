@@ -49,11 +49,11 @@ BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 red
 SRCLOC = ../../libs/MBoard1-libs ../../libs/STM32F10x_StdPeriph_Driver/src \
 ../../libs/misc ../../libs/RIOT-libs/src ../../libs/HA-libs ../../libs/HA-libs/ha_shell \
 ../../libs/HA-libs/device_class/src ../../libs/HA-libs/device_instance/src \
-../../libs/FATFileSystem/src
+../../libs/HA-libs/ha_device_handler ../../libs/FATFileSystem/src
 INCLOC = ../../libs/MBoard1-libs ../../libs/STM32F10x_StdPeriph_Driver/inc \
 ../../libs/misc ../../libs/RIOT-libs/inc ../../libs/HA-libs ../../libs/HA-libs/ha_shell \
 ../../libs/HA-libs/device_class/inc ../../libs/HA-libs/device_instance/inc \
-../../libs/FATFileSystem/src
+../../libs/HA-libs/ha_device_handler ../../libs/HA-libs/common_def ../../libs/FATFileSystem/src
 export CPPMIX =1
 
 # RIOT's usemodules (auto_init is one of default modules)
