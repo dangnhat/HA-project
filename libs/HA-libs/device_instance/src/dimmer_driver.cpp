@@ -13,7 +13,7 @@ using namespace dimmer_ns;
 /* configurable variables */
 const static uint8_t max_dimmer_dev = 16; //max num of dimmers = 16
 const static uint8_t delta_threshold = 2; //delta = 2%;
-const static uint16_t dimmer_sampling_time_cycle = 10; //sampling every 100ms (tim6_period = 10ms)
+const static uint16_t dimmer_sampling_time_cycle = 100; //sampling every 100ms (tim6_period = 1ms)
 
 /* internal variables */
 #if SND_MSG

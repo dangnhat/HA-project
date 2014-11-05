@@ -12,7 +12,7 @@ using namespace btn_sw_ns;
 /* configurable variables */
 const static uint8_t max_btn_sw = 16;
 const static uint8_t btn_sw_active_state = 0;
-const static uint8_t btn_sw_sampling_time_cycle = 2; //sampling every 20ms (tim6_period = 10ms)
+const static uint8_t btn_sw_sampling_time_cycle = 10; //sampling every 10ms (tim6_period = 1ms)
 const static uint16_t btn_hold_time = 100;
 
 /* button&switch table and pid table */
