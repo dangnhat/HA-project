@@ -39,7 +39,10 @@ extern "C" {
 #include "ff.h"
 #include "device_id.h"
 #include "mesg_id.h"
+
+#ifdef HA_NODE              /* Node specific includes */
 #include "ha_device_handler.h"
+#endif
 
 /* Typedefs */
 namespace ha_ns {
@@ -54,11 +57,8 @@ typedef enum: uint8_t {
 /*------------------- Functions ----------------------------------------------*/
 /**
  * @brief   Init Home automation system.
- *
- * @details
- *
- * @param[in]   netdev, type of device in the HA network. This could be node or cc.
+ *          It depends on HA_CC or HA_NODE definitions in command line.
  */
-void ha_system_init(ha_ns::netdev_t netdev);
+void ha_system_init(void);
 
 #endif /* HA_SYSTEM_H_ */

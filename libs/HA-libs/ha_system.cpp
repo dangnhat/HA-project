@@ -14,18 +14,7 @@
 /******************** Config interface ****************************************/
 #define HA_NOTIFICATION (1)
 #define HA_DEBUG_EN (0)
-
-#if HA_NOTIFICATION
-#define HA_NOTIFY(...) printf(__VA_ARGS__)
-#else
-#define HA_NOTIFY(...)
-#endif
-
-#if HA_DEBUG_EN
-#define HA_DEBUG(...) printf(__VA_ARGS__)
-#else
-#define HA_DEBUG(...)
-#endif
+#include "ha_debug.h"
 
 /* 10ms or 1ms timer is required for FAT FS */
 const ISRMgr_ns::ISR_t timer_1ms = ISRMgr_ns::ISRMgr_TIM6;
@@ -34,7 +23,7 @@ const char default_drive_path[] = "0:/";
 FATFS fatfs;
 
 /*------------------- Functions ----------------------------------------------*/
-void ha_system_init(ha_ns::netdev_t netdev) {
+void ha_system_init(void) {
     FRESULT fres;
 
     /* Init MB1_system */
@@ -54,15 +43,16 @@ void ha_system_init(ha_ns::netdev_t netdev) {
     }
     HA_NOTIFY("FAT FS is mounted to %s\n", default_drive_path);
 
-    if (netdev == ha_ns::node) {
-        /* Node's specific initializations */
-        /* Button & switch callback function */
-        MB1_ISRs.subISR_assign(timer_1ms, &btn_sw_callback_timer_isr);
+#ifdef HA_NODE
+    /* Node's specific initializations */
+    /* Button & switch callback function */
+    MB1_ISRs.subISR_assign(timer_1ms, &btn_sw_callback_timer_isr);
 
-        /* Dimmer callback function */
-        MB1_ISRs.subISR_assign(timer_1ms, &dimmer_callback_timer_isr);
-    }
-    else {
-        /* CC's specific initializations */
-    }
+    /* Dimmer callback function */
+    MB1_ISRs.subISR_assign(timer_1ms, &dimmer_callback_timer_isr);
+#endif
+
+#ifdef HA_CC
+    /* CC's specific initializations */
+#endif
 }

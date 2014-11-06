@@ -25,7 +25,7 @@ RIOTBASE ?= $(CURDIR)/../../../RIOT
 CFLAGS += -DDEVELHELP
 
 # Change this to 0 show compiler invocation lines by default:
-QUIET ?= 1
+QUIET ?= 0
 
 # Blacklist boards
 BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 redbee-econotag \
@@ -45,6 +45,10 @@ BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 red
 # others: untested.
 
 #----------------------- HA project configuration -----------------------------#
+
+# HA network device type
+CFLAGS += -DHA_CC
+
 # Location for source files and include headers (don't add / in the end)
 SRCLOC += ../../libs/HA-libs
 SRCLOC += ../../libs/MBoard1-libs 
@@ -63,6 +67,7 @@ INCLOC += ../../libs/RIOT-libs/inc
 INCLOC += ../../libs/FATFileSystem/src
 INCLOC += ../../libs/HA-libs/ha_shell
 INCLOC += ../../libs/HA-libs/common_def
+INCLOC += ../../libs/HA-libs/misc
 INCLOC += sixlowpan
 
 export CPPMIX =1
@@ -81,9 +86,9 @@ USEMODULE += defaulttransceiver
 
 # If you want to add some extra flags when compile c++ files, add these flags
 # to CXXEXFLAGS variable
-export CXXEXFLAGS += -fno-exceptions -fno-rtti -std=gnu++11
-export CFLAGS += -DUSE_STDPERIPH_DRIVER -ffunction-sections -fdata-sections
-export LINKFLAGS += -Wl,--gc-sections
+CXXEXFLAGS += -fno-exceptions -fno-rtti -std=gnu++11
+CFLAGS += -DUSE_STDPERIPH_DRIVER -ffunction-sections -fdata-sections
+LINKFLAGS += -Wl,--gc-sections
 
 #----------------------- HA project config processing -------------------------#
 # Collect ha modules
