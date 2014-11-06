@@ -45,30 +45,49 @@ BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 red
 # others: untested.
 
 #----------------------- HA project configuration -----------------------------#
+
+# HA network device type
+CFLAGS += -DHA_NODE
+
 # Location for source files and include headers (don't add / in the end)
-SRCLOC = ../../libs/MBoard1-libs ../../libs/STM32F10x_StdPeriph_Driver/src \
-../../libs/misc ../../libs/RIOT-libs/src ../../libs/HA-libs ../../libs/HA-libs/ha_shell \
-../../libs/HA-libs/device_class/src ../../libs/HA-libs/device_instance/src \
-../../libs/HA-libs/ha_device_handler ../../libs/FATFileSystem/src
-INCLOC = ../../libs/MBoard1-libs ../../libs/STM32F10x_StdPeriph_Driver/inc \
-../../libs/misc ../../libs/RIOT-libs/inc ../../libs/HA-libs ../../libs/HA-libs/ha_shell \
-../../libs/HA-libs/device_class/inc ../../libs/HA-libs/device_instance/inc \
-../../libs/HA-libs/ha_device_handler ../../libs/HA-libs/common_def ../../libs/FATFileSystem/src
+SRCLOC += ../../libs/MBoard1-libs
+SRCLOC += ../../libs/STM32F10x_StdPeriph_Driver/src
+SRCLOC += ../../libs/misc 
+SRCLOC += ../../libs/RIOT-libs/src
+SRCLOC += ../../libs/HA-libs
+SRCLOC += ../../libs/HA-libs/ha_shell
+SRCLOC += ../../libs/HA-libs/device_class/src
+SRCLOC += ../../libs/HA-libs/device_instance/src
+SRCLOC += ../../libs/HA-libs/ha_device_handler
+SRCLOC += ../../libs/FATFileSystem/src
+
+INCLOC += ../../libs/MBoard1-libs
+INCLOC += ../../libs/STM32F10x_StdPeriph_Driver/inc
+INCLOC += ../../libs/misc
+INCLOC += ../../libs/RIOT-libs/inc
+INCLOC += ../../libs/HA-libs
+INCLOC += ../../libs/HA-libs/ha_shell
+INCLOC += ../../libs/HA-libs/device_class/inc
+INCLOC += ../../libs/HA-libs/device_instance/inc
+INCLOC += ../../libs/HA-libs/ha_device_handler
+INCLOC += ../../libs/HA-libs/common_def
+INCLOC += ../../libs/HA-libs/misc
+INCLOC += ../../libs/FATFileSystem/src
 export CPPMIX =1
 
 # RIOT's usemodules (auto_init is one of default modules)
-export USEMODULE += vtimer defaulttransceiver
+USEMODULE += vtimer defaulttransceiver
 
 # If you want to add some extra flags when compile c++ files, add these flags
 # to CXXEXFLAGS variable
-export CXXEXFLAGS += -fno-exceptions -fno-rtti -std=gnu++11
-export CFLAGS += -DUSE_STDPERIPH_DRIVER -ffunction-sections -fdata-sections
-export LINKFLAGS += -Wl,--gc-sections
+CXXEXFLAGS += -fno-exceptions -fno-rtti -std=gnu++11
+CFLAGS += -DUSE_STDPERIPH_DRIVER -ffunction-sections -fdata-sections
+LINKFLAGS += -Wl,--gc-sections
 
 #----------------------- HA project config processing -------------------------#
 # Collect ha modules
-export USEMODULE += $(notdir $(SRCLOC))
-export DIRS += $(SRCLOC)
+USEMODULE += $(notdir $(SRCLOC))
+DIRS += $(SRCLOC)
 
 # Add include header to RIOT's INCLUDES
 export INCLUDES += $(addprefix -I${CURDIR}/, $(INCLOC))
