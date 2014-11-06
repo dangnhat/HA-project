@@ -18,7 +18,7 @@ typedef enum {
     green = 2,  //luc
     blue = 3,   //lam
     yellow = 4, //vang
-    magenta = 5,//do tuoi
+    magenta = 5, //do tuoi
     cyan = 6,   //luc lam
     orange = 7, //cam
     rose = 8,   //hoa hong
@@ -37,13 +37,27 @@ public:
     void device_configure(pwm_config_params_t *red_channel_params,
             pwm_config_params_t *green_channel_params,
             pwm_config_params_t *blue_channel_params);
+    void set_white_point(uint8_t red_percent_wp, uint8_t green_percent_wp,
+            uint8_t blue_percent_wp);
+    void rgb_set_color(uint16_t rgb_16bits_color);
+    void rgb_set_color(uint32_t rgb_24bits_color);
     void rgb_set_color(rgb_ns::rgb_color_t color);
     void rgb_set_color(uint8_t red_percent, uint8_t green_percent,
             uint8_t blue_percent);
 private:
+    uint8_t red_percent_wp;
+    uint8_t green_percent_wp;
+    uint8_t blue_percent_wp;
+
+    uint8_t current_red_percent;
+    uint8_t current_green_percent;
+    uint8_t current_blue_percent;
+
     level_bulb_instance red_bulb;
     level_bulb_instance green_bulb;
     level_bulb_instance blue_bulb;
+
+    void rgb_calibrate(void);
 };
 
 #endif //__HA_RGB_DRIVER_H_
