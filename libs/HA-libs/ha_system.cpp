@@ -57,10 +57,10 @@ void ha_system_init(ha_ns::netdev_t netdev) {
     if (netdev == ha_ns::node) {
         /* Node's specific initializations */
         /* Button & switch callback function */
-        MB1_ISRs.subISR_assign(timer_10ms, &btn_sw_callback_timer_isr);
+        MB1_ISRs.subISR_assign(timer_1ms, &btn_sw_callback_timer_isr);
 
         /* Dimmer callback function */
-        MB1_ISRs.subISR_assign(timer_10ms, &dimmer_callback_timer_isr);
+        MB1_ISRs.subISR_assign(timer_1ms, &dimmer_callback_timer_isr);
     }
     else {
         /* CC's specific initializations */
