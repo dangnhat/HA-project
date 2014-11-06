@@ -37,7 +37,7 @@ protected:
     /**
      * @brief Set the period for PWM.
      *
-     * @param[in] period 1->65536.
+     * @param[in] period 0->65535.
      */
     void pwm_dev_period_setup(uint16_t period);
 
