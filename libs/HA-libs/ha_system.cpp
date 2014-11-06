@@ -28,7 +28,7 @@
 #endif
 
 /* 10ms or 1ms timer is required for FAT FS */
-const ISRMgr_ns::ISR_t timer_10ms = ISRMgr_ns::ISRMgr_TIM6;
+const ISRMgr_ns::ISR_t timer_1ms = ISRMgr_ns::ISRMgr_TIM6;
 
 const char default_drive_path[] = "0:/";
 FATFS fatfs;
@@ -41,24 +41,28 @@ void ha_system_init(ha_ns::netdev_t netdev) {
     MB1_system_init();
     HA_NOTIFY("MB1_system initialized.\n");
 
-    if (netdev == ha_ns::node) {
-        /* Button & switch callback function */
-        MB1_ISRs.subISR_assign(timer_10ms, &btn_sw_callback_timer_isr);
-
-        /* Dimmer callback function */
-        MB1_ISRs.subISR_assign(timer_10ms, &dimmer_callback_timer_isr);
-    }
-
     /* Reinit CC1101 module */
-//    cc110x_reconfig();
+    cc110x_reconfig();
     HA_NOTIFY("CC1101 configured to 433MHz.\n");
 
     /* FAT file system module */
-    MB1_ISRs.subISR_assign(timer_10ms, disk_timerproc_10ms);
+    MB1_ISRs.subISR_assign(timer_1ms, disk_timerproc_1ms);
 
     fres = f_mount(&fatfs, default_drive_path, 1);
     if (fres != FR_OK) {
         print_ferr(fres);
     }
     HA_NOTIFY("FAT FS is mounted to %s\n", default_drive_path);
+
+    if (netdev == ha_ns::node) {
+        /* Node's specific initializations */
+        /* Button & switch callback function */
+        MB1_ISRs.subISR_assign(timer_10ms, &btn_sw_callback_timer_isr);
+
+        /* Dimmer callback function */
+        MB1_ISRs.subISR_assign(timer_10ms, &dimmer_callback_timer_isr);
+    }
+    else {
+        /* CC's specific initializations */
+    }
 }

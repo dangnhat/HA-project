@@ -27,6 +27,8 @@ extern "C" {
 #include "thread.h"
 #include "vtimer.h"
 #include "msg.h"
+#include "net_if.h"
+#include "rpl.h"
 }
 
 /* MBoard-1 includes */
@@ -42,9 +44,8 @@ extern "C" {
 /* Typedefs */
 namespace ha_ns {
 
-typedef enum
-    : uint8_t {
-        node = 0,
+typedef enum: uint8_t {
+    node = 0,
     cc = 1,
 } netdev_t;
 
