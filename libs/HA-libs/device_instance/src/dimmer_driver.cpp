@@ -13,7 +13,8 @@ using namespace dimmer_ns;
 /* configurable variables */
 const static uint8_t max_dimmer_dev = 16; //max num of dimmers = 16
 const static uint8_t delta_threshold = 2; //delta = 2%;
-const static uint16_t dimmer_sampling_time_cycle = 100; //sampling every 100ms (tim6_period = 1ms)
+const static uint8_t timer_period = 1; //ms
+const static uint16_t dimmer_sampling_time_cycle = 100 / timer_period; //sampling every 100ms (tim6_period = 1ms)
 
 /* internal variables */
 #if SND_MSG
@@ -32,6 +33,10 @@ dimmer_instance::dimmer_instance(void)
 #if AUTO_UPDATE
     this->is_over = false;
     this->old_value = 0;
+    if (!table_init) {
+        table_init = true;
+        dimmer_table_init();
+    }
 #endif
 }
 
@@ -48,10 +53,6 @@ void dimmer_instance::device_configure(adc_config_params_t *adc_config_params)
             adc_config_params->device_pin, adc_config_params->adc_x,
             adc_config_params->adc_channel);
 #if AUTO_UPDATE
-    if (!table_init) {
-        table_init = true;
-        dimmer_table_init();
-    }
     this->assign_dimmer();
 #endif
 }
@@ -127,9 +128,9 @@ void dimmer_instance::remove_dimmer(void)
 
 void dimmer_callback_timer_isr(void)
 {
-    time_cycle_count = (time_cycle_count + 1) % dimmer_sampling_time_cycle;
+    time_cycle_count = (time_cycle_count + timer_period) % dimmer_sampling_time_cycle;
 
-    if (time_cycle_count == (dimmer_sampling_time_cycle - 1)) {
+    if (time_cycle_count == (dimmer_sampling_time_cycle - timer_period)) {
         for (uint8_t i = 0; i < max_dimmer_dev; i++) {
             if (dimmer_table[i] != NULL) {
                 uint8_t new_value = dimmer_table[i]->dimmer_processing();

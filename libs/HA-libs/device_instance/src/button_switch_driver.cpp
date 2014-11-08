@@ -12,8 +12,9 @@ using namespace btn_sw_ns;
 /* configurable variables */
 const static uint8_t max_btn_sw = 16;
 const static uint8_t btn_sw_active_state = 0;
-const static uint8_t btn_sw_sampling_time_cycle = 10; //sampling every 10ms (tim6_period = 1ms)
-const static uint16_t btn_hold_time = 100;
+const static uint8_t timer_period = 1; //ms
+const static uint8_t btn_sw_sampling_time_cycle = 10 / timer_period; //sampling every 10ms (tim6_period = 1ms)
+const static uint16_t btn_hold_time = 1 * 1000 / btn_sw_sampling_time_cycle; //1s
 
 /* button&switch table and pid table */
 static button_switch_instance* btn_sw_table[max_btn_sw];
@@ -45,6 +46,11 @@ button_switch_instance::button_switch_instance(btn_or_sw_t type) :
         this->current_status = sw_off;
         this->old_status = sw_off;
     }
+
+    if (!table_init) {
+        table_init = true;
+        btn_sw_table_init();
+    }
 }
 
 button_switch_instance::~button_switch_instance(void)
@@ -57,10 +63,7 @@ void button_switch_instance::device_configure(
 {
     gpio_dev_configure(gpio_config_params->device_port,
             gpio_config_params->device_pin);
-    if(!table_init) {
-        table_init = true;
-        btn_sw_table_init();
-    }
+
     this->assign_btn_sw();
 }
 
