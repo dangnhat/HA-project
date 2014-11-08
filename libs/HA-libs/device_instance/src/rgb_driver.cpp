@@ -62,11 +62,22 @@ void rgb_instance::set_white_point(uint8_t red_percent_wp,
     rgb_calibrate();
 }
 
-void rgb_instance::rgb_set_color(uint16_t rgb_16bits_color)
+void rgb_instance::rgb_set_color(uint32_t rgb_color,
+        rgb_color_model_t rgb_color_model)
 {
-    uint8_t red_percent = ((rgb_16bits_color >> 11) & 0x1F) / 31;
-    uint8_t green_percent = ((rgb_16bits_color >> 5) & 0x3F) / 31;
-    uint8_t blue_percent = (rgb_16bits_color & 0x1F) / 31;
+    uint8_t red_percent = 0;
+    uint8_t green_percent = 0;
+    uint8_t blue_percent = 0;
+
+    if (rgb_color_model == model_16bits) {
+        red_percent = ((rgb_color >> 11) & 0x1F) * 100 / 31;
+        green_percent = ((rgb_color >> 5) & 0x3F) * 100 / 63;
+        blue_percent = (rgb_color & 0x1F) * 100 / 31;
+    } else if (rgb_color_model == model_24bits) {
+        red_percent = ((rgb_color >> 16) & 0xFF) * 100 / 255;
+        green_percent = ((rgb_color >> 8) & 0xFF) * 100 / 255;
+        blue_percent = (rgb_color & 0xFF) * 100 / 255;
+    }
 
     rgb_set_color(red_percent, green_percent, blue_percent);
 }
