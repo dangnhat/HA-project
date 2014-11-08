@@ -30,4 +30,7 @@ void sensor_linear_handler(uint32_t dev_id);
 
 int get_file_name_from_dev_id(uint32_t dev_id, char* file_name);
 
+uint8_t get_configuration_common(uint32_t dev_id, uint8_t* buff,
+        float* fl_buff, uint8_t offset, uint8_t size_buff, bool is_float);
+
 #endif //__HA_DEVICE_HANDLER_H_

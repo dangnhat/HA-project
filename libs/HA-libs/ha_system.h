@@ -42,6 +42,8 @@ extern "C" {
 
 #ifdef HA_NODE              /* Node specific includes */
 #include "ha_device_handler.h"
+const uint8_t max_end_point = 16;
+extern kernel_pid_t end_point_pid[max_end_point];
 #endif
 
 /* Typedefs */

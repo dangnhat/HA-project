@@ -22,8 +22,19 @@ const ISRMgr_ns::ISR_t timer_1ms = ISRMgr_ns::ISRMgr_TIM6;
 const char default_drive_path[] = "0:/";
 FATFS fatfs;
 
+#ifdef HA_NODE
+const uint8_t timer_period = 1; //ms
+const uint32_t send_alive_time_period = 60 * 1000 / timer_period; //send alive every 60s.
+
+uint32_t time_cycle_count = 0;
+
+static void endpoint_pid_table_init(void);
+void send_alive_timer_isr(void);
+#endif
+
 /*------------------- Functions ----------------------------------------------*/
-void ha_system_init(void) {
+void ha_system_init(void)
+{
     FRESULT fres;
 
     /* Init MB1_system */
@@ -45,14 +56,47 @@ void ha_system_init(void) {
 
 #ifdef HA_NODE
     /* Node's specific initializations */
+    /* Initialize pid table of endpoints */
+    endpoint_pid_table_init();
+
+    /* Send alive callback function */
+    MB1_ISRs.subISR_assign(timer_1ms, &send_alive_timer_isr);
+
     /* Button & switch callback function */
     MB1_ISRs.subISR_assign(timer_1ms, &btn_sw_callback_timer_isr);
 
     /* Dimmer callback function */
     MB1_ISRs.subISR_assign(timer_1ms, &dimmer_callback_timer_isr);
+
+    /* Sensor-linear ADC callback function */
+    MB1_ISRs.subISR_assign(timer_1ms, &sensor_linear_callback_timer_isr);
 #endif
 
 #ifdef HA_CC
     /* CC's specific initializations */
 #endif
 }
+
+#ifdef HA_NODE
+static void endpoint_pid_table_init(void)
+{
+    for (uint8_t i = 0; i < max_end_point; i++) {
+        end_point_pid[i] = KERNEL_PID_UNDEF;
+    }
+}
+
+void send_alive_timer_isr(void)
+{
+    time_cycle_count = time_cycle_count + 1;
+    if (time_cycle_count == send_alive_time_period) {
+        time_cycle_count = 0;
+        for (uint8_t i = 0; i < max_end_point; i++) {
+            if (end_point_pid[i] != KERNEL_PID_UNDEF) {
+                msg_t msg;
+                msg.type = ha_node_ns::SEND_ALIVE;
+                msg_send(&msg, end_point_pid[i], false);
+            }
+        }
+    }
+}
+#endif

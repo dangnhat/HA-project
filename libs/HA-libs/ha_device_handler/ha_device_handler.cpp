@@ -15,9 +15,6 @@ extern "C" {
 #include "device_id.h"
 #include "mesg_id.h"
 
-static uint8_t get_configuration_common(uint32_t dev_id, uint8_t* buff,
-        float* fl_buff, uint8_t offset, uint8_t size_buff, bool is_float);
-
 void* end_point_handler(void* arg)
 {
     uint8_t queue_size = 64;
@@ -234,7 +231,7 @@ void level_bulb_handler(uint32_t dev_id)
 
 void servo_sg90_handler(uint32_t dev_id)
 {
-    uint8_t num_line = 2;
+    uint8_t num_line = 4;
     uint8_t config_buff[num_line];
     if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
             < num_line) {
@@ -268,7 +265,7 @@ void servo_sg90_handler(uint32_t dev_id)
 
 void sensor_linear_handler(uint32_t dev_id)
 {
-    uint8_t num_line = 2;
+    uint8_t num_line = 4;
     uint8_t config_buff[num_line];
     if (get_configuration_common(dev_id, config_buff, NULL, 0, num_line, false)
             < num_line) {
