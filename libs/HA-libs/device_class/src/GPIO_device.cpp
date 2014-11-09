@@ -13,6 +13,7 @@ gpio_dev_class::gpio_dev_class(bool input_device)
 {
     this->in_dev = input_device;
     this->exti_type = 0;
+    this->gpio_dev_worker = NULL;
 }
 
 void gpio_dev_class::gpio_dev_on(void)
@@ -45,19 +46,27 @@ void gpio_dev_class::gpio_dev_configure(port_t port, uint8_t pin)
 void gpio_dev_class::gpio_dev_int_both_edge(void)
 {
     exti_init(both_edge);
-    isr_mgr_ptr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
 }
 
 void gpio_dev_class::gpio_dev_int_rising_edge(void)
 {
     exti_init(rising_edge);
-    isr_mgr_ptr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
 }
 
 void gpio_dev_class::gpio_dev_int_falling_edge(void)
 {
     exti_init(falling_edge);
-    isr_mgr_ptr->subISR_assign((ISR_t) exti_type, gpio_dev_worker);
+}
+
+void gpio_dev_class::gpio_dev_assign_callback(void (*callback)(void *arg), void *arg)
+{
+    this->gpio_dev_worker = callback;
+    isr_mgr_ptr->subISR_EXTI_assign((ISR_t) exti_type, gpio_dev_worker, arg);
+}
+
+void gpio_dev_class::gpio_dev_remove_callback(void)
+{
+    isr_mgr_ptr->subISR_EXTI_remove((ISR_t) exti_type, gpio_dev_worker);
 }
 
 uint8_t gpio_dev_class::gpio_dev_read(void)
