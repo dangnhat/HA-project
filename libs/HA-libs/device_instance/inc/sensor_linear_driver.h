@@ -25,8 +25,6 @@ extern "C" {
 
 #include "ADC_device.h"
 
-#define MAX_COORDINATES 16
-
 namespace sensor_linear_ns {
 typedef enum {
     linear = 0,
@@ -38,7 +36,7 @@ enum
     : uint16_t {
         SEN_LINEAR_MSG
 };
-#endif
+#endif //SND_MSG
 }
 
 class sensor_linear_instance: private adc_dev_class {
@@ -55,18 +53,20 @@ public:
     uint16_t get_sensor_value(void);
 
 #if AUTO_UPDATE
+    void start_sensor(void);
     void set_delta_threshold(uint16_t delta_threshold);
     void set_overflow_threshold(uint16_t overflow_threshold);
     void set_underflow_threshold(uint16_t underflow_threshold);
-
     uint16_t sensor_linear_processing(void);
 
     bool is_underlow_or_overflow(void);
-    void start();
-#endif
+#endif //AUTO_UPDATE
+
+#if SND_MSG
+    kernel_pid_t get_pid(void);
+#endif //SND_MSG
 private:
     float get_voltage_value(void);
-    sensor_linear_ns::equation_t equation_type;
     float a_factor = 1;
     float b_constant = 1;
 
@@ -80,12 +80,16 @@ private:
 
     void assign_sensor(void);
     void remove_sensor(void);
-#endif
+#endif //AUTO_UPDATE
+
+#if SND_MSG
+    kernel_pid_t thread_pid;
+#endif //SND_MSG
 };
 
 #if AUTO_UPDATE
 void sensor_linear_callback_timer_isr(void);
-#endif
+#endif //AUTO_UPDATE
 
 float linear_equation_calculate(float x_value, float a_factor,
         float b_constant);
