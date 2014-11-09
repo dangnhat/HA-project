@@ -47,6 +47,8 @@ ISRMgr_ns::ISR_t gdo2_isr_type = ISRMgr_ns::ISRMgr_EXTI11;
 
 static void gdo_init_interrupt(void);
 static void nss_init(void);
+static void gdo0_irq(void *arg);
+static void gdo2_irq(void *arg);
 
 int cc110x_get_gdo0(void)
 {
@@ -166,6 +168,16 @@ void cc110x_gdo2_disable(void)
     gdo2->exti_line_disable();
 }
 
+static void gdo0_irq(void *arg)
+{
+    cc110x_gdo0_irq();
+}
+
+static void gdo2_irq(void *arg)
+{
+    cc110x_gdo2_irq();
+}
+
 static void gdo_init_interrupt(void)
 {
     gpio_ns::gpio_params_t params_struct;
@@ -184,8 +196,8 @@ static void gdo_init_interrupt(void)
     gdo2->gpio_init(&params_struct);
     gdo2->exti_init(gpio_ns::falling_edge);
 
-    isr_mgr->subISR_assign(gdo0_isr_type, &cc110x_gdo0_irq);
-    isr_mgr->subISR_assign(gdo2_isr_type, &cc110x_gdo2_irq);
+    isr_mgr->subISR_EXTI_assign(gdo0_isr_type, gdo0_irq, NULL);
+    isr_mgr->subISR_EXTI_assign(gdo2_isr_type, gdo2_irq, NULL);
 }
 
 void cc110x_init_interrupts(void)
