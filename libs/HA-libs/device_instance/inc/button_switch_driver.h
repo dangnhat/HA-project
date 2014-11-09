@@ -17,7 +17,7 @@ extern "C" {
 #include "thread.h"
 #include "msg.h"
 }
-#endif
+#endif //SND_MSG
 
 #include "GPIO_device.h"
 
@@ -43,7 +43,7 @@ enum
     : uint16_t {
         BTN_SW_MSG
 };
-#endif
+#endif //SND_MSG
 }
 
 class button_switch_instance: public gpio_dev_class {
@@ -52,8 +52,25 @@ public:
     ~button_switch_instance(void);
 
     void device_configure(gpio_config_params_t *gpio_config_params);
-    btn_sw_ns::btn_sw_status_t get_status(void);bool is_changed_status(void);
+
+    /**
+     *
+     */
+    btn_sw_ns::btn_sw_status_t get_status(void);
+
+    /**
+     *
+     */
+    bool is_changed_status(void);
+
+    /**
+     *
+     */
     void btn_sw_processing(void);
+
+#if SND_MSG
+    kernel_pid_t get_pid(void);
+#endif //SND_MSG
 private:
     btn_sw_ns::btn_or_sw_t dev_type;
     btn_sw_ns::btn_sw_status_t current_status, old_status;
@@ -64,6 +81,10 @@ private:
     uint8_t old_state_reg;
 
     uint16_t hold_time_count; //button's var.
+
+#if SND_MSG
+    kernel_pid_t thread_pid;
+#endif //SND_MSG
 
     void button_processing(void);
     void switch_processing(void);
