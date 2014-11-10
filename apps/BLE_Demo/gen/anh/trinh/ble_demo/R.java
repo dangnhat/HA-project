@@ -39,52 +39,70 @@ public final class R {
         public static final int activity_vertical_margin=0x7f060001;
     }
     public static final class drawable {
-        public static final int bulb=0x7f020000;
-        public static final int button_push=0x7f020001;
-        public static final int device_list_style=0x7f020002;
-        public static final int device_value_bg=0x7f020003;
-        public static final int dimmer=0x7f020004;
-        public static final int float_button=0x7f020005;
-        public static final int float_button_style=0x7f020006;
-        public static final int gas_sensor=0x7f020007;
-        public static final int group_list_style=0x7f020008;
-        public static final int ic_launcher=0x7f020009;
-        public static final int inknon=0x7f02000a;
-        public static final int light_sensor=0x7f02000b;
-        public static final int motor=0x7f02000c;
-        public static final int next=0x7f02000d;
-        public static final int pir_sensor=0x7f02000e;
-        public static final int prev=0x7f02000f;
-        public static final int rgb_led=0x7f020010;
-        public static final int seek_thumb=0x7f020011;
-        public static final int seek_thumb2=0x7f020012;
-        public static final int switch_btn=0x7f020013;
-        public static final int temp_sensor=0x7f020014;
+        public static final int actionbar_tab_indicator=0x7f020000;
+        public static final int bulb=0x7f020001;
+        public static final int button_push=0x7f020002;
+        public static final int device_list_style=0x7f020003;
+        public static final int device_value_bg=0x7f020004;
+        public static final int dimmer=0x7f020005;
+        public static final int float_button=0x7f020006;
+        public static final int float_button_style=0x7f020007;
+        public static final int gas_sensor=0x7f020008;
+        public static final int group_list_style=0x7f020009;
+        public static final int ic_launcher=0x7f02000a;
+        public static final int inknon=0x7f02000b;
+        public static final int layer_bg_tab_selected=0x7f02000c;
+        public static final int light_sensor=0x7f02000d;
+        public static final int motor=0x7f02000e;
+        public static final int next=0x7f02000f;
+        public static final int pir_sensor=0x7f020010;
+        public static final int prev=0x7f020011;
+        public static final int progress_bg=0x7f020012;
+        public static final int rgb_led=0x7f020013;
+        public static final int seek_thumb=0x7f020014;
+        public static final int seek_thumb2=0x7f020015;
+        public static final int seek_thumb3=0x7f020016;
+        public static final int switch_btn=0x7f020017;
+        public static final int tab_bar_background_selected=0x7f020018;
+        public static final int tab_bar_background_selected_pressed=0x7f020019;
+        public static final int tab_indicator=0x7f02001a;
+        public static final int tab_selected_example=0x7f02001b;
+        public static final int tab_selected_focused_example=0x7f02001c;
+        public static final int tab_selected_pressed_example=0x7f02001d;
+        public static final int tab_text_selector=0x7f02001e;
+        public static final int tab_unselected_example=0x7f02001f;
+        public static final int tab_unselected_focused_example=0x7f020020;
+        public static final int tab_unselected_pressed_example=0x7f020021;
+        public static final int temp_sensor=0x7f020022;
+        public static final int toggle_off=0x7f020023;
+        public static final int toggle_on=0x7f020024;
+        public static final int toggle_selector=0x7f020025;
     }
     public static final class id {
-        public static final int FrameLayout1=0x7f0a0006;
-        public static final int LinearLayout1=0x7f0a000d;
-        public static final int RelativeLayout1=0x7f0a0010;
-        public static final int btnAddScene=0x7f0a0008;
-        public static final int connection_state=0x7f0a000a;
-        public static final int data_value=0x7f0a000b;
+        public static final int FrameLayout1=0x7f0a0007;
+        public static final int LinearLayout1=0x7f0a000e;
+        public static final int RelativeLayout1=0x7f0a0011;
+        public static final int btnAddScene=0x7f0a0009;
+        public static final int connection_state=0x7f0a000b;
+        public static final int data_value=0x7f0a000c;
         public static final int devIcon=0x7f0a0001;
         public static final int devName=0x7f0a0002;
         public static final int devVal=0x7f0a0004;
-        public static final int device_address=0x7f0a0009;
-        public static final int device_name=0x7f0a000f;
+        public static final int device_address=0x7f0a000a;
+        public static final int device_name=0x7f0a0010;
         public static final int dimBar=0x7f0a0003;
-        public static final int elvDeviceControl=0x7f0a0005;
-        public static final int elvScene=0x7f0a0007;
-        public static final int gatt_services_list=0x7f0a000c;
-        public static final int menu_connect=0x7f0a0013;
-        public static final int menu_disconnect=0x7f0a0014;
-        public static final int menu_refresh=0x7f0a0012;
-        public static final int menu_scan=0x7f0a0015;
-        public static final int menu_stop=0x7f0a0016;
+        public static final int elvDeviceControl=0x7f0a0006;
+        public static final int elvScene=0x7f0a0008;
+        public static final int frag_device_control=0x7f0a0005;
+        public static final int gatt_services_list=0x7f0a000d;
+        public static final int menu_connect=0x7f0a0014;
+        public static final int menu_disconnect=0x7f0a0015;
+        public static final int menu_refresh=0x7f0a0013;
+        public static final int menu_scan=0x7f0a0016;
+        public static final int menu_stop=0x7f0a0017;
         public static final int pager=0x7f0a0000;
-        public static final int roomName=0x7f0a000e;
-        public static final int toggleVal=0x7f0a0011;
+        public static final int roomName=0x7f0a000f;
+        public static final int toggleVal=0x7f0a0012;
     }
     public static final class layout {
         public static final int actionbar_indeterminate_progress=0x7f030000;
@@ -163,6 +181,9 @@ public final class R {
         /**      the theme apply to the application or activity	
          */
         public static final int CustomActionBar=0x7f080005;
+        /**  ProgressDialog Style 
+         */
+        public static final int CustomDialog=0x7f08000a;
         public static final int MyActionBar=0x7f080006;
         /**  action bar tab background style 
          */

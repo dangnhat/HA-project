@@ -9,6 +9,9 @@ import java.util.List;
 
 import org.w3c.dom.ls.LSInput;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -23,18 +26,20 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ExpandableListView.OnGroupCollapseListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
+import android.widget.TextView;
 import android.widget.Toast;
+import anh.trinh.ble_demo.data.DataUnsigned;
 import anh.trinh.ble_demo.data.DeviceInfo;
 import anh.trinh.ble_demo.list_view.Device_c;
 import anh.trinh.ble_demo.list_view.ExpandableListViewAdapter;
 import anh.trinh.ble_demo.list_view.Zone_c;
 
 public class DeviceControlFragment extends Fragment{
-	private ExpandableListView 		lvDevControl;
+	private ExpandableListView 	lvDevControl;
+	private ExpandableListViewAdapter mAdapter;
 	private ArrayList<Zone_c> 	listParent 		= new ArrayList<Zone_c>();
-	private ArrayList<Device_c> 		listChild 		= new ArrayList<Device_c>();
-	private HomeActivity			mContext 		= new HomeActivity();
-	
+	private final String 		TAG				= "DeviceControlFragment";
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -44,23 +49,49 @@ public class DeviceControlFragment extends Fragment{
 		lvDevControl	= (ExpandableListView) rootView
 										.findViewById(R.id.elvDeviceControl);
 		
-		prepareDataForDisp();
-		ExpandableListViewAdapter mAdapter = new ExpandableListViewAdapter(	getActivity(), 
-																			listParent);
+		Log.i(TAG, "enter process");
+		
+//		initialStaticData();
+		
+		mAdapter = new ExpandableListViewAdapter(getActivity(), listParent);
 		lvDevControl.setGroupIndicator(null);
 		lvDevControl.setAdapter(mAdapter);
-	
-
+		
+		
 		return rootView;
 	}
 	
 	
-	private void prepareDataForDisp(){
-//		ArrayList<DeviceInfo> mDevList = new ArrayList<DeviceInfo>();
-//		mDevList	=	mContext.mDevInfoList;
-//		if(mDevList.isEmpty()){
-//			Log.i(getTag(), "Ohhh Noooo");
-//		}
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+		Log.i(TAG, "onActivity create");
+	}
+	
+	@Override
+	public void onDestroyView() {
+		// TODO Auto-generated method stub
+		super.onDestroyView();
+		Log.i(TAG, "onDestroyView");
+	}
+	
+	
+	
+	public void updateUI(ArrayList<DeviceInfo> deviceList){
+//		Log.i(TAG, Integer.toString(deviceList.size()) );
+		prepareDataForDisp(deviceList);
+		if(!listParent.isEmpty()){
+			Log.i(TAG, "data available");
+			lvDevControl.invalidateViews();
+//			mAdapter.notifyDataSetChanged();
+		}
+	}
+	
+	/**
+	 * ininial virtual data 
+	 */
+	private void initialStaticData(){
 		ArrayList<DeviceInfo> mDevList = new ArrayList<DeviceInfo>();
 
         // initial static device list for expandable listview
@@ -106,15 +137,11 @@ public class DeviceControlFragment extends Fragment{
 			}
       	mDevList.add(mDevInfo);
       }
-//		Arrays.binarySea
+		
 		ByteBuffer devID = ByteBuffer.allocate(4);
 		byte mZoneId;
 		byte mDevId;
 		Zone_c zone = null;
-//		HashMap<byte, byte[]> child;
-		
-//		String roomName[] 	= {"Kitchen", "Bathroom", "Living room", "Bedroom"};
-//		String devName[]	= {"Bulb", "Dimmer", "Motor", "Sensor"};
 		
 		for (int i = 0; i < mDevList.size(); i++){
 			Log.i("prepareData", "hello" );
@@ -141,15 +168,42 @@ public class DeviceControlFragment extends Fragment{
 			device.setVal(mDevList.get(i).getDevVal());
 			listParent.get(getZoneIndex(listParent, mZoneId)).addChildListItem(device);
 		}
+	}
+	
+	
+	/**
+	 * Initial data for Expandable ListView
+	 */
+	private void prepareDataForDisp(ArrayList<DeviceInfo> deviceList){
+		ArrayList<DeviceInfo> mDevList =  new ArrayList<DeviceInfo>();
+		mDevList = 	deviceList;
+		Log.i("DeviceList size", Integer.toString(mDevList.size()));
 		
-		for(Zone_c parent : listParent){
-			Log.i("prepare_data: ZoneID = ",Integer.toString(parent.getID()) );
-			for(Device_c child : parent.getChildList()){
-				Log.i("prepare_data", child.getName());
+		ByteBuffer devID = ByteBuffer.allocate(4);
+		int mZoneId;
+		int mDevId;
+		Zone_c zone = null;
+		
+		for (int i = 0; i < mDevList.size(); i++){
+//			mZoneId = devID.putInt(mDevList.get(i).getDevID()).get(0);
+			mZoneId = DataUnsigned.byteType( devID.putInt(mDevList.get(i).getDevID()).get(0) );
+			Log.i(TAG, Integer.toString(mZoneId));
+			devID.clear();
+			mDevId = devID.putInt(mDevList.get(i).getDevID()).get(3);
+			devID.clear();
+			
+			if(!searchZone(listParent, mZoneId)){
+				zone = new Zone_c();
+				zone.setName(mZoneId);
+				listParent.add(zone);
 			}
-//			Log.i("prepare_data: ZoneID = ",Integer.toString(parent.getID()) );
-//			Log.i("prepare_data: numOfChild = ",Integer.toString(parent.getChildCount()) );
+			
+			Device_c device = new Device_c();
+			device.setName((byte) mDevId);
+			device.setVal(mDevList.get(i).getDevVal());
+			listParent.get(getZoneIndex(listParent, mZoneId)).addChildListItem(device);
 		}
+		
 		
 		
 	}
@@ -161,12 +215,12 @@ public class DeviceControlFragment extends Fragment{
 	 * @param item
 	 * @return
 	 */
-	private boolean searchZone(ArrayList<Zone_c> parentList, byte zoneID){
+	private boolean searchZone(ArrayList<Zone_c> parentList, int mZoneId){
 		if(parentList.isEmpty() ){
 			return false;
 		}
 		for(Zone_c parent : parentList){
-			if(parent.getID() == zoneID){
+			if(parent.getID() == mZoneId){
 				return true;
 			}
 		}
@@ -177,13 +231,13 @@ public class DeviceControlFragment extends Fragment{
 	 * Get zone index in List
 	 * 
 	 * @param zoneList
-	 * @param zoneID
+	 * @param mZoneId
 	 * @return
 	 */
-	private int getZoneIndex(ArrayList<Zone_c> zoneList, byte zoneID){
+	private int getZoneIndex(ArrayList<Zone_c> zoneList, int mZoneId){
 		
 		for(int i = 0; i< zoneList.size(); i++){
-			if(zoneList.get(i).getID() == zoneID){
+			if(zoneList.get(i).getID() == mZoneId){
 				return i;
 			}
 		}

@@ -3,7 +3,8 @@
     android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:padding="5dp" >
 
     <ImageView
         android:id="@+id/devIcon"
@@ -27,7 +28,7 @@
         android:text="@string/deviceName"
         android:textSize="16sp" />
 
-    <ToggleButton
+    <!-- <ToggleButton
         android:id="@+id/toggleVal"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -35,7 +36,17 @@
         android:layout_alignTop="@+id/devIcon"
         android:background="@drawable/device_value_bg"
         android:textColor="@color/white"
-        android:text="ToggleButton" />
+        android:text="ToggleButton" /> -->
 
+    <ToggleButton
+        android:id="@+id/toggleVal"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/toggle_selector"
+        android:checked="false"
+        android:textOn=""
+        android:textOff="" />
     
 </RelativeLayout>

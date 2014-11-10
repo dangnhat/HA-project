@@ -20,8 +20,8 @@
 	
 	<!-- action bar tab background style -->
 	<style 	name="MyActionBarTab"
-	    	parent="@android:style/Widget.Holo.Light.ActionBar.TabBar">
-	    <item name="android:background">@color/cyan</item>
+	    	parent="@android:style/Widget.ActionBar.TabBar">
+	    <item name="android:background">@drawable/actionbar_tab_indicator</item>
 	</style>
 	
 	<!-- action bar title text style -->
@@ -34,6 +34,17 @@
 	<style 	name="MyActionBarTabText"
 	    	parent="@android:style/Widget.Holo.ActionBar.TabText">
 	    	<item name="android:textColor">@color/white</item>
+	    	<item name="android:textAllCaps">true</item>
 	</style>
+	
+	<!-- ProgressDialog Style -->
+	<style name="CustomDialog"
+	       parent="@android:style/Theme.DeviceDefault.Light.Dialog.MinWidth" >
+	    <item name="android:windowBackground">@android:color/transparent</item>
+		<item name="android:textSize">18sp</item>
+		<item name="android:gravity">center</item>
+	    	
+	</style>
+	
 	
 </resources>

@@ -53,6 +53,13 @@ public class ExpandableListViewAdapter extends BaseExpandableListAdapter {
 		this.mContext	= mContext;
 		this.listParent	= listParent;
 	}
+	
+	/**
+	 * Update list data
+	 */
+	public void updateData(ArrayList<Zone_c> listParent){
+		this.listParent = listParent;
+	}
 
 	@Override
 	public Object getChild(int groupPos, int childPos) {
@@ -379,5 +386,10 @@ public class ExpandableListViewAdapter extends BaseExpandableListAdapter {
 		return true;
 	}
 	
-
+	@Override
+	public void notifyDataSetChanged() {
+		// TODO Auto-generated method stub
+		super.notifyDataSetChanged();
+//		Log.i("List Adapter", "update data");
+	}
 }

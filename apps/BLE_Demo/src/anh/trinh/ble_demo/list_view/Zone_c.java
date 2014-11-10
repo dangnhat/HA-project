@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class Zone_c {
 	
 	private String 					name;
-	private byte					parentId;
+	private int						parentId;
 	private ArrayList<Device_c>		listChild = new ArrayList<Device_c>();
 	
 	public Zone_c(String name, ArrayList<Device_c> listChild){
@@ -22,12 +22,12 @@ public class Zone_c {
 		return name;
 	}
 	
-	public void setName(byte zoneID){
-		this.name = "Zone" + zoneID;
+	public void setName(int zoneID){
+		this.name = "Zone " + zoneID;
 		this.parentId = zoneID;
 	}
 	
-	public byte getID(){
+	public int getID(){
 		return this.parentId;
 	}
 	public ArrayList<Device_c> getChildList(){

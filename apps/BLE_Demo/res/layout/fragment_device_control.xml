@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/frag_device_control"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:paddingLeft="15dp"
     android:paddingRight="15dp" >
-    
-   
+
     <ExpandableListView
         android:id="@+id/elvDeviceControl"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/background_grey"
         android:divider="@color/background_grey"
         android:dividerHeight="5sp"
-        android:scrollbars="none"
-         >
+        android:scrollbars="none" >
     </ExpandableListView>
-
 </LinearLayout>
