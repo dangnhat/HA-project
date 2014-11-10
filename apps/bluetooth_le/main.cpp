@@ -40,13 +40,13 @@ uint8_t				msg[]	= "Trinh Van Anh 1992 cocacola";
  * Private Functions
  *
  ******************************************************************************/
-//void *usart_receving(void *arg){
-//
-//	usart3_receive();
-//	while(1){
-//	}
-//	return NULL;
-//}
+void *usart_receving(void *arg){
+
+	receiveBTMessage();
+	while(1){
+	}
+	return NULL;
+}
 
 
 /*******************************************************************************
@@ -61,13 +61,13 @@ int main() {
 	/* Initial BLE interface */
 	ble_init();
 
-//	usart_rec_pid = thread_create(usart_rec_stack,
-//									usart_rec_stack_size,
-//									PRIORITY_MAIN-1,
-//									,
-//									usart_receving,
-//									NULL,
-//									"usart3 receive thread");
+	usart_rec_pid = thread_create(usart_rec_stack,
+									usart_rec_stack_size,
+									PRIORITY_MAIN-1,
+									0,
+									usart_receving,
+									NULL,
+									"usart3 receive thread");
 //	while(BTFlags.ready != 0x01){
 //
 //	}

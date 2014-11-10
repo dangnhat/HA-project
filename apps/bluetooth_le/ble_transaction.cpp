@@ -8,8 +8,10 @@
 #include "ble_transaction.h"
 #include "MB1_System.h"
 #include <stdio.h>
-#include <msg.h>
-
+extern "C"{
+#include "msg.h"
+#include "thread.h"
+}
 
 void USART3_RxInit()
 {
@@ -33,7 +35,6 @@ void ble_init()
 
 	//reset device
 	ble_cmd_system_reset(0);
-	ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
 	ble_cmd_sm_set_bondable_mode(1);
 }
 
@@ -93,7 +94,6 @@ void receiveBTMessage()
 
 	for(uint8_t i = 0; i < BTHeader.lolen; i++){
 		data[i]	= rxBuf[i+4];
-//		printf("%02x \n", data[i]);
 	}
 
 	//find the appropriate message based on the header, which allows
@@ -104,9 +104,6 @@ void receiveBTMessage()
 	if(!BTMessage)
 	{
 		//handle error here
-		printf("wtf\n");
-		//Disable interrupt usart3
-//		USART_ITConfig(USART3, USART_FLAG_RXNE, DISABLE);
 		return;
 	}
 	//call the handler for the received message, passing in the received payload data
