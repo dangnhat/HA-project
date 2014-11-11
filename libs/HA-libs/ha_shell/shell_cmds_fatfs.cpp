@@ -188,7 +188,7 @@ void cat(int argc, char** argv)
     FRESULT fres;
     FIL file;
     char line[512];
-    char* path_p;
+    char* path_p = NULL;
     int count;
 
     if (argc == 1) {
@@ -222,8 +222,11 @@ void cat(int argc, char** argv)
 
     /* read file */
     while( f_gets(line, sizeof(line), &file) ){
-        puts(line);
+        printf("%s", line);
+        fflush(stdout);
     }
+
+    f_close(&file);
 }
 
 /*----------------------------------------------------------------------------*/

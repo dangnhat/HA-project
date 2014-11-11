@@ -37,6 +37,9 @@ enum mesg_type_e: uint16_t { /* in GFF format */
     ALIVE = 0x0200,
 };
 
+const uint8_t SET_DEV_VAL_DATA_LEN = 6; /* device_id + value */
+const uint8_t ALIVE_DATA_LEN = 0;
+
 };
 
 #endif /* MESG_ID_H_ */

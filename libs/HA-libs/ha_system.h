@@ -22,15 +22,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-/* RIOT's includes */
-extern "C" {
-#include "thread.h"
-#include "vtimer.h"
-#include "msg.h"
-#include "net_if.h"
-#include "rpl.h"
-}
-
 /* MBoard-1 includes */
 #include "MB1_System.h"
 
@@ -38,20 +29,19 @@ extern "C" {
 #include "ha_shell.h"
 #include "ff.h"
 #include "device_id.h"
-#include "mesg_id.h"
+#include "gff_mesg_id.h"
 
 #ifdef HA_NODE              /* Node specific includes */
 #include "ha_device_handler.h"
 #endif
 
+#ifdef HA_CC                /* CC specific includes */
+#include "cc_slp_sender.h"
+#include "cc_slp_receiver.h"
+#endif
+
 /* Typedefs */
 namespace ha_ns {
-
-typedef enum: uint8_t {
-    node = 0,
-    cc = 1,
-} netdev_t;
-
 }
 
 /*------------------- Functions ----------------------------------------------*/

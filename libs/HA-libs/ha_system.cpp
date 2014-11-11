@@ -30,9 +30,9 @@ void ha_system_init(void) {
     MB1_system_init();
     HA_NOTIFY("MB1_system initialized.\n");
 
-    /* Reinit CC1101 module */
-    cc110x_reconfig();
-    HA_NOTIFY("CC1101 configured to 433MHz.\n");
+    /* Reinit CC1101 module. TODO: need to check channel, freq again */
+//    cc110x_reconfig();
+//    HA_NOTIFY("CC1101 configured to 433MHz.\n");
 
     /* FAT file system module */
     MB1_ISRs.subISR_assign(timer_1ms, disk_timerproc_1ms);
@@ -40,8 +40,12 @@ void ha_system_init(void) {
     fres = f_mount(&fatfs, default_drive_path, 1);
     if (fres != FR_OK) {
         print_ferr(fres);
+        HA_NOTIFY("FAT FS is NOT mounted.\n");
     }
-    HA_NOTIFY("FAT FS is mounted to %s\n", default_drive_path);
+    else {
+        HA_NOTIFY("FAT FS is mounted to %s\n", default_drive_path);
+    }
+
 
 #ifdef HA_NODE
     /* Node's specific initializations */
@@ -54,5 +58,12 @@ void ha_system_init(void) {
 
 #ifdef HA_CC
     /* CC's specific initializations */
+    /* Start CC's 6LoWPAN threads */
+    cc_slp_sender_start();
+    cc_slp_receiver_start();
 #endif
+
+    /* Create shell thread */
+    ha_shell_create();
+    HA_NOTIFY("Home Automation shell started.\n");
 }

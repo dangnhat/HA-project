@@ -19,33 +19,23 @@ extern "C" {
 /* Includes other shell commands modules */
 #include "shell_cmds_fatfs.h"
 #include "shell_cmds_time.h"
+#include "shell_cmds_sixlowpan.h"
 
-/*********************** Config interface *************************************/
-const shell_command_t shell_commands[] = {
-    /* FAT FS cmds */
-    /* {"mount", "Mount FAT FS", mount}, HA_system_init will mount FAT FS */
-    /* {"umount", "Unmount FAT FS", umount}, */
-    {"ls", "List directory contents", ls},
-    {"cat", "Concatenate files and print on the standard output", cat},
-    {"touch", "Change file timestamp", touch},
-    {"rm", "Remove files or directories", rm},
-    {"mkdir", "Make directories", mkdir},
-    {"cd", "Change working directory", cd},
-    {"pwd", "Print name of current/working directory", pwd},
-
-    /* time cmds */
-    {"date", "Print or set the system date and time", date},
-    {NULL, NULL, NULL}
-};
+namespace ha_ns {
+extern kernel_pid_t shell_pid;
+}
 
 /*------------------- Functions ----------------------------------------------*/
 /**
- * @brief   Init and run the shell.
+ * @brief   Create a thread and run ha_shell.
  *
- * @details This shell will be based on RIOT's shell, posix_read on uart0
- * (STM32's USART1).
- * This function will NEVER return.
+ * @details Thread for shell will have following configurations:
+ *          - shell_stack_size = 2560,
+ *          - shell_prio = PRIORITY_MAIN
+ *          - name = Home automation shell
+ *          This shell will be based on RIOT's shell, posix_read on uart0
+ *          (STM32's USART1).
  */
-void ha_shell_irun(void);
+void ha_shell_create(void);
 
 #endif /* SHELL_CMDS_H_ */

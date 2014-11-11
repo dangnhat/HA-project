@@ -9,6 +9,8 @@
 #ifndef HA_DEBUG_H_
 #define HA_DEBUG_H_
 
+#include <stdio.h>
+
 #if HA_NOTIFICATION
 #define HA_NOTIFY(...) printf(__VA_ARGS__)
 #else
