@@ -28,7 +28,8 @@ enum device_type_e
         SWITCH = 0x01,
     BUTTON = 0x02,
     DIMMER = 0x03,
-    SENSOR_GEN = 0x04,
+    LIN_SENSOR = 0x04,
+    EVT_SENSOR = 0x05,
 
     ON_OFF_BULB = 0x41,
     LEVEL_BULB = 0x42,
@@ -37,6 +38,5 @@ enum device_type_e
 };
 
 }
-;
 
 #endif /* DEVICE_ID_H_ */
