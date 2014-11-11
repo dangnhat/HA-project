@@ -23,7 +23,8 @@ const char default_drive_path[] = "0:/";
 FATFS fatfs;
 
 /*------------------- Functions ----------------------------------------------*/
-void ha_system_init(void) {
+void ha_system_init(void)
+{
     FRESULT fres;
 
     /* Init MB1_system */
@@ -49,11 +50,9 @@ void ha_system_init(void) {
 
 #ifdef HA_NODE
     /* Node's specific initializations */
-    /* Button & switch callback function */
-    MB1_ISRs.subISR_assign(timer_1ms, &btn_sw_callback_timer_isr);
+    ha_node_init();
 
-    /* Dimmer callback function */
-    MB1_ISRs.subISR_assign(timer_1ms, &dimmer_callback_timer_isr);
+    HA_NOTIFY("HA node initialized\n");
 #endif
 
 #ifdef HA_CC

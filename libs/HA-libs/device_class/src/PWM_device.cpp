@@ -61,7 +61,7 @@ void pwm_dev_class::pwm_dev_timer_frequency_setup(uint32_t freq_in_hz)
 {
     uint16_t prescaler;
 
-    prescaler = sys_core_clock / freq_in_hz;
+    prescaler = sys_core_clock / freq_in_hz - 1;
     pwm_prescaler_setup(prescaler);
 }
 

@@ -11,19 +11,18 @@ using namespace btn_sw_ns;
 
 /* configurable variables */
 const static uint8_t max_btn_sw = 16;
-const static uint8_t btn_sw_active_state = 0;
-const static uint8_t btn_sw_sampling_time_cycle = 10; //sampling every 10ms (tim6_period = 1ms)
-const static uint16_t btn_hold_time = 100;
+const static uint8_t btn_sw_active_state = 0; //active low-level
+const static uint8_t timer_period = 1; //ms
+const static uint8_t btn_sw_sampling_time_cycle = 10 / timer_period; //sampling every 10ms (tim6_period = 1ms)
+const static uint16_t btn_hold_time = 1 * 1000 / btn_sw_sampling_time_cycle; //btn is on hold after holding 1s.
 
-/* button&switch table and pid table */
-static button_switch_instance* btn_sw_table[max_btn_sw];
-#if SND_MSG
-static kernel_pid_t pid_table[max_btn_sw];
-#endif
-
+static button_switch_instance* btn_sw_table[max_btn_sw]; //button&switch table
 static uint8_t time_cycle_count = 0;
 static bool table_init = false;
 
+/**
+ * @brief Initialize device table.
+ */
 static void btn_sw_table_init(void);
 
 button_switch_instance::button_switch_instance(btn_or_sw_t type) :
@@ -45,6 +44,15 @@ button_switch_instance::button_switch_instance(btn_or_sw_t type) :
         this->current_status = sw_off;
         this->old_status = sw_off;
     }
+
+    if (!table_init) {
+        table_init = true;
+        btn_sw_table_init();
+    }
+
+#if SND_MSG
+    this->thread_pid = thread_getpid();
+#endif //SND_MSG
 }
 
 button_switch_instance::~button_switch_instance(void)
@@ -57,10 +65,7 @@ void button_switch_instance::device_configure(
 {
     gpio_dev_configure(gpio_config_params->device_port,
             gpio_config_params->device_pin);
-    if(!table_init) {
-        table_init = true;
-        btn_sw_table_init();
-    }
+
     this->assign_btn_sw();
 }
 
@@ -159,9 +164,6 @@ void button_switch_instance::assign_btn_sw(void)
     for (uint8_t i = 0; i < max_btn_sw; i++) {
         if (btn_sw_table[i] == NULL) {
             btn_sw_table[i] = this;
-#if SND_MSG
-            pid_table[i] = thread_getpid();
-#endif
             return;
         }
     }
@@ -172,9 +174,6 @@ void button_switch_instance::remove_btn_sw(void)
     for (uint8_t i = 0; i < max_btn_sw; i++) {
         if (btn_sw_table[i] == this) {
             btn_sw_table[i] = NULL;
-#if SND_MSG
-            pid_table[i] = KERNEL_PID_UNDEF; //redundant
-#endif
             return;
         }
     }
@@ -189,9 +188,10 @@ static void btn_sw_table_init(void)
 
 void btn_sw_callback_timer_isr(void)
 {
-    time_cycle_count = (time_cycle_count + 1) % btn_sw_sampling_time_cycle;
+    time_cycle_count = time_cycle_count + 1;
 
-    if (time_cycle_count == (btn_sw_sampling_time_cycle - 1)) {
+    if (time_cycle_count == btn_sw_sampling_time_cycle) {
+        time_cycle_count = 0;
         for (uint8_t i = 0; i < max_btn_sw; i++) {
             if (btn_sw_table[i] != NULL) {
                 btn_sw_table[i]->btn_sw_processing();
@@ -201,10 +201,21 @@ void btn_sw_callback_timer_isr(void)
                     msg.type = BTN_SW_MSG;
                     msg.content.value =
                             (uint32_t) btn_sw_table[i]->get_status();
-                    msg_send(&msg, pid_table[i], false);
+                    kernel_pid_t pid = btn_sw_table[i]->get_pid();
+                    if (pid == KERNEL_PID_UNDEF) {
+                        return;
+                    }
+                    msg_send(&msg, pid, false);
                 }
-#endif
+#endif //SND_MSG
             }
         } //end for()
     } //end if()
 }
+
+#if SND_MSG
+kernel_pid_t button_switch_instance::get_pid(void)
+{
+    return this->thread_pid;
+}
+#endif //SND_MSG

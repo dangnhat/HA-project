@@ -32,7 +32,7 @@
 #include "gff_mesg_id.h"
 
 #ifdef HA_NODE              /* Node specific includes */
-#include "ha_device_handler.h"
+#include "ha_node.h"
 #endif
 
 #ifdef HA_CC                /* CC specific includes */
