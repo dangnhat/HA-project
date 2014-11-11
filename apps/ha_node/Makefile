@@ -58,7 +58,7 @@ SRCLOC += ../../libs/HA-libs
 SRCLOC += ../../libs/HA-libs/ha_shell
 SRCLOC += ../../libs/HA-libs/device_class/src
 SRCLOC += ../../libs/HA-libs/device_instance/src
-SRCLOC += ../../libs/HA-libs/ha_device_handler
+SRCLOC += ../../libs/HA-libs/ha_node
 SRCLOC += ../../libs/FATFileSystem/src
 
 INCLOC += ../../libs/MBoard1-libs
@@ -69,14 +69,21 @@ INCLOC += ../../libs/HA-libs
 INCLOC += ../../libs/HA-libs/ha_shell
 INCLOC += ../../libs/HA-libs/device_class/inc
 INCLOC += ../../libs/HA-libs/device_instance/inc
-INCLOC += ../../libs/HA-libs/ha_device_handler
+INCLOC += ../../libs/HA-libs/ha_node
 INCLOC += ../../libs/HA-libs/common_def
 INCLOC += ../../libs/HA-libs/misc
 INCLOC += ../../libs/FATFileSystem/src
 export CPPMIX =1
 
 # RIOT's usemodules (auto_init is one of default modules)
-USEMODULE += vtimer defaulttransceiver
+USEMODULE += uart0
+USEMODULE += shell
+USEMODULE += shell_commands
+USEMODULE += ps
+USEMODULE += vtimer
+USEMODULE += transport_layer
+USEMODULE += rpl
+USEMODULE += defaulttransceiver
 
 # If you want to add some extra flags when compile c++ files, add these flags
 # to CXXEXFLAGS variable
