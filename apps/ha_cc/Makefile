@@ -25,7 +25,7 @@ RIOTBASE ?= $(CURDIR)/../../../RIOT
 CFLAGS += -DDEVELHELP
 
 # Change this to 0 show compiler invocation lines by default:
-QUIET ?= 0
+QUIET ?= 1
 
 # Blacklist boards
 BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 redbee-econotag \
@@ -57,6 +57,8 @@ SRCLOC += ../../libs/misc
 SRCLOC += ../../libs/RIOT-libs/src
 SRCLOC += ../../libs/FATFileSystem/src
 SRCLOC += ../../libs/HA-libs/ha_shell
+SRCLOC += ../../libs/HA-libs/misc
+SRCLOC += ../../libs/HA-libs/ha_sixlowpan
 SRCLOC += sixlowpan
 
 INCLOC += ../../libs/HA-libs
@@ -68,19 +70,19 @@ INCLOC += ../../libs/FATFileSystem/src
 INCLOC += ../../libs/HA-libs/ha_shell
 INCLOC += ../../libs/HA-libs/common_def
 INCLOC += ../../libs/HA-libs/misc
+INCLOC += ../../libs/HA-libs/ha_sixlowpan
 INCLOC += sixlowpan
+INCLOC += .
 
 export CPPMIX =1
 
 # RIOT's usemodules (auto_init is one of default modules)
-USEPKG += libcoap
-
 USEMODULE += uart0
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += vtimer
-USEMODULE += transport_layer
+USEMODULE += udp
 USEMODULE += rpl
 USEMODULE += defaulttransceiver
 
