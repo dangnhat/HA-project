@@ -63,15 +63,12 @@ void ble_evt_connection_disconnected(const struct ble_msg_connection_disconnecte
 	ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
 }
 
-/**
- * Re
- */
 void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
 {
 	printf("-- write remote --\n");
 	msg_t msg_ble_thread;
 	msg_ble_thread.type = ble_message_ns::BLE_CLIENT_WRITE;
-//	msg_ble_thread->content.ptr = msg->value;
+	msg_ble_thread.content.ptr 		= (char*) (&msg->value);
 	msg_send(&msg_ble_thread, ble_thread_ns::ble_thread_pid, false);
 }
 

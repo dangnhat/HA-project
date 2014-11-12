@@ -49,6 +49,7 @@ void *usart_receving(void *arg){
 
 	// Store message received from other threads
 	msg_t msg;
+	uint8array* client_msg;
 
 	while(1){
 		msg_receive(&msg);
@@ -65,20 +66,21 @@ void *usart_receving(void *arg){
 				break;
 			case BLE_USART_REC:
 				puts("usart rec\n");
-//				msg_t usartMSg;
-//				usartMSg.type = BLE_SERVER_RESET;
-//				msg_send_to_self(&usartMSg);
-//				receiveBTMessage();
 				break;
 			case BLE_CLIENT_WRITE:
 				puts("client write\n");
+				client_msg = (uint8array*) msg.content.ptr;
+				printf("len = %d\n", client_msg->len);
+				for(uint8_t i = 0; i < client_msg->len; i++){
+					printf("data = %x\n", client_msg->data[i]);
+				}
 				break;
 
 			default:
 				break;
 		}
 	}
-	printf("wtf\n");
+
 	return NULL;
 }
 
@@ -116,7 +118,7 @@ int main() {
 //
 //		if(newKey == MB1_usrBtn1.pressedKey_get()){
 //			/* Write data to BLE */
-//			ble_cmd_attributes_write(0x000b, 0, 30, msg);
+//			ble_cmd_attributes_write(CHARA_WRITE_ADDR, 0, 30, msg);
 //		}
 
 	}

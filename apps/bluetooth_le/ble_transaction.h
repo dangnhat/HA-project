@@ -20,6 +20,7 @@ extern "C" {
 
 #define MAX_BUF_SIZE		512
 #define MAX_MSGBUF_SIZE		256
+#define ATT_WRITE_ADDR    	0x0B
 
 extern uint8_t rxBuf[MAX_BUF_SIZE];
 extern uint8_t idxBuf;
