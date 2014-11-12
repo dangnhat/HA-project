@@ -12,11 +12,11 @@
 #include "MB1_System.h"
 #include "apitypes.h"
 #include "cmd_def.h"
+#include "ble_message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 #define MAX_BUF_SIZE		512
 #define MAX_MSGBUF_SIZE		256
@@ -24,7 +24,10 @@ extern "C" {
 extern uint8_t rxBuf[MAX_BUF_SIZE];
 extern uint8_t idxBuf;
 extern uint8_t attBuf[MAX_MSGBUF_SIZE];
-extern int16_t usart_rec_pid;
+
+namespace ble_thread_ns{
+extern int16_t ble_thread_pid;
+}
 
 struct ble_serv_stt_s{
 	uint8_t	ready;

@@ -10,12 +10,18 @@
 #include "ble_transaction.h"
 #include <stdio.h>
 
+extern "C"{
+#include "msg.h"
+#include "thread.h"
+}
+
 void ble_evt_system_boot(const struct ble_msg_system_boot_evt_t *msg)
 {
-	printf("--- system boot event ---\n");
-	BTFlags.ready = 0x01;
-	ble_cmd_sm_set_bondable_mode(1);
-//	ble_cmd_system_hello();
+	printf("--- system boot event ---%x\n", thread_getpid());
+
+	msg_t bleThreadMsg;
+	bleThreadMsg.type =  ble_message_ns::BLE_SERVER_RESET;
+	msg_send(&bleThreadMsg, ble_thread_ns::ble_thread_pid, false);
 }
 
 void ble_rsp_system_reset(const void *nul)
@@ -63,13 +69,10 @@ void ble_evt_connection_disconnected(const struct ble_msg_connection_disconnecte
 void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
 {
 	printf("-- write remote --\n");
-	for(uint8_t i = 0; i < msg->value.len; i++){
-		attBuf[msg->offset+i]	=	msg->value.data[i];
-	}
-	if(attBuf[0] == (msg->offset + msg->value.len) ){
-		printf("%d\n",attBuf[0]);
-	}
-
+	msg_t msg_ble_thread;
+	msg_ble_thread.type = ble_message_ns::BLE_CLIENT_WRITE;
+//	msg_ble_thread->content.ptr = msg->value;
+	msg_send(&msg_ble_thread, ble_thread_ns::ble_thread_pid, false);
 }
 
 void ble_rsp_attributes_write(const struct ble_msg_attributes_write_rsp_t *msg)

@@ -13,6 +13,10 @@ extern "C"{
 #include "thread.h"
 }
 
+namespace ble_thread_ns{
+int16_t ble_thread_pid;
+}
+
 void USART3_RxInit()
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -34,21 +38,24 @@ void ble_init()
 	MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_USART3, usart3_receive);
 
 	//reset device
-	ble_cmd_system_reset(0);
-	ble_cmd_sm_set_bondable_mode(1);
+//	ble_cmd_sm_set_bondable_mode(1);
 }
 
 void usart3_receive()
 {
-//	msg_t 					*usartMsg;
+//	msg_t 					usartMsg;
+//	usartMsg.type			=  ble_message::BLE_USART_REC;
+
 	USART_ClearFlag(USART3, USART_FLAG_RXNE);
 //	printf("%02x \n", MB1_USART3.Get_ISR()); //DEBUG
+
 	rxBuf[idxBuf++] = MB1_USART3.Get_ISR();
 
 
 	if((idxBuf > 1) && (idxBuf == (rxBuf[1]+4))){	//END of packet
 		idxBuf = 0;
 		receiveBTMessage();							// Parse data from packet
+//		msg_send_int(&usartMsg, ble_thread_pid);
 	}
 }
 
