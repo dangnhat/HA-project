@@ -137,3 +137,8 @@ int32_t cir_queue::get_data(uint8_t* buf, int32_t size)
     return retsize;
 }
 
+int32_t cir_queue::get_size(void)
+{
+    return (tail==-1) ? 0 : (head >= tail ? head - tail : head + cir_queue_size - tail);
+}
+
