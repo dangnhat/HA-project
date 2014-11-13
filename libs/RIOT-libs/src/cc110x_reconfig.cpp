@@ -22,7 +22,8 @@ extern "C" {
 
 #define PA_INDEX_DEFAULT	(4)
 
-uint8_t pa_table_433[] = { 0x12,         ///< -30 dBm
+uint8_t pa_table_390[] = {
+        0x12,         ///< -30 dBm
         0x0E,         ///< -20 dBm
         0x1D,         ///< -15 dBm
         0x34,         ///< -10 dBm
@@ -32,7 +33,8 @@ uint8_t pa_table_433[] = { 0x12,         ///< -30 dBm
         0xC0          ///< +10 dBm
         };
 
-char conf_table_433[] = { 0x06, // IOCFG2
+char conf_table_390[] = {
+        0x06, // IOCFG2
         0x2E, // IOCFG1
         0x0E, // IOCFG0
         0x0F, // FIFOTHR
@@ -45,9 +47,12 @@ char conf_table_433[] = { 0x06, // IOCFG2
         CC1100_DEFAULT_CHANNR * 10, // CHANNR
         0x0B, // FSCTRL1
         0x00, // FSCTRL0
-        0x10, // FREQ2
-        0xB1, // FREQ1
-        0x3B, // FREQ0
+//        0x10, // FREQ2 /* Old 433 Mhz value */
+//        0xB1, // FREQ1
+//        0x3B, // FREQ0
+        0x0F, // FREQ2 /* 390 Mhz value */
+        0x00, // FREQ1
+        0x00, // FREQ0
         0x2D, // MDMCFG4
         0xF8, // MDMCFG3
         0x73, // MDMCFG2
@@ -89,6 +94,12 @@ void cc110x_set_up_freq_carrier(uint8_t freq2, uint8_t freq1, uint8_t freq0)
 
 void cc110x_reconfig(void)
 {
-    cc110x_writeburst_reg(0x00, conf_table_433, CC1100_CONF_SIZE);
-    cc110x_set_up_patable(pa_table_433[PA_INDEX_DEFAULT]);
+    cc110x_writeburst_reg(0x00, conf_table_390, CC1100_CONF_SIZE);
+    cc110x_set_up_patable(pa_table_390[PA_INDEX_DEFAULT]);
+}
+
+void cc110x_reconfig390(void)
+{
+    cc110x_set_up_freq_carrier(0x0F, 0x00, 0x00);
+    cc110x_set_up_patable(pa_table_390[PA_INDEX_DEFAULT]);
 }

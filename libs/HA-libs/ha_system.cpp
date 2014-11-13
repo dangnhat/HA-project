@@ -10,6 +10,7 @@
 
 #include "cc110x_reconfig.h" /* to re-init CC1101 module to use with 433MHz */
 #include "diskio.h" /* for FAT FS initialization */
+#include "ha_sixlowpan.h"
 
 /******************** Config interface ****************************************/
 #define HA_NOTIFICATION (1)
@@ -22,6 +23,9 @@ const ISRMgr_ns::ISR_t timer_1ms = ISRMgr_ns::ISRMgr_TIM6;
 const char default_drive_path[] = "0:/";
 FATFS fatfs;
 
+/* 6LoWPAN restart */
+Button* stop_resart_slp_btn_p = &MB1_usrBtn1;
+
 /*------------------- Functions ----------------------------------------------*/
 void ha_system_init(void)
 {
@@ -32,8 +36,8 @@ void ha_system_init(void)
     HA_NOTIFY("MB1_system initialized.\n");
 
     /* Reinit CC1101 module. TODO: need to check channel, freq again */
-//    cc110x_reconfig();
-//    HA_NOTIFY("CC1101 configured to 433MHz.\n");
+    cc110x_reconfig();
+    HA_NOTIFY("CC1101 configured to 390MHz, 0dBm.\n");
 
     /* FAT file system module */
     MB1_ISRs.subISR_assign(timer_1ms, disk_timerproc_1ms);
@@ -65,4 +69,7 @@ void ha_system_init(void)
     /* Create shell thread */
     ha_shell_create();
     HA_NOTIFY("Home Automation shell started.\n");
+
+    /* Prompt and restart 6LoWPAN thread */
+    ha_slp_start_on_reset(stop_resart_slp_btn_p, "UsrBtn1");
 }
