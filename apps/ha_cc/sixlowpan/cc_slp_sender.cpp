@@ -191,7 +191,7 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
         break;
     default:
         HA_DEBUG("send_data_gff: unknow GFF command id %x\n", gff_cmd_id);
-        break;
+        return -1;
     }
 
     /* insert node id */

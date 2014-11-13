@@ -129,7 +129,7 @@ static void start_receiver_loop(void)
             for (count = 0; count < recsize; count++) {
                 HA_DEBUG("%x ", payload_buffer[count]);
             }
-            printf("\n");
+            HA_DEBUG("\n");
         }
     }
 
