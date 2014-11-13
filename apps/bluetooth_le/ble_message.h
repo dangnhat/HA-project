@@ -8,6 +8,8 @@
 #ifndef BLE_MESSAGE_H_
 #define BLE_MESSAGE_H_
 
+#include "MB1_System.h"
+
 namespace ble_message_ns{
 	enum:uint16_t{
 		BLE_MESSAGE_GET		=	0x0000,
@@ -43,7 +45,7 @@ typedef struct ble_msg_t{
 	uint8_t cmdIDh;
 	uint8_t cmdIDl;
 	uint8_t data[];
-}ble_msg;
+}bleMsg;
 
 
 typedef struct devInfo_t{
@@ -63,24 +65,46 @@ devInfo* 	init_ble_database();
  *  Create Bluetooth Message
  */
 
-ble_msg  create_ble_msg(){
+bleMsg create_ble_msg();
 
-}
 /**
  * Receive message from Mobile
  */
-ble_msg		receive_ble_msg(uint8_t dataBuf[]);
+bleMsg	arrToBTMsg(uint8_t dataBuf[]);
 
 /**
  * Send message to Mobile
  */
-void        send_ble_msg(ble_msg msg);
+void        send_ble_msg(bleMsg msg);
 
 /**
  *
  */
-void 		parse_ble_msg(uint8_t dataBuf[]);
+void  parse_ble_msg(uint8_t dataBuf[]);
 
+/**
+ *  Convert Bluetooth message to Array of bytes
+ */
+uint8_t* bleMsgToArray(bleMsg BTMsg);
 
+/**
+ * Convert list of device to byte array
+ */
+uint8_t*    getMsgData(devInfo devList[]);
+
+/**
+ * Convert 32bit to array 8bit
+ */
+uint8_t*    intToUint8(int input);
+
+/**
+ * Convert 16bit to array 8bit
+ */
+uint8_t*  	convert16bitTo8bit(int16_t input);
+
+/**
+ * Create device ID
+ */
+uint32_t   buildDevID(uint8_t zoneID, uint8_t nodeID, uint8_t enpID, uint8_t devID);
 
 #endif /* BLE_MESSAGE_H_ */

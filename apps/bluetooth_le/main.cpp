@@ -35,6 +35,7 @@ uint8_t 			idxBuf					= 0;
 ble_serv_stt_s 		BTFlags;
 uint8_t				attBuf[MAX_MSGBUF_SIZE];
 uint8_t				msg[]	= "Trinh Van Anh 1992 cocacola";
+
 /*******************************************************************************
  * Private Functions
  *
@@ -65,10 +66,10 @@ void *usart_receving(void *arg){
 										gap_undirected_connectable);
 				break;
 			case BLE_USART_REC:
-				puts("usart rec\n");
+				puts("usart rec");
 				break;
 			case BLE_CLIENT_WRITE:
-				puts("client write\n");
+				puts("client write");
 				client_msg = (uint8array*) msg.content.ptr;
 				printf("len = %d\n", client_msg->len);
 				for(uint8_t i = 0; i < client_msg->len; i++){
@@ -100,6 +101,9 @@ int main() {
 	/* Initial BLE interface */
 	ble_init();
 
+	devInfo devList[] = init_ble_database();
+	uint8_t dataBuf[] = getMsgData(devList);
+
 	ble_thread_ns::ble_thread_pid = thread_create(ble_thread_stack,
 									ble_thread_stack_size,
 									PRIORITY_MAIN-1,
@@ -110,16 +114,19 @@ int main() {
 	printf("%x\n", ble_thread_ns::ble_thread_pid);
 
 	while(1){
-//
+
 //		if(newKey == MB1_usrBtn0.pressedKey_get()){
 //			/* Set BLE device discoverable */
 //			ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
 //		}
-//
-//		if(newKey == MB1_usrBtn1.pressedKey_get()){
-//			/* Write data to BLE */
+
+		if(newKey == MB1_usrBtn1.pressedKey_get()){
+			/* Write data to BLE */
 //			ble_cmd_attributes_write(CHARA_WRITE_ADDR, 0, 30, msg);
-//		}
+			for(uint8_t i = 0; i < sizeof(dataBuf); i++){
+				printf("data[%x] = %b\n", i, dataBuf[i]);
+			}
+		}
 
 	}
 }

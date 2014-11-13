@@ -9,9 +9,6 @@
 #define DEVICE_INFO_H_
 
 
-#define	DEV_BuildDevID(zoneID, nodeID, enpID, devID)  ( (uint32_t)(devID) | \
-		(uint32_t)(enpID<<8) | (uint32_t)(nodeID<<16) | (uint32_t)(zoneID<<24) )
-
 namespace dev_id_ns{
 	enum:uint8_t{
 		SWITCH			=	0x01,
