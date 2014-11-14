@@ -40,6 +40,18 @@ const shell_command_t shell_commands[] = {
     /* sixlowpan cmds */
     {"6lowpan", "6LoWPAN network stack configurations", sixlowpan_config},
 
+#ifdef HA_NODE
+    /* device configuration cmds */
+    {"btn", "Configure button device", button_config},
+    {"sw", "Configure switch device", switch_config},
+    {"bulb", "Configure on-off bulb device", on_off_bulb_config},
+    {"senevt", "Configure sensor event device", sensor_event_config},
+    {"dimmer", "Configure dimmer device", dimmer_config},
+    {"lvbulb", "Configure level bulb device", level_bulb_config},
+    {"servo", "Configure servo device", servo_config},
+    {"rgb", "Configure RGB-led device", rgb_led_config},
+    {"senlnr", "Configure ADC linear sensor device", adc_sensor_config},
+#endif
     {NULL, NULL, NULL}
 };
 

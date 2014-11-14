@@ -9,9 +9,7 @@
 #define __HA_NODE_H
 
 #include "ha_device_handler.h"
-
-const uint8_t max_end_point = 1;
-extern kernel_pid_t end_point_pid[max_end_point];
+#include "ha_node_glb.h"
 
 void ha_node_init(void);
 

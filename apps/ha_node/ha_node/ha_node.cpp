@@ -23,7 +23,7 @@ const uint8_t timer_period = 1; //ms
 const uint32_t send_alive_time_period = 60 * 1000 / timer_period; //send alive every 60s.
 
 uint32_t time_cycle_count = 0;
-kernel_pid_t end_point_pid[max_end_point];
+kernel_pid_t ha_node_ns::end_point_pid[max_end_point];
 
 static void endpoint_pid_table_init(void);
 static void send_alive_timer_isr(void);
@@ -47,8 +47,8 @@ void ha_node_init(void)
 
 static void endpoint_pid_table_init(void)
 {
-    for (uint8_t i = 0; i < max_end_point; i++) {
-        end_point_pid[i] = KERNEL_PID_UNDEF;
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+        ha_node_ns::end_point_pid[i] = KERNEL_PID_UNDEF;
     }
 }
 
@@ -57,11 +57,11 @@ static void send_alive_timer_isr(void)
     time_cycle_count = time_cycle_count + 1;
     if (time_cycle_count == send_alive_time_period) {
         time_cycle_count = 0;
-        for (uint8_t i = 0; i < max_end_point; i++) {
-            if (end_point_pid[i] != KERNEL_PID_UNDEF) {
+        for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+            if (ha_node_ns::end_point_pid[i] != KERNEL_PID_UNDEF) {
                 msg_t msg;
                 msg.type = ha_node_ns::SEND_ALIVE;
-                msg_send(&msg, end_point_pid[i], false);
+                msg_send(&msg, ha_node_ns::end_point_pid[i], false);
             }
         }
     }
