@@ -40,7 +40,7 @@ const char rm_usage[] = "Usage:\n"
         "rm -r [sub-folder], remove sub-folder with all of its contents.\n"
         "rm -h, get this help.\n"
         "Note: total path name shouldn't be > ";
-const uint16_t RM_MAX_PATH_LEN = 256;
+const uint16_t RM_MAX_PATH_LEN = 64;
 
 const char mkdir_usage[] = "Usage:\n"
         "mkdir [sub-folder], make directories.\n"
@@ -54,7 +54,7 @@ const char pwd_usage[] = "Usage:\n"
         "pwd, print name of current/working directory.\n"
         "pwd -h, get this help.\n"
         "Note: total path name is limited to ";
-const uint16_t PWD_MAX_PATH_LEN = 256;
+const uint16_t PWD_MAX_PATH_LEN = 64;
 
 /*------------------- Global var for FAT FS ----------------------------------*/
 static FATFS fatfs;
@@ -187,7 +187,7 @@ void cat(int argc, char** argv)
 {
     FRESULT fres;
     FIL file;
-    char line[512];
+    char line[64];
     char* path_p = NULL;
     int count;
 

@@ -113,9 +113,12 @@ int16_t ha_slp_init(uint8_t interface, transceiver_type_t transceiver,
     uint16_t ret_hwaddr = 0;
     uint8_t ret_valu8;
     ipv6_addr_t ipaddr;
-    char addr_str[IPV6_MAX_ADDR_STR_LEN];
     transceiver_command_t tcmd;
     msg_t m;
+
+#if (HA_DEBUG_EN)
+    char addr_str[IPV6_MAX_ADDR_STR_LEN];
+#endif
 
     /* Use short addresses */
     net_if_set_src_address_mode(interface, NET_IF_TRANS_ADDR_M_SHORT);

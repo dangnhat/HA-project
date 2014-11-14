@@ -27,7 +27,7 @@ extern "C" {
 /* Constants and definitions */
 namespace ha_ns {
 
-const uint16_t sixlowpan_pattern_maxsize = 128;
+const uint16_t sixlowpan_pattern_maxsize = 90;
 const char sixlowpan_config_file[] = "slp_conf";
 const char sixlowpan_config_pattern[sixlowpan_pattern_maxsize] =
         "6LoWPAN\n"

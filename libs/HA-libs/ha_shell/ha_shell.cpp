@@ -67,24 +67,16 @@ using namespace ha_ns;
 /*------------------- Static functions prototypes ----------------------------*/
 static int shell_readc(void);
 static void shell_putc(int c);
-static void* shell_irun(void *);
 
 /*------------------- Functions ----------------------------------------------*/
 void ha_shell_create(void)
 {
     shell_pid = thread_create(shell_stack, shell_stack_size, shell_prio, CREATE_STACKTEST,
-            shell_irun, NULL, "home_automation_shell");
+            ha_shell_irun, NULL, "home_automation_shell");
 }
 
-/*------------------- Static functions ---------------------------------------*/
-/**
- * @brief   Init and run the shell.
- *
- * @details This shell will be based on RIOT's shell, posix_read on uart0
- * (STM32's USART1).
- * This function will NEVER return.
- */
-static void* shell_irun(void *)
+/*----------------------------------------------------------------------------*/
+void* ha_shell_irun(void *arg)
 {
     shell_t shell;
 
@@ -93,7 +85,7 @@ static void* shell_irun(void *)
     shell_run(&shell);
 }
 
-/*----------------------------------------------------------------------------*/
+/*------------------- Static functions ---------------------------------------*/
 static int shell_readc(void)
 {
     char c = 0;

@@ -42,4 +42,13 @@ extern kernel_pid_t shell_pid;
  */
 void ha_shell_create(void);
 
+/**
+ * @brief   Init and run the shell.
+ *
+ * @details This shell will be based on RIOT's shell, posix_read on uart0
+ * (STM32's USART1).
+ * This function will NEVER return.
+ */
+void* ha_shell_irun(void *arg);
+
 #endif /* SHELL_CMDS_H_ */

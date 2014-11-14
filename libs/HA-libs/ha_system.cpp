@@ -67,10 +67,6 @@ void ha_system_init(void)
     /* CC's specific initializations */
 #endif
 
-    /* Create shell thread */
-    ha_shell_create();
-    HA_NOTIFY("Home Automation shell started.\n");
-
     /* Prompt and restart 6LoWPAN thread */
     ha_slp_start_on_reset(stop_resart_slp_btn_p, "UsrBtn1");
 }
