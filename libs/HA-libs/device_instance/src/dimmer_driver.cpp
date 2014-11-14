@@ -6,19 +6,21 @@
  * @brief This is source file for dimmer device instance for HA system.
  */
 #include "dimmer_driver.h"
+#if AUTO_UPDATE
+#include "ha_node_glb.h"
+#endif
 
 using namespace dimmer_ns;
 
 #if AUTO_UPDATE
 /* configurable variables */
-const static uint8_t max_dimmer_dev = 16; //max num of dimmers = 16
 const static uint8_t delta_threshold = 2; //delta = 2%;
 const static uint8_t timer_period = 1; //ms
 const static uint16_t dimmer_sampling_time_cycle = 100 / timer_period; //sampling every 100ms (tim6_period = 1ms)
 
 /* internal variables */
 static bool table_init = false;
-static dimmer_instance* dimmer_table[max_dimmer_dev];
+static dimmer_instance* dimmer_table[ha_node_ns::max_end_point];
 static uint16_t time_cycle_count = 0;
 
 /* internal function */
@@ -107,14 +109,14 @@ bool dimmer_instance::is_over_delta_thres(void)
 
 static void dimmer_table_init(void)
 {
-    for (uint8_t i = 0; i < max_dimmer_dev; i++) {
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         dimmer_table[i] = NULL;
     }
 }
 
 void dimmer_instance::assign_dimmer(void)
 {
-    for (uint8_t i = 0; i < max_dimmer_dev; i++) {
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         if (dimmer_table[i] == NULL) {
             dimmer_table[i] = this;
             return;
@@ -124,7 +126,7 @@ void dimmer_instance::assign_dimmer(void)
 
 void dimmer_instance::remove_dimmer(void)
 {
-    for (uint8_t i = 0; i < max_dimmer_dev; i++) {
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         if (dimmer_table[i] == this) {
             dimmer_table[i] = NULL;
             return;
@@ -138,7 +140,7 @@ void dimmer_callback_timer_isr(void)
 
     if (time_cycle_count == dimmer_sampling_time_cycle) {
         time_cycle_count = 0;
-        for (uint8_t i = 0; i < max_dimmer_dev; i++) {
+        for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
             if (dimmer_table[i] != NULL) {
                 uint8_t new_value = dimmer_table[i]->dimmer_processing();
 #if SND_MSG

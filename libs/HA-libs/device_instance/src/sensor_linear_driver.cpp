@@ -6,19 +6,21 @@
  * @brief This is source file for ADC-sensors instance having linear graph in HA system.
  */
 #include "sensor_linear_driver.h"
+#if AUTO_UPDATE
+#include "ha_node_glb.h"
+#endif
 
 #if AUTO_UPDATE
-const static uint8_t max_sensor_linear = 16;
 const static uint8_t timer_period = 1; //1ms
 const static uint16_t sampling_time_cycle = 100 / timer_period; //sampling every 100ms (tim6_period = 1ms)
 
 /* internal variables */
 #if SND_MSG
-const static uint32_t send_msg_time_period = 30 * 1000 / sampling_time_cycle; //send msg every 30s.
-static uint16_t send_msg_time_count = 0;
+const uint32_t send_msg_time_period = 30 * 1000 / sampling_time_cycle; //send msg every 30s.
+uint16_t send_msg_time_count = 0;
 #endif //SND_MSG
+sensor_linear_instance* sensor_linear_table[ha_node_ns::max_end_point];
 static bool table_init = false;
-static sensor_linear_instance* sensor_linear_table[max_sensor_linear];
 static uint16_t time_cycle_count = 0;
 
 /* internal function */
@@ -151,7 +153,7 @@ bool sensor_linear_instance::is_underlow_or_overflow(void)
 
 void sensor_linear_instance::assign_sensor(void)
 {
-    for (uint8_t i = 0; i < max_sensor_linear; i++) {
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         if (sensor_linear_table[i] == NULL) {
             sensor_linear_table[i] = this;
             return;
@@ -161,7 +163,7 @@ void sensor_linear_instance::assign_sensor(void)
 
 void sensor_linear_instance::remove_sensor(void)
 {
-    for (uint8_t i = 0; i < max_sensor_linear; i++) {
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         if (sensor_linear_table[i] == this) {
             sensor_linear_table[i] = NULL;
             return;
@@ -178,7 +180,7 @@ void sensor_linear_callback_timer_isr(void)
 #if SND_MSG
         send_msg_time_count = (send_msg_time_count + 1) % send_msg_time_period;
 #endif //SND_MSG
-        for (uint8_t i = 0; i < max_sensor_linear; i++) {
+        for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
             if (sensor_linear_table[i] != NULL) {
                 uint16_t new_value =
                         sensor_linear_table[i]->sensor_linear_processing();
@@ -204,7 +206,7 @@ void sensor_linear_callback_timer_isr(void)
 
 static void sensor_linear_table_init(void)
 {
-    for (uint8_t i = 0; i < max_sensor_linear; i++) {
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         sensor_linear_table[i] = NULL;
     }
 }
