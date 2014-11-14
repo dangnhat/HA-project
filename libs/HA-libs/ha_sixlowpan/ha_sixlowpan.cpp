@@ -18,8 +18,8 @@ extern "C" {
 #include "ha_sixlowpan.h"
 #include "ff.h"
 
-#define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_NOTIFICATION (0)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 namespace ha_ns {
@@ -155,7 +155,7 @@ int16_t ha_slp_init(uint8_t interface, transceiver_type_t transceiver,
         HA_DEBUG("ha_slp_init: initialized as host (do nothing for now)\n");
         break;
     default:
-        HA_DEBUG("ha_slp_init: unknow netdev_type %c(%d)\n", netdev_type, netdev_type);
+        HA_DEBUG("ha_slp_init: unknown netdev_type %c(%d)\n", netdev_type, netdev_type);
         return -1;
     }
 

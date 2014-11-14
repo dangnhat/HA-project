@@ -52,8 +52,8 @@ void ha_system_init(void)
     }
 
     /* Start CC's 6LoWPAN threads */
-    slp_sender_start();
-    slp_receiver_start();
+//    slp_sender_start();
+//    slp_receiver_start();
 
 
 #ifdef HA_NODE
@@ -72,5 +72,5 @@ void ha_system_init(void)
     HA_NOTIFY("Home Automation shell started.\n");
 
     /* Prompt and restart 6LoWPAN thread */
-    ha_slp_start_on_reset(stop_resart_slp_btn_p, "UsrBtn1");
+//    ha_slp_start_on_reset(stop_resart_slp_btn_p, "UsrBtn1");
 }
