@@ -65,7 +65,6 @@ void ble_evt_connection_disconnected(const struct ble_msg_connection_disconnecte
 
 void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
 {
-	printf("-- write remote --\n");
 	msg_t msg_ble_thread;
 	msg_ble_thread.type = ble_message_ns::BLE_CLIENT_WRITE;
 	msg_ble_thread.content.ptr 		= (char*) (&msg->value);

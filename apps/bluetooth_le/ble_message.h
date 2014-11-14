@@ -59,7 +59,7 @@ typedef struct devInfo_t{
 /**
  * Initial list of devices
  */
-devInfo* 	init_ble_database();
+void 	init_ble_database(devInfo* devList, uint8_t len);
 
 /**
  *  Create Bluetooth Message
@@ -85,22 +85,22 @@ void  parse_ble_msg(uint8_t dataBuf[]);
 /**
  *  Convert Bluetooth message to Array of bytes
  */
-uint8_t* bleMsgToArray(bleMsg BTMsg);
+void bleMsgToArray(bleMsg BTMsg, uint8_t* buffer, uint8_t bufLen);
 
 /**
  * Convert list of device to byte array
  */
-uint8_t*    getMsgData(devInfo devList[]);
+void getMsgData(devInfo devList[], uint8_t* buffer, uint8_t bufLen);
 
 /**
  * Convert 32bit to array 8bit
  */
-uint8_t*    intToUint8(int input);
+void   intToUint8(int inNum, uint8_t* buffer);
 
 /**
  * Convert 16bit to array 8bit
  */
-uint8_t*  	convert16bitTo8bit(int16_t input);
+void   convert16bitTo8bit(int16_t inNum, uint8_t* buffer);
 
 /**
  * Create device ID
