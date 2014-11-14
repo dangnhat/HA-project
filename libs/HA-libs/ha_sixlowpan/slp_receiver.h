@@ -25,6 +25,8 @@ void slp_receiver_start(void);
  *          and only SET_DEV_VAL message is available.
  *          Thus, SET_DEV_VAL will be sent directly to suitable thread of an end point with
  *          value in RIOT's IPC message.
+ *
+ * @param[in]   GFF_buffer, buffer holding GFF frame.
  */
 void slp_received_GFF_handler(void *GFF_buffer);
 
