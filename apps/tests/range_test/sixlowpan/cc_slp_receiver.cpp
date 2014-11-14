@@ -18,6 +18,8 @@ extern "C" {
 #include "cc_msg_id.h"
 #include "cc_slp_receiver.h"
 
+#include "MB1_System.h" /* for range test */
+
 /*--------------------- Global variable --------------------------------------*/
 namespace ha_cc_ns {
 kernel_pid_t slp_receiver_pid;
@@ -129,7 +131,9 @@ static void start_receiver_loop(void)
             for (count = 0; count < recsize; count++) {
                 HA_DEBUG("%x ", payload_buffer[count]);
             }
-            printf("\n");
+            HA_DEBUG("\n");
+            /* for range test */
+            MB1_Led_green.toggle();
         }
     }
 

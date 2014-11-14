@@ -151,7 +151,7 @@ void sixlowpan_config(int argc, char** argv)
 
             case 's':
                 mesg.type = ha_ns::SIXLOWPAN_RESTART;
-                msg_send(&mesg, *ha_ns::sixlowpan_sender_pid, false);
+                msg_send(&mesg, ha_ns::sixlowpan_sender_pid, false);
                 return;
 
             case 'x':
@@ -168,11 +168,12 @@ void sixlowpan_config(int argc, char** argv)
                 uint322buf(sto_device_id, &set_dev_val_buffer[3]);
                 uint162buf(sto_value, &set_dev_val_buffer[7]);
 
-                ha_ns::slp_sender_gff_queue_p->add_data(set_dev_val_buffer, 3 + set_dev_val_buffer[0]);
+                ha_ns::sixlowpan_sender_gff_queue.add_data(set_dev_val_buffer,
+                        3 + set_dev_val_buffer[0]);
 
                 mesg.type = ha_ns::GFF_PENDING;
-                mesg.content.ptr = (char *) ha_ns::slp_sender_gff_queue_p;
-                msg_send(&mesg, *ha_ns::sixlowpan_sender_pid, false);
+                mesg.content.ptr = (char *) &ha_ns::sixlowpan_sender_gff_queue;
+                msg_send(&mesg, ha_ns::sixlowpan_sender_pid, false);
                 return;
 
             case 'h':

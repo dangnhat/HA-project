@@ -87,7 +87,7 @@ public:
      *
      * @return  size
      */
-    int32_t get_size(void) { return (tail==-1) ? 0 : (head-tail); }
+    int32_t get_size(void);
     
     /**
      * @brief   get head of the circular queue.

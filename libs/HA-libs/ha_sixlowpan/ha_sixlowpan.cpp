@@ -11,6 +11,8 @@ extern "C" {
 #include "net_if.h"
 #include "rpl.h"
 #include "socket_base/socket.h"
+#include "vtimer.h"
+#include "msg.h"
 }
 
 #include "ha_sixlowpan.h"
@@ -20,22 +22,7 @@ extern "C" {
 #define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
-#ifdef HA_CC
-#include "cc_slp_sender.h"
-#include "cc_slp_receiver.h"
-#endif
-
 namespace ha_ns {
-/* 6LoWPAN sender and receiver threads */
-#ifdef HA_CC
-kernel_pid_t *sixlowpan_sender_pid = &ha_cc_ns::slp_sender_pid;
-kernel_pid_t *sixlowpan_receiver_pid = &ha_cc_ns::slp_receiver_pid;
-
-cir_queue *slp_sender_gff_queue_p = &ha_cc_ns::slp_sender_gff_queue;
-#else
-kernel_pid_t *sixlowpan_sender_pid = &ha_node_ns::slp_sender_pid;
-#endif
-
 /* Communications global vars */
 ipv6_addr_t sixlowpan_ipaddr;
 uint16_t sixlowpan_node_id = 0;
@@ -207,4 +194,51 @@ int16_t ha_slp_init(uint8_t interface, transceiver_type_t transceiver,
     ha_ns::sixlowpan_netdev_type = netdev_type;
 
     return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+void ha_slp_start_on_reset(Button *btn_p, const char *btn_prompt)
+{
+    uint8_t count;
+    uint16_t prefixes[4];
+    uint16_t node_id;
+    char netdev_type;
+    uint16_t channel;
+    int16_t retval;
+    msg_t mesg;
+
+    /* print config */
+    retval = ha_slp_readconfig(ha_ns::sixlowpan_config_file, ha_ns::sixlowpan_config_pattern,
+                sizeof(ha_ns::sixlowpan_config_pattern),
+                prefixes, node_id, netdev_type, channel);
+    if (retval < 0) {
+        printf("6LoWPAN configurations were not right!\n");
+        return;
+    }
+
+    printf("Configurations:\n");
+    printf(ha_ns::sixlowpan_config_pattern,
+            (uint32_t)prefixes[3], (uint32_t)prefixes[2],
+            (uint32_t)prefixes[1], (uint32_t)prefixes[0],
+            (uint32_t)node_id, netdev_type, (uint32_t)channel);
+
+    /* print prompt */
+    printf("\n");
+    for (count = 5; count > 0; count--) {
+        printf("\r6LoWPAN will be started in %u(s)", count);
+        printf("press %s to stop", btn_prompt);
+        fflush(stdout);
+
+        if (btn_p->pressedKey_get() == Btn_ns::newKey) {
+            printf("\nStopped.\n");
+            return;
+        }
+
+        vtimer_usleep(1000000);
+    }
+    printf("\n");
+
+    /* start 6lowpan stack */
+    mesg.type = ha_ns::SIXLOWPAN_RESTART;
+    msg_send(&mesg, ha_ns::sixlowpan_sender_pid, false);
 }

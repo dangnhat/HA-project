@@ -29,9 +29,15 @@ void cc110x_set_up_patable(uint8_t PA_value);
 void cc110x_set_up_freq_carrier(uint8_t freq2, uint8_t freq1, uint8_t freq0);
 
 /**
- * @brief Re-configure Configuration register for CC110x at 433MHz
+ * @brief Re-configure Configuration register for CC110x at 390MHz
  */
 void cc110x_reconfig(void);
+
+/**
+ * @brief Re-configure Configuration register for CC110x at 390MHz (only affects
+ *  on FREQ2, FREQ1, FREQ0) and PA at 0 dBm.
+ */
+void cc110x_reconfig390(void);
 
 #endif /* __CC110X_RECONFIG_H */
 /** @} */
