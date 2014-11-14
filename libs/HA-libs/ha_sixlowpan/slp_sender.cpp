@@ -1,9 +1,9 @@
 /**
- * @file cc_slp_sender.cpp
+ * @file slp_sender.cpp
  * @author  Pham Huu Dang Nhat  <phamhuudangnhat@gmail.com>.
- * @version 1.0
- * @date 8-Nov-2014
- * @brief This is source file for CC's 6lowpan sender thread.
+ * @version 1.1
+ * @date 14-Nov-2014
+ * @brief This is source file for 6lowpan sender thread.
  */
 
 extern "C" {
@@ -16,18 +16,16 @@ extern "C" {
 #include "ha_gff_misc.h"
 #include "gff_mesg_id.h"
 
-#include "cc_msg_id.h"
-#include "cc_slp_sender.h"
+#include "slp_sender.h"
 
 #include "cir_queue.h"
 #include "ff.h"
 
 /*--------------------- Global variable --------------------------------------*/
-namespace ha_cc_ns {
-kernel_pid_t slp_sender_pid;
-
-cir_queue slp_sender_gff_queue; /* This queue will hold data in GFF format from */
-                                /* controller thread to 6lowpan sender thread */
+namespace ha_ns {
+kernel_pid_t sixlowpan_sender_pid;
+cir_queue sixlowpan_sender_gff_queue; /* This queue will hold data in GFF format from */
+                                        /* controller thread to 6lowpan sender thread */
 }
 
 /*--------------------- Configurations ---------------------------------------*/
@@ -47,16 +45,16 @@ static msg_t slp_sender_msgqueue[slp_sender_msgqueue_size];
 /**
  * @brief   Create and start 6lowpan sender thread.
  */
-void cc_slp_sender_start(void)
+void slp_sender_start(void)
 {
     /* Create 6lp_sender thread */
-    ha_cc_ns::slp_sender_pid = thread_create(slp_sender_stack, slp_sender_stacksize,
-            slp_sender_prio, CREATE_STACKTEST, slp_sender_func, NULL, "CC_6LoWPAN_sender");
-    if (ha_cc_ns::slp_sender_pid > 0) {
-        HA_NOTIFY("CC 6LoWPAN sender thread created.\n");
+    ha_ns::sixlowpan_sender_pid = thread_create(slp_sender_stack, slp_sender_stacksize,
+            slp_sender_prio, CREATE_STACKTEST, slp_sender_func, NULL, "6LoWPAN_sender");
+    if (ha_ns::sixlowpan_sender_pid > 0) {
+        HA_NOTIFY("6LoWPAN sender thread created.\n");
     }
     else {
-        HA_NOTIFY("Can't create CC 6LoWPAN sender thread.\n");
+        HA_NOTIFY("Can't create 6LoWPAN sender thread.\n");
     }
 }
 
@@ -85,7 +83,7 @@ static void *slp_sender_func(void *arg)
             HA_DEBUG("slp_sender: Received SIXLOWPAN_RESTART.\n");
             restart_sixlowpan();
             /* restart receiver */
-            msg_send(&mesg, *ha_ns::sixlowpan_receiver_pid, false);
+            msg_send(&mesg, ha_ns::sixlowpan_receiver_pid, false);
             break;
 
         case ha_ns::GFF_PENDING:
@@ -188,6 +186,10 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
     case ha_ns::SET_DEV_VAL:
         HA_DEBUG("send_data_gff: SET_DEV_VAL message.\n");
         node_id = parse_node_deviceid(buf2uint32(&payload_buffer[3]));
+        break;
+    case ha_ns::ALIVE:
+        HA_DEBUG("send_data_gff: ALIVE message.\n");
+        node_id = ha_ns::sixlowpan_ha_cc_node_id;
         break;
     default:
         HA_DEBUG("send_data_gff: unknow GFF command id %x\n", gff_cmd_id);

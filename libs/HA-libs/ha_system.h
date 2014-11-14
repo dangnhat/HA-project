@@ -36,8 +36,6 @@
 #endif
 
 #ifdef HA_CC                /* CC specific includes */
-#include "cc_slp_sender.h"
-#include "cc_slp_receiver.h"
 #endif
 
 /* Typedefs */

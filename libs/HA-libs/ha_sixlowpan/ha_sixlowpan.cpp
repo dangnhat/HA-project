@@ -22,22 +22,7 @@ extern "C" {
 #define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
-#ifdef HA_CC
-#include "cc_slp_sender.h"
-#include "cc_slp_receiver.h"
-#endif
-
 namespace ha_ns {
-/* 6LoWPAN sender and receiver threads */
-#ifdef HA_CC
-kernel_pid_t *sixlowpan_sender_pid = &ha_cc_ns::slp_sender_pid;
-kernel_pid_t *sixlowpan_receiver_pid = &ha_cc_ns::slp_receiver_pid;
-
-cir_queue *slp_sender_gff_queue_p = &ha_cc_ns::slp_sender_gff_queue;
-#else
-kernel_pid_t *sixlowpan_sender_pid = &ha_node_ns::slp_sender_pid;
-#endif
-
 /* Communications global vars */
 ipv6_addr_t sixlowpan_ipaddr;
 uint16_t sixlowpan_node_id = 0;
@@ -255,5 +240,5 @@ void ha_slp_start_on_reset(Button *btn_p, const char *btn_prompt)
 
     /* start 6lowpan stack */
     mesg.type = ha_ns::SIXLOWPAN_RESTART;
-    msg_send(&mesg, *ha_ns::sixlowpan_sender_pid, false);
+    msg_send(&mesg, ha_ns::sixlowpan_sender_pid, false);
 }

@@ -1,9 +1,9 @@
 /**
- * @file cc_slp_receiver.cpp
+ * @file slp_receiver.cpp
  * @author  Pham Huu Dang Nhat  <phamhuudangnhat@gmail.com>.
- * @version 1.0
- * @date 11-Nov-2014
- * @brief This is source file for CC's 6lowpan receiver thread.
+ * @version 1.1
+ * @date 14-Nov-2014
+ * @brief This is source file for 6lowpan receiver thread.
  */
 
 extern "C" {
@@ -15,12 +15,11 @@ extern "C" {
 #include "ha_sixlowpan.h"
 #include "ha_gff_misc.h"
 
-#include "cc_msg_id.h"
-#include "cc_slp_receiver.h"
+#include "slp_receiver.h"
 
 /*--------------------- Global variable --------------------------------------*/
-namespace ha_cc_ns {
-kernel_pid_t slp_receiver_pid;
+namespace ha_ns {
+kernel_pid_t sixlowpan_receiver_pid;
 }
 
 /*--------------------- Configurations ---------------------------------------*/
@@ -42,16 +41,16 @@ static msg_t slp_receiver_msgqueue[slp_receiver_msgqueue_size];
  */
 static void *slp_receiver_func(void *arg);
 
-void cc_slp_receiver_start(void)
+void slp_receiver_start(void)
 {
     /* Create 6lp_receiver thread */
-    ha_cc_ns::slp_receiver_pid = thread_create(slp_receiver_stack, slp_receiver_stacksize,
-            slp_receiver_prio, CREATE_STACKTEST, slp_receiver_func, NULL, "CC_6LoWPAN_receiver");
-    if (ha_cc_ns::slp_receiver_pid > 0) {
-        HA_NOTIFY("CC 6LoWPAN receiver thread created.\n");
+    ha_ns::sixlowpan_receiver_pid = thread_create(slp_receiver_stack, slp_receiver_stacksize,
+            slp_receiver_prio, CREATE_STACKTEST, slp_receiver_func, NULL, "6LoWPAN_receiver");
+    if (ha_ns::sixlowpan_receiver_pid > 0) {
+        HA_NOTIFY("6LoWPAN receiver thread created.\n");
     }
     else {
-        HA_NOTIFY("Can't create CC 6LoWPAN receiver thread.\n");
+        HA_NOTIFY("Can't create 6LoWPAN receiver thread.\n");
     }
 }
 
@@ -130,6 +129,9 @@ static void start_receiver_loop(void)
                 HA_DEBUG("%x ", payload_buffer[count]);
             }
             HA_DEBUG("\n");
+
+            /* processing GFF message */
+            slp_received_GFF_handler(payload_buffer);
         }
     }
 

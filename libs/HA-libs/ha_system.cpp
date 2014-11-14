@@ -51,6 +51,10 @@ void ha_system_init(void)
         HA_NOTIFY("FAT FS is mounted to %s\n", default_drive_path);
     }
 
+    /* Start CC's 6LoWPAN threads */
+    slp_sender_start();
+    slp_receiver_start();
+
 
 #ifdef HA_NODE
     /* Node's specific initializations */
@@ -61,9 +65,6 @@ void ha_system_init(void)
 
 #ifdef HA_CC
     /* CC's specific initializations */
-    /* Start CC's 6LoWPAN threads */
-    cc_slp_sender_start();
-    cc_slp_receiver_start();
 #endif
 
     /* Create shell thread */

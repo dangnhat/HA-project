@@ -17,6 +17,8 @@ extern "C" {
 #include "socket_base/socket.h"
 }
 
+#include "slp_sender.h"
+#include "slp_receiver.h"
 #include "common_msg_id.h"
 #include "cir_queue.h"
 
@@ -38,12 +40,14 @@ const uint8_t sixlowpan_default_interface = 0;
 const transceiver_type_t sixlowpan_default_transceiver = TRANSCEIVER_DEFAULT;
 
 /* 6LoWPAN sender and receiver threads */
-extern kernel_pid_t* sixlowpan_sender_pid;
-extern cir_queue* slp_sender_gff_queue_p;
+extern kernel_pid_t sixlowpan_sender_pid;
+extern cir_queue sixlowpan_sender_gff_queue;
 
-extern kernel_pid_t* sixlowpan_receiver_pid;
+extern kernel_pid_t sixlowpan_receiver_pid;
 
 /* Communications */
+const uint16_t sixlowpan_ha_cc_node_id = 1;
+
 extern ipv6_addr_t sixlowpan_ipaddr;
 extern uint16_t sixlowpan_node_id;
 extern char sixlowpan_netdev_type;
