@@ -24,8 +24,14 @@ extern "C" {
 /*--------------------- Global variable --------------------------------------*/
 namespace ha_ns {
 kernel_pid_t sixlowpan_sender_pid;
-cir_queue sixlowpan_sender_gff_queue; /* This queue will hold data in GFF format from */
-                                        /* controller thread to 6lowpan sender thread */
+
+const uint16_t sixlowpan_sender_gff_queue_size = 256;
+uint8_t sixlowpan_sender_gff_queue_buf[sixlowpan_sender_gff_queue_size];
+cir_queue sixlowpan_sender_gff_queue(
+        sixlowpan_sender_gff_queue_buf,
+        sixlowpan_sender_gff_queue_size);
+    /* This queue will hold data in GFF format from */
+    /* controller thread to 6lowpan sender thread */
 }
 
 /*--------------------- Configurations ---------------------------------------*/
@@ -130,8 +136,8 @@ static int16_t restart_sixlowpan(void)
         return -1;
     }
 
-    HA_NOTIFY("Configurations:\n");
-    HA_NOTIFY(ha_ns::sixlowpan_config_pattern,
+    HA_DEBUG("Configurations:\n");
+    HA_DEBUG(ha_ns::sixlowpan_config_pattern,
             (uint32_t)prefixes[3], (uint32_t)prefixes[2],
             (uint32_t)prefixes[1], (uint32_t)prefixes[0],
             (uint32_t)node_id, netdev_type, (uint32_t)channel);

@@ -219,7 +219,7 @@ void ha_slp_start_on_reset(Button *btn_p, const char *btn_prompt)
         return;
     }
 
-    printf("Configurations:\n");
+    printf("\nConfigurations:\n");
     printf(ha_ns::sixlowpan_config_pattern,
             (uint32_t)prefixes[3], (uint32_t)prefixes[2],
             (uint32_t)prefixes[1], (uint32_t)prefixes[0],
@@ -228,7 +228,7 @@ void ha_slp_start_on_reset(Button *btn_p, const char *btn_prompt)
     /* print prompt */
     printf("\n");
     for (count = 5; count > 0; count--) {
-        printf("\r6LoWPAN will be started in %u(s)", count);
+        printf("\r6LoWPAN will be started in %u(s), ", count);
         printf("press %s to stop", btn_prompt);
         fflush(stdout);
 
