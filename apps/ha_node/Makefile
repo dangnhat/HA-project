@@ -56,10 +56,13 @@ SRCLOC += ../../libs/misc
 SRCLOC += ../../libs/RIOT-libs/src
 SRCLOC += ../../libs/HA-libs
 SRCLOC += ../../libs/HA-libs/ha_shell
+SRCLOC += ../../libs/HA-libs/ha_sixlowpan
 SRCLOC += ../../libs/HA-libs/device_class/src
 SRCLOC += ../../libs/HA-libs/device_instance/src
-SRCLOC += ../../libs/HA-libs/ha_node
+SRCLOC += ../../libs/HA-libs/misc
 SRCLOC += ../../libs/FATFileSystem/src
+SRCLOC += ha_node
+SRCLOC += sixlowpan
 
 INCLOC += ../../libs/MBoard1-libs
 INCLOC += ../../libs/STM32F10x_StdPeriph_Driver/inc
@@ -67,12 +70,15 @@ INCLOC += ../../libs/misc
 INCLOC += ../../libs/RIOT-libs/inc
 INCLOC += ../../libs/HA-libs
 INCLOC += ../../libs/HA-libs/ha_shell
+INCLOC += ../../libs/HA-libs/ha_sixlowpan
 INCLOC += ../../libs/HA-libs/device_class/inc
 INCLOC += ../../libs/HA-libs/device_instance/inc
-INCLOC += ../../libs/HA-libs/ha_node
 INCLOC += ../../libs/HA-libs/common_def
 INCLOC += ../../libs/HA-libs/misc
 INCLOC += ../../libs/FATFileSystem/src
+INCLOC += ha_node
+INCLOC += sixlowpan
+
 export CPPMIX =1
 
 # RIOT's usemodules (auto_init is one of default modules)
