@@ -21,6 +21,10 @@ extern "C" {
 #include "shell_cmds_time.h"
 #include "shell_cmds_sixlowpan.h"
 
+#ifdef HA_NODE
+#include "shell_cmds_dev_config.h"
+#endif
+
 namespace ha_ns {
 extern kernel_pid_t shell_pid;
 }
