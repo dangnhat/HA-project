@@ -30,7 +30,7 @@ cir_queue sixlowpan_sender_gff_queue; /* This queue will hold data in GFF format
 
 /*--------------------- Configurations ---------------------------------------*/
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 static const char slp_sender_prio = PRIORITY_MAIN - 2;
@@ -38,7 +38,7 @@ static const uint16_t slp_sender_stacksize = 2048;
 static char slp_sender_stack[slp_sender_stacksize];
 static void *slp_sender_func(void *arg);
 
-static const char slp_sender_msgqueue_size = 128;
+static const char slp_sender_msgqueue_size = 32;
 static msg_t slp_sender_msgqueue[slp_sender_msgqueue_size];
 
 /*--------------------- Public functions -------------------------------------*/

@@ -23,7 +23,7 @@
 #include <cstdint>
 
 namespace cir_queue_ns {
-    const int32_t cir_queue_size = 1024;
+    const int32_t cir_queue_size = 256;
 }
 
 class cir_queue {
