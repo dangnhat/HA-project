@@ -42,14 +42,6 @@ void rgb_instance::device_configure(pwm_config_params_t *red_channel_params,
     red_bulb.device_configure(red_channel_params);
     green_bulb.device_configure(green_channel_params);
     blue_bulb.device_configure(blue_channel_params);
-
-    red_bulb.set_max_level_intensity(max_level);
-    green_bulb.set_max_level_intensity(max_level);
-    blue_bulb.set_max_level_intensity(max_level);
-
-    red_bulb.set_output_freq(200);
-    green_bulb.set_output_freq(200);
-    blue_bulb.set_output_freq(200);
 }
 
 void rgb_instance::set_white_point(uint8_t red_percent_wp,
