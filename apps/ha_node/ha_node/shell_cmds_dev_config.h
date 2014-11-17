@@ -10,6 +10,8 @@
 
 #include "ha_device_handler.h"
 
+void rst_endpoint_callback(int argc, char** argv);
+
 void button_config(int argc, char** argv);
 
 void switch_config(int argc, char** argv);
@@ -43,5 +45,12 @@ void rgb_led_config(int argc, char** argv);
  * @param[in] argv Arguments.
  */
 void adc_sensor_config(int argc, char** argv);
+
+/**
+ * @brief get dev_id in dev_list file and send to end point having id = ep_id.
+ *
+ * @param[in] ep_id Target endpoint id.
+ */
+void run_endpoint(int8_t ep_id);
 
 #endif //__SHELL_CMDS_DEV_CONFIG_H_

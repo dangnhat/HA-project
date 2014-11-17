@@ -42,6 +42,7 @@ const shell_command_t shell_commands[] = {
 
 #ifdef HA_NODE
     /* device configuration cmds */
+    {"rst", "Run spcified thread with a device", rst_endpoint_callback},
     {"btn", "Configure button device", button_config},
     {"sw", "Configure switch device", switch_config},
     {"bulb", "Configure on-off bulb device", on_off_bulb_config},
@@ -56,7 +57,7 @@ const shell_command_t shell_commands[] = {
 };
 
 /* Shell thread */
-const uint16_t shell_stack_size = 2560;
+const uint16_t shell_stack_size = 2048;
 char shell_stack[shell_stack_size];
 const char shell_prio = PRIORITY_MAIN;
 kernel_pid_t shell_pid;

@@ -67,6 +67,8 @@ const char linear_sensor_usage[] =
                 "senlnr -h, get this help.\n"
                 "Note: multiple options can be combined together.\n";
 
+//static FIL fil;
+
 /**
  * @brief configure pure GPIO devices (port/pin).
  *
@@ -99,9 +101,24 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id);
 
 static bool check_port(char src, char* port);
 
+static bool check_devid(uint32_t dev_id);
+
 static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type);
 
 /* ------Implementation------ */
+
+void rst_endpoint_callback(int argc, char** argv)
+{
+
+    if (argc == 1) {
+        printf("ERR: too few arguments.\n");
+        return;
+    }
+
+    int ep_id = atoi(argv[1]);
+
+    run_endpoint(ep_id);
+}
 
 void button_config(int argc, char** argv)
 {
@@ -208,29 +225,29 @@ void rgb_led_config(int argc, char** argv)
     FRESULT f_res;
     FIL fil;
     UINT byte_read;
-    char f_name[8];
+    char f_name[4];
 
-    int ep_id = -1;
-    int dev_type = ha_ns::RGB_LED;
+    int8_t ep_id = -1;
+    uint8_t dev_type = (uint8_t) ha_ns::RGB_LED;
 
     char Rport = '0';
-    int Rpin = 0;
-    int Rtimer_x = 0;
-    int Rchannel = 0;
+    int8_t Rpin = 0;
+    int8_t Rtimer_x = 0;
+    int8_t Rchannel = 0;
 
     char Gport = '0';
-    int Gpin = 0;
-    int Gtimer_x = 0;
-    int Gchannel = 0;
+    int8_t Gpin = 0;
+    int8_t Gtimer_x = 0;
+    int8_t Gchannel = 0;
 
     char Bport = '0';
-    int Bpin = 0;
-    int Btimer_x = 0;
-    int Bchannel = 0;
+    int8_t Bpin = 0;
+    int8_t Btimer_x = 0;
+    int8_t Bchannel = 0;
 
-    int red_at_wp = 0;
-    int green_at_wp = 0;
-    int blue_at_wp = 0;
+    int8_t red_at_wp = 0;
+    int8_t green_at_wp = 0;
+    int8_t blue_at_wp = 0;
 
     char config_str[ha_node_ns::dev_pattern_maxsize];
 
@@ -259,7 +276,7 @@ void rgb_led_config(int argc, char** argv)
                     return;
                 }
                 snprintf(f_name, sizeof(f_name), "%x", ep_id);
-                f_res = f_open(&fil, argv[count], FA_READ | FA_OPEN_ALWAYS);
+                f_res = f_open(&fil, f_name, FA_READ | FA_OPEN_ALWAYS);
                 if (f_res != FR_OK) {
                     print_ferr(f_res);
                     return;
@@ -267,14 +284,13 @@ void rgb_led_config(int argc, char** argv)
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::dev_pattern_maxsize, &byte_read);
                 if (f_res != FR_OK) {
-                    printf("Error on reading file, byte_read %u\n", byte_read);
                     print_ferr(f_res);
                     return;
                 }
-                sscanf(config_str, ha_node_ns::rgb_config_pattern,
-                        &Rport, &Rpin, &Rtimer_x, &Rchannel, &Gport, &Gpin,
-                        &Gtimer_x, &Gchannel, &Bport, &Bpin, &Btimer_x,
-                        &Bchannel, &red_at_wp, &green_at_wp, &blue_at_wp);
+                sscanf(config_str, ha_node_ns::rgb_config_pattern, &Rport,
+                        &Rpin, &Rtimer_x, &Rchannel, &Gport, &Gpin, &Gtimer_x,
+                        &Gchannel, &Bport, &Bpin, &Btimer_x, &Bchannel,
+                        &red_at_wp, &green_at_wp, &blue_at_wp);
                 /* close opened file */
                 f_close(&fil);
                 break;
@@ -423,6 +439,11 @@ void rgb_led_config(int argc, char** argv)
                     return;
                 }
                 blue_at_wp = atoi(argv[count]);
+                if (red_at_wp > 100 || green_at_wp > 100 || blue_at_wp > 100) {
+                    printf(
+                            "ERR: invalid calibrating factor. Try -h to get help.\n");
+                    return;
+                }
                 break;
             default:
                 printf("Unknown option.\n");
@@ -434,7 +455,7 @@ void rgb_led_config(int argc, char** argv)
         }
     }
 
-    if(ep_id < 0) {
+    if (ep_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -442,20 +463,17 @@ void rgb_led_config(int argc, char** argv)
     /* Write configurations to file */
     f_res = f_open(&fil, f_name, FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
-        printf("Error on opening file to write configuration\n");
         print_ferr(f_res);
         return;
     }
     f_sync(&fil);
 
-    int byte_written = f_printf(&fil, ha_node_ns::rgb_config_pattern,
-            Rport, Rpin, Rtimer_x, Rchannel, Gport, Gpin, Gtimer_x, Gchannel,
-            Bport, Bpin, Btimer_x, Bchannel, red_at_wp, green_at_wp,
-            blue_at_wp);
+    int16_t byte_written = f_printf(&fil, ha_node_ns::rgb_config_pattern, Rport,
+            Rpin, Rtimer_x, Rchannel, Gport, Gpin, Gtimer_x, Gchannel, Bport,
+            Bpin, Btimer_x, Bchannel, red_at_wp, green_at_wp, blue_at_wp);
     f_sync(&fil);
 
     if (byte_written < 0) {
-        printf("Error on writing configuration to file\n");
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -481,19 +499,21 @@ void adc_sensor_config(int argc, char** argv)
     FRESULT f_res;
     FIL fil;
     UINT byte_read;
-    char f_name[8];
+    char f_name[4];
 
-    int ep_id = -1;
-    int dev_type = ha_ns::LIN_SENSOR;
+    int8_t ep_id = -1;
+    uint8_t dev_type = (uint8_t) ha_ns::LIN_SENSOR;
 
     char port = '0';
-    int pin = 0;
-    int adc_x = 0;
-    int channel = 0;
+    int8_t pin = 0;
+    int8_t adc_x = 0;
+    int8_t channel = 0;
 
     char e_type = '0';
-    char* a_factor;
-    char* b_constant;
+    uint8_t a_index = 0;
+    uint8_t b_index = 0;
+    char a_factor[16];
+    char b_constant[16];
 
     int filter_thres = 0;
     int under_thres = 0;
@@ -534,14 +554,13 @@ void adc_sensor_config(int argc, char** argv)
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::dev_pattern_maxsize, &byte_read);
                 if (f_res != FR_OK) {
-                    printf("Error on reading file, byte_read %u\n", byte_read);
                     print_ferr(f_res);
                     f_close(&fil);
                     return;
                 }
-                sscanf(config_str, ha_node_ns::senlnr_config_pattern,
-                        &port, &pin, &adc_x, &channel, &e_type, a_factor,
-                        b_constant, &filter_thres, &under_thres, &over_thres);
+                sscanf(config_str, ha_node_ns::senlnr_config_pattern, &port,
+                        &pin, &adc_x, &channel, &e_type, a_factor, b_constant,
+                        &filter_thres, &under_thres, &over_thres);
                 /* close opened file */
                 f_close(&fil);
                 break;
@@ -599,7 +618,7 @@ void adc_sensor_config(int argc, char** argv)
                     return;
                 }
                 e_type = argv[count][0];
-                if (e_type != 'l' || e_type != 'r') {
+                if (e_type != 'l' && e_type != 'r') {
                     printf("ERR: invalid type, linear equation as default\n");
                     e_type = 'l';
                 }
@@ -610,7 +629,7 @@ void adc_sensor_config(int argc, char** argv)
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                a_factor = argv[count];
+                a_index = count;
                 break;
             case 'b':
                 count++;
@@ -618,7 +637,7 @@ void adc_sensor_config(int argc, char** argv)
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                b_constant = argv[count];
+                b_index = count;
                 break;
             case 'f':
                 count++;
@@ -654,7 +673,7 @@ void adc_sensor_config(int argc, char** argv)
         }
     }
 
-    if(ep_id < 0) {
+    if (ep_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -668,13 +687,12 @@ void adc_sensor_config(int argc, char** argv)
     }
     f_sync(&fil);
 
-    int byte_written = f_printf(&fil, ha_node_ns::senlnr_config_pattern,
-            port, pin, adc_x, channel, e_type, a_factor, b_constant,
+    int16_t byte_written = f_printf(&fil, ha_node_ns::senlnr_config_pattern,
+            port, pin, adc_x, channel, e_type, argv[a_index], argv[b_index],
             filter_thres, under_thres, over_thres);
     f_sync(&fil);
 
     if (byte_written < 0) {
-        printf("Error on writing configuration to file\n");
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -699,12 +717,11 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     FRESULT f_res;
     FIL fil;
     UINT byte_read;
-    char f_name[8];
+    char f_name[4];
 
-    *endpoint_id = -1;
-    int ep_id = -1;
+    int8_t ep_id = -1;
     char port = '0';
-    int pin = 0;
+    int8_t pin = 0;
 
     char config_str[ha_node_ns::gpio_pattern_size];
 
@@ -743,7 +760,6 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
                 f_res = f_read(&fil, config_str, ha_node_ns::gpio_pattern_size,
                         &byte_read);
                 if (f_res != FR_OK) {
-                    printf("Error on reading file, byte_read %u\n", byte_read);
                     print_ferr(f_res);
                     f_close(&fil);
                     return;
@@ -786,7 +802,7 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
         }
     }
 
-    if(ep_id < 0) {
+    if (ep_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -794,18 +810,16 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     /* Write configurations to file */
     f_res = f_open(&fil, f_name, FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
-        printf("Error on opening file to write configuration\n");
         print_ferr(f_res);
         return;
     }
     f_sync(&fil);
 
-    int byte_written = f_printf(&fil, ha_node_ns::gpio_dev_config_pattern, port,
-            pin);
+    int16_t byte_written = f_printf(&fil, ha_node_ns::gpio_dev_config_pattern,
+            port, pin);
     f_sync(&fil);
 
     if (byte_written < 0) {
-        printf("Error on writing configuration to file\n");
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -829,14 +843,13 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
     FRESULT f_res;
     FIL fil;
     UINT byte_read;
-    char f_name[16];
+    char f_name[4];
 
-    *endpoint_id = -1;
-    int ep_id = -1;
+    int8_t ep_id = -1;
     char port = '0';
-    int pin = 0;
-    int adc_x = 0;
-    int channel = 0;
+    int8_t pin = 0;
+    int8_t adc_x = 0;
+    int8_t channel = 0;
 
     char config_str[ha_node_ns::adc_pwm_pattern_size];
 
@@ -875,13 +888,12 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::adc_pwm_pattern_size, &byte_read);
                 if (f_res != FR_OK) {
-                    printf("Error on reading file, byte_read %u\n", byte_read);
                     print_ferr(f_res);
                     f_close(&fil);
                     return;
                 }
-                sscanf(config_str, ha_node_ns::adc_dev_config_pattern,
-                        &port, &pin, &adc_x, &channel);
+                sscanf(config_str, ha_node_ns::adc_dev_config_pattern, &port,
+                        &pin, &adc_x, &channel);
                 /* close opened file */
                 f_close(&fil);
                 break;
@@ -942,7 +954,7 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
         }
     }
 
-    if(ep_id < 0) {
+    if (ep_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -950,18 +962,16 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
     /* Write configurations to file */
     f_res = f_open(&fil, f_name, FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
-        printf("Error on opening file to write configuration\n");
         print_ferr(f_res);
         return;
     }
     f_sync(&fil);
 
-    int byte_written = f_printf(&fil, ha_node_ns::adc_dev_config_pattern,
+    int16_t byte_written = f_printf(&fil, ha_node_ns::adc_dev_config_pattern,
             port, pin, adc_x, channel);
     f_sync(&fil);
 
     if (byte_written < 0) {
-        printf("Error on writing configuration to file\n");
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -985,14 +995,13 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
     FRESULT f_res;
     FIL fil;
     UINT byte_read;
-    char f_name[16];
+    char f_name[4];
 
-    *endpoint_id = -1;
-    int ep_id = -1;
+    int8_t ep_id = -1;
     char port = '0';
-    int pin = 0;
-    int timer_x = 0;
-    int channel = 0;
+    int8_t pin = 0;
+    int8_t timer_x = 0;
+    int8_t channel = 0;
 
     char config_str[ha_node_ns::adc_pwm_pattern_size];
 
@@ -1030,13 +1039,12 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::adc_pwm_pattern_size, &byte_read);
                 if (f_res != FR_OK) {
-                    printf("Error on reading file, byte_read %u\n", byte_read);
                     print_ferr(f_res);
                     f_close(&fil);
                     return;
                 }
-                sscanf(config_str, ha_node_ns::adc_dev_config_pattern,
-                        &port, &pin, &timer_x, &channel);
+                sscanf(config_str, ha_node_ns::adc_dev_config_pattern, &port,
+                        &pin, &timer_x, &channel);
                 /* close opened file */
                 f_close(&fil);
                 break;
@@ -1089,7 +1097,7 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
         }
     }
 
-    if(ep_id < 0) {
+    if (ep_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -1097,18 +1105,16 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
     /* Write configurations to file */
     f_res = f_open(&fil, f_name, FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
-        printf("Error on opening file to write configuration\n");
         print_ferr(f_res);
         return;
     }
     f_sync(&fil);
 
-    int byte_written = f_printf(&fil, ha_node_ns::pwm_dev_config_pattern,
+    int16_t byte_written = f_printf(&fil, ha_node_ns::pwm_dev_config_pattern,
             port, pin, timer_x, channel);
     f_sync(&fil);
 
     if (byte_written < 0) {
-        printf("Error on writing configuration to file\n");
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -1173,13 +1179,13 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
 {
     FIL fil;
     FRESULT f_res;
-    int ep_arr[ha_node_ns::max_end_point];
     uint32_t dev_list[ha_node_ns::max_end_point];
+
+    memset(dev_list, 0, sizeof(dev_list));
 
     f_res = f_open(&fil, ha_node_ns::ha_dev_list_file,
     FA_READ | FA_OPEN_ALWAYS);
     if (f_res != FR_OK) {
-        printf("Error on opening device list file\n");
         print_ferr(f_res);
         return;
     }
@@ -1187,8 +1193,7 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
     char line[64];
     for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         if (f_gets(line, sizeof(line), &fil)) {
-            sscanf(line, ha_node_ns::dev_list_pattern, &ep_arr[i],
-                    &dev_list[i]);
+            sscanf(line, ha_node_ns::dev_list_pattern, &dev_list[i]);
         } else {
             break;
         }
@@ -1203,17 +1208,74 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
     f_res = f_open(&fil, ha_node_ns::ha_dev_list_file,
     FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
-        printf("Error on opening device list file\n");
         print_ferr(f_res);
         return;
     }
 
     for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
-        snprintf(line, sizeof(line), ha_node_ns::dev_list_pattern, i,
-                dev_list[i]);
+        snprintf(line, sizeof(line), ha_node_ns::dev_list_pattern, dev_list[i]);
         f_puts(line, &fil);
     }
     f_close(&fil);
 
     return;
+}
+
+static bool check_devid(uint32_t dev_id)
+{
+    uint16_t node_id = dev_id >> 16;
+    uint8_t ep_id = (dev_id >> 8) & 0xFF;
+    uint8_t dev_type = dev_id & 0xFF;
+
+    if (node_id != ha_ns::sixlowpan_node_id) {
+        return false;
+    }
+    if (ep_id > ha_node_ns::max_end_point) {
+        return false;
+    }
+    if (dev_type == 0 || dev_type == 0xFF) {
+        return false;
+    }
+
+    return true;
+}
+
+void run_endpoint(int8_t ep_id)
+{
+    FIL fil;
+    uint32_t dev_list[ha_node_ns::max_end_point];
+
+    memset(dev_list, 0, sizeof(dev_list));
+
+    if (ep_id < 0 || ep_id > 15) {
+        printf("ERR: invalid input endpoint id.\n");
+        return;
+    }
+
+    if (f_open(&fil, ha_node_ns::ha_dev_list_file, FA_READ | FA_OPEN_ALWAYS)) {
+        printf("Error on opening device list file.\n");
+        return;
+    }
+
+    char line[24];
+    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+        if (f_gets(line, sizeof(line), &fil)) {
+            sscanf(line, ha_node_ns::dev_list_pattern, &dev_list[i]);
+        } else {
+            break;
+        }
+    }
+    f_close(&fil);
+
+    if (!check_devid(dev_list[ep_id])) {
+        printf("Device id is invalid!!.\n");
+        return;
+    } else {
+        printf("Device id is valid.\n");
+    }
+
+    msg_t msg;
+    msg.type = ha_node_ns::NEW_DEVICE;
+    msg.content.value = dev_list[ep_id];
+    msg_send(&msg, ha_node_ns::end_point_pid[ep_id], false);
 }
