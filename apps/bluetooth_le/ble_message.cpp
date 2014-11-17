@@ -69,7 +69,7 @@ void parse_ble_msg(uint8_t dataBuf[]){
 void 	init_ble_database(devInfo* devList, uint8_t len){
 
 	for(uint8_t i = 0; i < len; i++){
-		printf("devIdx = %d\n", i);
+//		printf("devIdx = %d\n", i);
 		devList[i].devIdx = i;
 	}
 

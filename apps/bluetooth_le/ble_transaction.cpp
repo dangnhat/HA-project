@@ -17,6 +17,10 @@ namespace ble_thread_ns{
 int16_t ble_thread_pid;
 }
 
+
+using namespace ble_thread_ns;
+
+
 void USART3_RxInit()
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -43,9 +47,8 @@ void ble_init()
 
 void usart3_receive()
 {
-//	msg_t 					usartMsg;
-//	usartMsg.type			=  ble_message::BLE_USART_REC;
-
+//	msg_t 	usartMsg;
+//	usartMsg.type	=  ble_message_ns::BLE_USART_REC;
 	USART_ClearFlag(USART3, USART_FLAG_RXNE);
 //	printf("%02x \n", MB1_USART3.Get_ISR()); //DEBUG
 
