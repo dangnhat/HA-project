@@ -18,13 +18,15 @@
  * @}
  */
 
+#include <stddef.h>
 #include "cir_queue.h"
 
-using namespace cir_queue_ns;
-
 /*----------------------------------------------------------------------------*/
-cir_queue::cir_queue(void)
+cir_queue::cir_queue(uint8_t *queue_p, uint16_t queue_size)
 {
+    this->queue_p = queue_p;
+    this->queue_size = 0;
+
     this->head = 0;
     this->tail = -1;
     this->preview_pos = this->tail;
@@ -37,13 +39,13 @@ void cir_queue::add_data(uint8_t a_byte)
 {
     int32_t old_head = head;
 
-    queue[head] = a_byte;
+    queue_p[head] = a_byte;
 
     if (tail == -1) { /* queue is empty */
         tail = head;
     }
 
-    head = (head + 1) % cir_queue_size;
+    head = (head + 1) % queue_size;
 
     /* check overflowed */
     if ((old_head < tail) && (head >= tail)) {
@@ -80,9 +82,9 @@ uint8_t cir_queue::preview_data(bool cont)
         preview_pos = tail;
     }
 
-    retval = queue[preview_pos];
+    retval = queue_p[preview_pos];
 
-    preview_pos = (preview_pos + 1) % cir_queue_size;
+    preview_pos = (preview_pos + 1) % queue_size;
 
     return retval;
 }
@@ -96,8 +98,8 @@ uint8_t cir_queue::get_data(void)
         return 0;
     }
 
-    retdata = queue[this->tail];
-    this->tail = (this->tail + 1) % cir_queue_size;
+    retdata = queue_p[this->tail];
+    this->tail = (this->tail + 1) % queue_size;
 
     if (this->tail == this->head) {
         this->tail = -1;
@@ -135,5 +137,10 @@ int32_t cir_queue::get_data(uint8_t* buf, int32_t size)
     }
 
     return retsize;
+}
+
+int32_t cir_queue::get_size(void)
+{
+    return (tail==-1) ? 0 : (head >= tail ? head - tail : head + queue_size - tail);
 }
 

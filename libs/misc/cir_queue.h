@@ -22,20 +22,19 @@
 
 #include <cstdint>
 
-namespace cir_queue_ns {
-    const int32_t cir_queue_size = 1024;
-}
-
 class cir_queue {
 public:
 
     /**
-     * @brief   constructor
+     * @brief   constructor, user must allocate data for the queue.
      *          Init private (head = 0, tail = -1)
+     *
+     * @param[in]   queue_p, pointer to buffer for queue.
+     * @param[in]   queue_size, size of the buffer.
      *
      * @return  none
      */
-    cir_queue (void);
+    cir_queue(uint8_t *queue_p, uint16_t queue_size);
     
     /**
      * @brief   add one byte to head of the circular queue.
@@ -87,7 +86,7 @@ public:
      *
      * @return  size
      */
-    int32_t get_size(void) { return (tail==-1) ? 0 : (head-tail); }
+    int32_t get_size(void);
     
     /**
      * @brief   get head of the circular queue.
@@ -110,12 +109,14 @@ public:
      */
     bool is_overflowed(void) { return overflowed; }
 
+protected:
+    uint8_t* queue_p;
+    uint16_t queue_size;
+
 private:
     int32_t head; /* next pos for new data to be pushed to the queue*/
     int32_t tail; /* next data to be pop from the queue */
     int32_t preview_pos;
-
-    uint8_t queue[cir_queue_ns::cir_queue_size];
     
     /* error indicators */
     bool overflowed;

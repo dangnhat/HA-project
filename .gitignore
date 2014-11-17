@@ -1,3 +1,11 @@
 .cproject
 .settings
+.project
+*\ Default.launch
+
+cscope.out
+tags
+
 bin
+
+incpaths_symbols.xml
