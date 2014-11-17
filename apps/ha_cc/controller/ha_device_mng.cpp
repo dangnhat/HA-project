@@ -21,7 +21,7 @@
 #include "shell_cmds_fatfs.h"
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG (0)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 using namespace ha_device_mng_ns;
@@ -32,8 +32,7 @@ static const char print_first_line[] = "#\t|\tid\t|\tval\t|\ti/o\t|\tttl\t|\tnam
 static const char print_line_pattern[] = "%d\t|\t%08lx\t|\t%d\t|\t%d\t|\t%d\t| %s\n";
 
 /* save and restore */
-static const char devices_list_file[] = "dev_lst";
-static const char devices_list_line_pattern[] = "%lx %d %d\n";
+static const char devices_list_line_pattern[] = "%lx %hd %hhd\n";
 
 /*----------------------------------------------------------------------------*/
 ha_device_mng::ha_device_mng(ha_device *devices_buffer, uint16_t num_of_dev,
@@ -216,6 +215,10 @@ void ha_device_mng::save(void)
     uint16_t count;
     uint16_t num_of_dev_count;
 
+    if (devices_list_file == NULL) {
+        return;
+    }
+
     /* open file */
     fres = f_open(&file, devices_list_file, FA_WRITE | FA_CREATE_ALWAYS);
     if (fres != FR_OK) {
@@ -255,6 +258,10 @@ void ha_device_mng::restore(void)
     int16_t value;
     int8_t ttl;
     char line[32];
+
+    if (devices_list_file == NULL) {
+        return;
+    }
 
     /* open file */
     fres = f_open(&file, devices_list_file, FA_READ | FA_OPEN_ALWAYS);

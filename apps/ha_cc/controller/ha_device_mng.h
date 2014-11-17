@@ -176,4 +176,4 @@ private:
     const char *devices_list_file;
 };
 
-#endif // misc.h
+#endif // DEVICE_MNG_H_
