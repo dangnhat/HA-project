@@ -19,7 +19,7 @@ extern "C" {
 #include "ff.h"
 
 #define HA_NOTIFICATION (0)
-#define HA_DEBUG_EN (0)
+#define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
 namespace ha_ns {
