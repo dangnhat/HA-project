@@ -25,6 +25,10 @@ extern "C" {
 #include "shell_cmds_dev_config.h"
 #endif
 
+#ifdef HA_CC
+#include "controller.h"
+#endif
+
 namespace ha_ns {
 extern kernel_pid_t shell_pid;
 }

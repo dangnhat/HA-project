@@ -116,6 +116,13 @@ static void *controller_func(void *) {
         case ha_cc_ns::BLE_GFF_PENDING:
             HA_DEBUG("controller: BLE_GFF_PENDING\n");
             break;
+        case ha_cc_ns::ONE_SEC_INTERRUPT:
+            HA_DEBUG("controller: ONE_SEC_INTERRUPT\n");
+            controller_dev_mng.dec_all_devs_ttl();
+            break;
+        default:
+            HA_DEBUG("controller: Unknown message %d\n", mesg.type);
+            break;
         }
     }
 
@@ -163,5 +170,19 @@ static void slp_gff_handler(uint8_t *gff_frame, cir_queue *slp_queue, ha_device_
         HA_DEBUG("slp_gff_handler: unknown cmd id %x\n", cmd_id);
         break;
     }
+}
 
+/*----------------------------------------------------------------------------*/
+void second_int_callback(void)
+{
+    msg_t mesg;
+
+    mesg.type = ha_cc_ns::ONE_SEC_INTERRUPT;
+    msg_send(&mesg, controller_pid, false);
+}
+
+/*----------------------------------------------------------------------------*/
+void controller_list_devices(int argc, char** argv)
+{
+    controller_dev_mng.print_all_devices();
 }

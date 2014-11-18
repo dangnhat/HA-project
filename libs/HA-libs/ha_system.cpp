@@ -66,6 +66,7 @@ void ha_system_init(void)
 #ifdef HA_CC
     /* CC's specific initializations */
     controller_start();
+    MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_RTC, second_int_callback);
 #endif
 
     /* Prompt and restart 6LoWPAN thread */

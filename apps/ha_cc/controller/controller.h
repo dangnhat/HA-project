@@ -38,4 +38,14 @@ extern cir_queue ble_to_controller_queue;
  */
 void controller_start(void);
 
+/**
+ * @brief   Callback for 1 second interrupt.
+ */
+void second_int_callback(void);
+
+/**
+ * @brief   List devices shell command.
+ */
+void controller_list_devices(int argc, char** argv);
+
 #endif // CONTROLLER_H_
