@@ -10,6 +10,8 @@
 
 #include "ha_device_handler.h"
 
+void stop_endpoint_callback(int argc, char** argv);
+
 void rst_endpoint_callback(int argc, char** argv);
 
 void button_config(int argc, char** argv);

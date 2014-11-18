@@ -12,7 +12,7 @@
 #include "shell_cmds_dev_config.h"
 #include "shell_cmds_fatfs.h"
 #include "ha_sixlowpan.h"
-#include "ha_node_glb.h"
+//#include "ha_node_dev_config.h"
 #include "ff.h"
 #include "device_id.h"
 
@@ -67,8 +67,6 @@ const char linear_sensor_usage[] =
                 "senlnr -h, get this help.\n"
                 "Note: multiple options can be combined together.\n";
 
-//static FIL fil;
-
 /**
  * @brief configure pure GPIO devices (port/pin).
  *
@@ -106,6 +104,24 @@ static bool check_devid(uint32_t dev_id);
 static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type);
 
 /* ------Implementation------ */
+
+void stop_endpoint_callback(int argc, char** argv)
+{
+    if (argc == 1) {
+        printf("ERR: too few arguments.\n");
+        return;
+    }
+
+    int ep_id = atoi(argv[1]);
+    if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+        printf("ERR: invalid endpoint id\n");
+        return;
+    }
+
+    modify_dev_list_file(ep_id, ha_ns::NO_DEVICE);
+
+    run_endpoint(ep_id);
+}
 
 void rst_endpoint_callback(int argc, char** argv)
 {
@@ -224,30 +240,30 @@ void rgb_led_config(int argc, char** argv)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read;
+    UINT byte_read, byte_written;
     char f_name[4];
 
     int8_t ep_id = -1;
     uint8_t dev_type = (uint8_t) ha_ns::RGB_LED;
 
     char Rport = '0';
-    int8_t Rpin = 0;
-    int8_t Rtimer_x = 0;
-    int8_t Rchannel = 0;
+    uint16_t Rpin = 0;
+    uint16_t Rtimer_x = 0;
+    uint16_t Rchannel = 0;
 
     char Gport = '0';
-    int8_t Gpin = 0;
-    int8_t Gtimer_x = 0;
-    int8_t Gchannel = 0;
+    uint16_t Gpin = 0;
+    uint16_t Gtimer_x = 0;
+    uint16_t Gchannel = 0;
 
     char Bport = '0';
-    int8_t Bpin = 0;
-    int8_t Btimer_x = 0;
-    int8_t Bchannel = 0;
+    uint16_t Bpin = 0;
+    uint16_t Btimer_x = 0;
+    uint16_t Bchannel = 0;
 
-    int8_t red_at_wp = 0;
-    int8_t green_at_wp = 0;
-    int8_t blue_at_wp = 0;
+    uint16_t red_at_wp = 0;
+    uint16_t green_at_wp = 0;
+    uint16_t blue_at_wp = 0;
 
     char config_str[ha_node_ns::dev_pattern_maxsize];
 
@@ -281,18 +297,18 @@ void rgb_led_config(int argc, char** argv)
                     print_ferr(f_res);
                     return;
                 }
+                f_sync(&fil);
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::dev_pattern_maxsize, &byte_read);
                 if (f_res != FR_OK) {
                     print_ferr(f_res);
                     return;
                 }
+                f_close(&fil);
                 sscanf(config_str, ha_node_ns::rgb_config_pattern, &Rport,
                         &Rpin, &Rtimer_x, &Rchannel, &Gport, &Gpin, &Gtimer_x,
                         &Gchannel, &Bport, &Bpin, &Btimer_x, &Bchannel,
                         &red_at_wp, &green_at_wp, &blue_at_wp);
-                /* close opened file */
-                f_close(&fil);
                 break;
             case 'R': //configure Red channel
                 count++;
@@ -320,9 +336,9 @@ void rgb_led_config(int argc, char** argv)
                     return;
                 }
                 Rtimer_x = atoi(argv[count]);
-                if (Rtimer_x < 0 || Rtimer_x > 8 || Rtimer_x == 5
-                        || Rtimer_x == 6) {
-                    printf("ERR: invalid timer value\n");
+                if (Rtimer_x < 0 || Rtimer_x > 8 || Rtimer_x == 6
+                        || Rtimer_x == 7) {
+                    printf("ERR: invalid timer value for pwm\n");
                     return;
                 }
                 count++;
@@ -362,9 +378,9 @@ void rgb_led_config(int argc, char** argv)
                     return;
                 }
                 Gtimer_x = atoi(argv[count]);
-                if (Gtimer_x < 0 || Gtimer_x > 8 || Gtimer_x == 5
-                        || Gtimer_x == 6) {
-                    printf("ERR: invalid timer value\n");
+                if (Gtimer_x < 0 || Gtimer_x > 8 || Gtimer_x == 6
+                        || Gtimer_x == 7) {
+                    printf("ERR: invalid timer value for pwm\n");
                     return;
                 }
                 count++;
@@ -404,9 +420,9 @@ void rgb_led_config(int argc, char** argv)
                     return;
                 }
                 Btimer_x = atoi(argv[count]);
-                if (Btimer_x < 0 || Btimer_x > 8 || Btimer_x == 5
-                        || Btimer_x == 6) {
-                    printf("ERR: invalid timer value\n");
+                if (Btimer_x < 0 || Btimer_x > 8 || Btimer_x == 6
+                        || Btimer_x == 7) {
+                    printf("ERR: invalid timer value for pwm\n");
                     return;
                 }
                 count++;
@@ -468,23 +484,29 @@ void rgb_led_config(int argc, char** argv)
     }
     f_sync(&fil);
 
-    int16_t byte_written = f_printf(&fil, ha_node_ns::rgb_config_pattern, Rport,
-            Rpin, Rtimer_x, Rchannel, Gport, Gpin, Gtimer_x, Gchannel, Bport,
-            Bpin, Btimer_x, Bchannel, red_at_wp, green_at_wp, blue_at_wp);
-    f_sync(&fil);
+    snprintf(config_str, ha_node_ns::dev_pattern_maxsize,
+            ha_node_ns::rgb_config_pattern, Rport, Rpin, Rtimer_x, Rchannel,
+            Gport, Gpin, Gtimer_x, Gchannel, Bport, Bpin, Btimer_x, Bchannel,
+            red_at_wp, green_at_wp, blue_at_wp);
 
-    if (byte_written < 0) {
+    f_res = f_write(&fil, config_str, ha_node_ns::dev_pattern_maxsize,
+            &byte_written);
+    if (f_res != FR_OK) {
         print_ferr(f_res);
         f_close(&fil);
         return;
     }
-
     f_close(&fil);
 
     /* read back */
     f_open(&fil, f_name, FA_READ);
+    if (f_res != FR_OK) {
+        print_ferr(f_res);
+        return;
+    }
+    f_sync(&fil);
     while (f_gets(config_str, sizeof(config_str), &fil)) {
-        printf("%s\n", config_str);
+        printf("%s", config_str);
     }
     f_close(&fil);
 
@@ -498,16 +520,16 @@ void adc_sensor_config(int argc, char** argv)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read;
+    UINT byte_read, byte_written;
     char f_name[4];
 
     int8_t ep_id = -1;
     uint8_t dev_type = (uint8_t) ha_ns::LIN_SENSOR;
 
     char port = '0';
-    int8_t pin = 0;
-    int8_t adc_x = 0;
-    int8_t channel = 0;
+    uint16_t pin = 0;
+    uint16_t adc_x = 0;
+    uint16_t channel = 0;
 
     char e_type = '0';
     uint8_t a_index = 0;
@@ -551,6 +573,7 @@ void adc_sensor_config(int argc, char** argv)
                     print_ferr(f_res);
                     return;
                 }
+                f_sync(&fil);
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::dev_pattern_maxsize, &byte_read);
                 if (f_res != FR_OK) {
@@ -558,11 +581,10 @@ void adc_sensor_config(int argc, char** argv)
                     f_close(&fil);
                     return;
                 }
+                f_close(&fil);
                 sscanf(config_str, ha_node_ns::senlnr_config_pattern, &port,
                         &pin, &adc_x, &channel, &e_type, a_factor, b_constant,
                         &filter_thres, &under_thres, &over_thres);
-                /* close opened file */
-                f_close(&fil);
                 break;
             case 'p': //set port
                 count++;
@@ -687,12 +709,14 @@ void adc_sensor_config(int argc, char** argv)
     }
     f_sync(&fil);
 
-    int16_t byte_written = f_printf(&fil, ha_node_ns::senlnr_config_pattern,
-            port, pin, adc_x, channel, e_type, argv[a_index], argv[b_index],
-            filter_thres, under_thres, over_thres);
-    f_sync(&fil);
+    snprintf(config_str, ha_node_ns::dev_pattern_maxsize,
+            ha_node_ns::senlnr_config_pattern, port, pin, adc_x, channel,
+            e_type, argv[a_index], argv[b_index], filter_thres, under_thres,
+            over_thres);
 
-    if (byte_written < 0) {
+    f_res = f_write(&fil, config_str, ha_node_ns::dev_pattern_maxsize,
+            &byte_written);
+    if (f_res != FR_OK) {
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -701,8 +725,13 @@ void adc_sensor_config(int argc, char** argv)
 
     /* read back */
     f_open(&fil, f_name, FA_READ);
+    if (f_res != FR_OK) {
+        print_ferr(f_res);
+        return;
+    }
+    f_sync(&fil);
     while (f_gets(config_str, sizeof(config_str), &fil)) {
-        printf("%s\n", config_str);
+        printf("%s", config_str);
     }
     f_close(&fil);
 
@@ -718,10 +747,12 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     FIL fil;
     UINT byte_read;
     char f_name[4];
+    UINT byte_written = 0;
+    uint8_t count = 0;
 
     int8_t ep_id = -1;
     char port = '0';
-    int8_t pin = 0;
+    uint16_t pin = 0;
 
     char config_str[ha_node_ns::gpio_pattern_size];
 
@@ -731,7 +762,7 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     }
 
     /* Read all configuration from file */
-    for (uint8_t count = 1; count < argc; count++) {
+    for (count = 1; count < argc; count++) {
         if (argv[count][0] == '-') {
             switch (argv[count][1]) {
             case 'h': //get help
@@ -757,6 +788,7 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
                     print_ferr(f_res);
                     return;
                 }
+                f_sync(&fil);
                 f_res = f_read(&fil, config_str, ha_node_ns::gpio_pattern_size,
                         &byte_read);
                 if (f_res != FR_OK) {
@@ -764,10 +796,9 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
                     f_close(&fil);
                     return;
                 }
+                f_close(&fil);
                 sscanf(config_str, ha_node_ns::gpio_dev_config_pattern, &port,
                         &pin);
-                /* close opened file */
-                f_close(&fil);
                 break;
             case 'p':
                 count++;
@@ -815,11 +846,12 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     }
     f_sync(&fil);
 
-    int16_t byte_written = f_printf(&fil, ha_node_ns::gpio_dev_config_pattern,
-            port, pin);
-    f_sync(&fil);
+    snprintf(config_str, ha_node_ns::gpio_pattern_size,
+            ha_node_ns::gpio_dev_config_pattern, port, pin);
 
-    if (byte_written < 0) {
+    f_res = f_write(&fil, config_str, ha_node_ns::gpio_pattern_size,
+            &byte_written);
+    if (f_res != FR_OK) {
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -830,8 +862,13 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
 
     /* read back */
     f_open(&fil, f_name, FA_READ);
+    if (f_res != FR_OK) {
+        print_ferr(f_res);
+        return;
+    }
+    f_sync(&fil);
     while (f_gets(config_str, sizeof(config_str), &fil)) {
-        printf("%s\n", config_str);
+        printf("%s", config_str);
     }
     f_close(&fil);
 
@@ -843,13 +880,14 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
     FRESULT f_res;
     FIL fil;
     UINT byte_read;
+    UINT byte_written;
     char f_name[4];
 
     int8_t ep_id = -1;
     char port = '0';
-    int8_t pin = 0;
-    int8_t adc_x = 0;
-    int8_t channel = 0;
+    uint16_t pin = 0;
+    uint16_t adc_x = 0;
+    uint16_t channel = 0;
 
     char config_str[ha_node_ns::adc_pwm_pattern_size];
 
@@ -885,6 +923,7 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
                     print_ferr(f_res);
                     return;
                 }
+                f_sync(&fil);
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::adc_pwm_pattern_size, &byte_read);
                 if (f_res != FR_OK) {
@@ -892,10 +931,9 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
                     f_close(&fil);
                     return;
                 }
+                f_close(&fil);
                 sscanf(config_str, ha_node_ns::adc_dev_config_pattern, &port,
                         &pin, &adc_x, &channel);
-                /* close opened file */
-                f_close(&fil);
                 break;
             case 'p':
                 count++;
@@ -967,11 +1005,12 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
     }
     f_sync(&fil);
 
-    int16_t byte_written = f_printf(&fil, ha_node_ns::adc_dev_config_pattern,
-            port, pin, adc_x, channel);
-    f_sync(&fil);
+    snprintf(config_str, ha_node_ns::adc_pwm_pattern_size,
+            ha_node_ns::adc_dev_config_pattern, port, pin, adc_x, channel);
 
-    if (byte_written < 0) {
+    f_res = f_write(&fil, config_str, ha_node_ns::adc_pwm_pattern_size,
+            &byte_written);
+    if (f_res != FR_OK) {
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -982,8 +1021,13 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
 
     /* read back */
     f_open(&fil, f_name, FA_READ);
+    if (f_res != FR_OK) {
+        print_ferr(f_res);
+        return;
+    }
+    f_sync(&fil);
     while (f_gets(config_str, sizeof(config_str), &fil)) {
-        printf("%s\n", config_str);
+        printf("%s", config_str);
     }
     f_close(&fil);
 
@@ -994,14 +1038,14 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read;
+    UINT byte_read, byte_written;
     char f_name[4];
 
     int8_t ep_id = -1;
     char port = '0';
-    int8_t pin = 0;
-    int8_t timer_x = 0;
-    int8_t channel = 0;
+    uint16_t pin = 0;
+    uint16_t timer_x = 0;
+    uint16_t channel = 0;
 
     char config_str[ha_node_ns::adc_pwm_pattern_size];
 
@@ -1036,6 +1080,7 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
                     print_ferr(f_res);
                     return;
                 }
+                f_sync(&fil);
                 f_res = f_read(&fil, config_str,
                         ha_node_ns::adc_pwm_pattern_size, &byte_read);
                 if (f_res != FR_OK) {
@@ -1043,10 +1088,9 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
                     f_close(&fil);
                     return;
                 }
+                f_close(&fil);
                 sscanf(config_str, ha_node_ns::adc_dev_config_pattern, &port,
                         &pin, &timer_x, &channel);
-                /* close opened file */
-                f_close(&fil);
                 break;
             case 'p': //set port
                 count++;
@@ -1078,6 +1122,11 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
                     return;
                 }
                 timer_x = atoi(argv[count]);
+                if (timer_x < 0 || timer_x > 8 || timer_x == 6
+                        || timer_x == 7) {
+                    printf("ERR: invalid timer value for pwm\n");
+                    return;
+                }
                 break;
             case 'c': //set channel
                 count++;
@@ -1110,11 +1159,12 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
     }
     f_sync(&fil);
 
-    int16_t byte_written = f_printf(&fil, ha_node_ns::pwm_dev_config_pattern,
-            port, pin, timer_x, channel);
-    f_sync(&fil);
+    snprintf(config_str, ha_node_ns::adc_pwm_pattern_size,
+            ha_node_ns::pwm_dev_config_pattern, port, pin, timer_x, channel);
 
-    if (byte_written < 0) {
+    f_res = f_write(&fil, config_str, ha_node_ns::adc_pwm_pattern_size,
+            &byte_written);
+    if (f_res != FR_OK) {
         print_ferr(f_res);
         f_close(&fil);
         return;
@@ -1125,8 +1175,13 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
 
     /* read back */
     f_open(&fil, f_name, FA_READ);
+    if (f_res != FR_OK) {
+        print_ferr(f_res);
+        return;
+    }
+    f_sync(&fil);
     while (f_gets(config_str, sizeof(config_str), &fil)) {
-        printf("%s\n", config_str);
+        printf("%s", config_str);
     }
     f_close(&fil);
 
@@ -1211,6 +1266,7 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
         print_ferr(f_res);
         return;
     }
+    f_sync(&fil);
 
     for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
         snprintf(line, sizeof(line), ha_node_ns::dev_list_pattern, dev_list[i]);
@@ -1225,15 +1281,11 @@ static bool check_devid(uint32_t dev_id)
 {
     uint16_t node_id = dev_id >> 16;
     uint8_t ep_id = (dev_id >> 8) & 0xFF;
-    uint8_t dev_type = dev_id & 0xFF;
 
     if (node_id != ha_ns::sixlowpan_node_id) {
         return false;
     }
     if (ep_id > ha_node_ns::max_end_point) {
-        return false;
-    }
-    if (dev_type == 0 || dev_type == 0xFF) {
         return false;
     }
 

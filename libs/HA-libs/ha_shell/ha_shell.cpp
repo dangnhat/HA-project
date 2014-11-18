@@ -42,7 +42,8 @@ const shell_command_t shell_commands[] = {
 
 #ifdef HA_NODE
     /* device configuration cmds */
-    {"rst", "Run spcified thread with a device", rst_endpoint_callback},
+    {"rst", "Run the specified thread with a device", rst_endpoint_callback},
+    {"stop", "Stop device in the specified thread", stop_endpoint_callback},
     {"btn", "Configure button device", button_config},
     {"sw", "Configure switch device", switch_config},
     {"bulb", "Configure on-off bulb device", on_off_bulb_config},
