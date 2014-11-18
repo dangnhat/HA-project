@@ -25,7 +25,7 @@
 cir_queue::cir_queue(uint8_t *queue_p, uint16_t queue_size)
 {
     this->queue_p = queue_p;
-    this->queue_size = 0;
+    this->queue_size = queue_size;
 
     this->head = 0;
     this->tail = -1;
@@ -141,6 +141,6 @@ int32_t cir_queue::get_data(uint8_t* buf, int32_t size)
 
 int32_t cir_queue::get_size(void)
 {
-    return (tail==-1) ? 0 : (head >= tail ? head - tail : head + queue_size - tail);
+    return (tail==-1) ? 0 : (head > tail ? head - tail : head + queue_size - tail);
 }
 
