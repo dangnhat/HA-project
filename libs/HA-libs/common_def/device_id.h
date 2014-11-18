@@ -25,7 +25,8 @@ namespace ha_ns {
 
 enum device_type_e
     : uint8_t {
-        SWITCH = 0x01,
+        NO_DEVICE = 0x00,
+    SWITCH = 0x01,
     BUTTON = 0x02,
     DIMMER = 0x03,
     LIN_SENSOR = 0x04,
@@ -35,7 +36,8 @@ enum device_type_e
     LEVEL_BULB = 0x42,
     RGB_LED = 0x43,
     SERVO_SG90 = 0x44
-};
+}
+;
 
 }
 

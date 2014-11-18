@@ -47,7 +47,7 @@ const uint8_t GFF_CMD_POS = GFF_LEN_POS + GFF_LEN_SIZE;
 const uint8_t GFF_DATA_POS = GFF_CMD_POS + GFF_CMD_SIZE;
 
 const uint8_t SET_DEV_VAL_DATA_LEN = 6; /* device_id + value */
-const uint8_t ALIVE_DATA_LEN = 0;
+const uint8_t ALIVE_DATA_LEN = 4; /* device_id */
 
 };
 
