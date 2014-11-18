@@ -11,24 +11,30 @@
 #include <stdint.h>
 
 namespace ha_ns {
-enum
+enum btn_status_e
     : uint16_t {
         btn_no_pressed = 0,
     btn_pressed = 1,
     btn_on_hold = 2
-} btn_status_t;
+};
 
-enum
+enum sw_status_e
     : uint16_t {
         switch_off = 0,
     switch_on = 1
-} sw_status_t;
+};
 
-enum
+enum bulb_status_e
     : uint16_t {
         bulb_off = 0,
     bulb_on = 1
-} bulb_status_t;
+};
+
+enum evt_sensor_status_e
+    : uint16_t {
+        no_detected = 0,
+    detected = 1
+};
 }
 
 #endif //__HA_DEVICE_STATUS_H

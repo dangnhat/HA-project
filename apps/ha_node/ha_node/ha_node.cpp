@@ -19,8 +19,9 @@ extern "C" {
 #include "MB1_System.h"
 
 const ISRMgr_ns::ISR_t tim_isr_type = ISRMgr_ns::ISRMgr_TIM6;
-const uint8_t timer_period = 1; //ms
-const uint32_t send_alive_time_period = 60 * 1000 / timer_period; //send alive every 60s.
+const ISRMgr_ns::ISR_t rtc_isr_type = ISRMgr_ns::ISRMgr_RTC;
+const uint8_t rtc_period = 1; //sec
+const uint32_t send_alive_time_period = 10 / rtc_period; //send alive every 10s.
 
 uint32_t time_cycle_count = 0;
 kernel_pid_t ha_node_ns::end_point_pid[max_end_point];
@@ -33,7 +34,7 @@ void ha_node_init(void)
     endpoint_pid_table_init();
 
     /* Assign send-alive callback function into interrupt timer */
-    MB1_ISRs.subISR_assign(tim_isr_type, &send_alive_timer_isr);
+    MB1_ISRs.subISR_assign(rtc_isr_type, &send_alive_timer_isr);
 
     /* Assign button & switch callback function into interrupt timer */
     MB1_ISRs.subISR_assign(tim_isr_type, &btn_sw_callback_timer_isr);
