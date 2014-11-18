@@ -95,6 +95,11 @@ public:
     int8_t chag_dev_ttl(uint32_t device_id, int8_t val);
 
     /**
+     * @brief   Decrease all device's ttls by one, and remove device(s) if TTL_IS_ZERO.
+     */
+    void dec_all_devs_ttl(void);
+
+    /**
      * @brief   Remove a device from devices buffer. (i.e. set id to no device)
      *
      * @param[in]   device_id.

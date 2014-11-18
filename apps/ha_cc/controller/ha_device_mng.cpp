@@ -28,7 +28,7 @@ using namespace ha_device_mng_ns;
 
 /* print list of devices */
 static const char print_first_line[] = "#\t|\tid\t|\tval\t|\ti/o\t|\tttl\t|\tname\n"
-        "-----------------------------------------------------------------\n";
+        "---\n";
 static const char print_line_pattern[] = "%d\t|\t%08lx\t|\t%d\t|\t%d\t|\t%d\t| %s\n";
 
 /* save and restore */
@@ -131,6 +131,22 @@ int8_t ha_device_mng::chag_dev_ttl(uint32_t device_id, int8_t val)
     }
 
     return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+void ha_device_mng::dec_all_devs_ttl(void)
+{
+    uint16_t count;
+
+    for (count = 0; count < max_num_of_dev; count++) {
+        if (!devices_buffer[count].is_no_device()) {
+            devices_buffer[count].set_ttl(devices_buffer[count].get_ttl() - 1);
+            if (devices_buffer[count].get_ttl() == 0) {
+                devices_buffer[count].set_to_no_device();
+                cur_size--;
+            }
+        }
+    }
 }
 
 /*----------------------------------------------------------------------------*/
