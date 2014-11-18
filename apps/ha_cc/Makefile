@@ -60,6 +60,7 @@ SRCLOC += ../../libs/HA-libs/ha_shell
 SRCLOC += ../../libs/HA-libs/misc
 SRCLOC += ../../libs/HA-libs/ha_sixlowpan
 SRCLOC += sixlowpan
+SRCLOC += controller
 
 INCLOC += ../../libs/HA-libs
 INCLOC += ../../libs/MBoard1-libs
@@ -72,6 +73,7 @@ INCLOC += ../../libs/HA-libs/common_def
 INCLOC += ../../libs/HA-libs/misc
 INCLOC += ../../libs/HA-libs/ha_sixlowpan
 INCLOC += sixlowpan
+INCLOC += controller
 INCLOC += .
 
 export CPPMIX =1

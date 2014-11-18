@@ -79,4 +79,13 @@ uint8_t parse_ep_deviceid(uint32_t device_id);
  */
 uint8_t parse_devtype_deviceid(uint32_t device_id);
 
+/**
+ * @brief   Convert device type to name.
+ *
+ * @param[in]   device_type
+ *
+ * @return      type name.
+ */
+const char* device_type_to_name(uint8_t device_type);
+
 #endif /* HA_GFF_MISC_H_ */
