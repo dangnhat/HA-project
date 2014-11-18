@@ -63,9 +63,9 @@ static void sensor_callback(void *arg)
     msg_t msg;
     msg.type = SEN_EVT_MSG;
     if (sensor->is_detected()) {
-        msg.content.value = 1;
+        msg.content.value = sensor_event_ns::high_level;
     } else {
-        msg.content.value = 0;
+        msg.content.value = sensor_event_ns::low_level;
     }
 
     /* check valid pid and send msg */

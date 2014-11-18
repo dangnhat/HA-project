@@ -144,7 +144,8 @@ void dimmer_callback_timer_isr(void)
             if (dimmer_table[i] != NULL) {
                 uint8_t new_value = dimmer_table[i]->dimmer_processing();
 #if SND_MSG
-                if (dimmer_table[i]->is_over_delta_thres()) {
+                if (dimmer_table[i]->is_over_delta_thres() || dimmer_table[i]->is_first_send) {
+                    dimmer_table[i]->is_first_send = false;
                     msg_t msg;
                     msg.type = DIMMER_MSG;
                     msg.content.value = new_value;

@@ -7,28 +7,40 @@
  */
 #include "on_off_bulb_driver.h"
 
+const uint8_t bulb_active_level = 0;
+
 on_off_bulb_instance::on_off_bulb_instance(void) :
         gpio_dev_class(false)
 {
     this->is_turn_on = false;
 }
 
-void on_off_bulb_instance::device_configure(gpio_config_params_t *gpio_config_params)
+void on_off_bulb_instance::device_configure(
+        gpio_config_params_t *gpio_config_params)
 {
-    gpio_dev_configure(gpio_config_params->device_port, gpio_config_params->device_pin);
+    gpio_dev_configure(gpio_config_params->device_port,
+            gpio_config_params->device_pin);
     bulb_turn_off();
 }
 
 void on_off_bulb_instance::bulb_turn_on(void)
 {
     this->is_turn_on = true;
-    gpio_dev_on();
+    if (bulb_active_level == 0) {
+        gpio_dev_off();
+    } else {
+        gpio_dev_on();
+    }
 }
 
 void on_off_bulb_instance::bulb_turn_off(void)
 {
     this->is_turn_on = false;
-    gpio_dev_off();
+    if (bulb_active_level == 0) {
+        gpio_dev_on();
+    } else {
+        gpio_dev_off();
+    }
 }
 
 void on_off_bulb_instance::bulb_toggle(void)

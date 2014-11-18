@@ -21,7 +21,10 @@ public:
     void set_percent_intensity(uint8_t percent_intensity);
     void set_level_intensity(uint16_t level_intensity);
     void set_output_freq(uint32_t freq_in_hz);
-    void blink_on(void);
+    void set_active_level(uint8_t active_level);
+    void restart(void);
+    void stop(void);
+    void blink_on(uint8_t freq_in_hz);
     void blink_off(void);
     uint16_t get_level_intensity(void);
     uint8_t get_percent_intensity(void);
@@ -29,6 +32,7 @@ private:
     bool is_blink;
     uint16_t level_intensity;
     uint8_t percent_intensity;
+    uint8_t active_level;
 };
 
 #endif //__HA_LEVEL_BULB_DRIVER_H_

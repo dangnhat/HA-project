@@ -55,6 +55,7 @@ public:
 
 #if SND_MSG
     kernel_pid_t get_pid(void);
+    bool is_first_send = true;
 #endif
 private:
 #if AUTO_UPDATE
