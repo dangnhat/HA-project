@@ -29,7 +29,7 @@ const char slp_usage[] = "Usage:\n"
                         "r (root router), n (node router), or h (host)\n"
                     "6lowpan -c channel, set channel\n"
                     "6lowpan -s, start 6lowpan stack\n"
-                    "6lowpan -x device_id(hex) value, send SET-DEV_VAL message to a device\n"
+                    "6lowpan -x device_id(hex) value(hex), send SET-DEV_VAL message to a device\n"
                     "6lowpan -h, get help\n"
                     "note: multiple options can be combined together\n";
 const char slp_prefix_pattern[] = "%lx:%lx:%lx:%lx";
@@ -161,7 +161,7 @@ void sixlowpan_config(int argc, char** argv)
                 }
 
                 sto_device_id = strtol(argv[count + 1], NULL, 16);
-                sto_value = atoi(argv[count + 2]);
+                sto_value = strtol(argv[count + 2], NULL, 16);
 
                 set_dev_val_buffer[0] = ha_ns::SET_DEV_VAL_DATA_LEN;
                 uint162buf(ha_ns::SET_DEV_VAL, &set_dev_val_buffer[1]);

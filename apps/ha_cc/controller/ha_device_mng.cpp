@@ -27,12 +27,10 @@
 using namespace ha_device_mng_ns;
 
 /* print list of devices */
-static const char print_first_line[] = "#\t|\tid\t|\tval\t|\ti/o\t|\tttl\t|\tname\n"
-        "---\n";
-static const char print_line_pattern[] = "%d\t|\t%08lx\t|\t%d\t|\t%d\t|\t%d\t| %s\n";
+static const char print_line_pattern[] = "| %-3d | %08lx | %-8d | %-3d | %-4d | %-10s |\n";
 
 /* save and restore */
-static const char devices_list_line_pattern[] = "%lx %hd %hhd\n";
+static const char devices_list_line_pattern[] = "%lx %d %d\n";
 
 /*----------------------------------------------------------------------------*/
 ha_device_mng::ha_device_mng(ha_device *devices_buffer, uint16_t num_of_dev,
@@ -202,7 +200,9 @@ void ha_device_mng::print_all_devices(void)
     uint16_t num_of_dev_count = 0;
     uint16_t count;
 
-    HA_NOTIFY(print_first_line);
+    HA_NOTIFY("| %-3s | %-8s | %-8s | %-3s | %-4s | %-10s |\n", "#", "id",
+            "value", "i/o", "ttl", "name");
+    HA_NOTIFY("-----\n");
 
     for (count = 0; count < max_num_of_dev; count++) {
         if (!devices_buffer[count].is_no_device()) {
@@ -221,6 +221,8 @@ void ha_device_mng::print_all_devices(void)
             }
         }/* end a device */
     }/* end for */
+
+    HA_NOTIFY("Total num of devs: %hu\n", cur_size);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -271,8 +273,7 @@ void ha_device_mng::restore(void)
     FIL file;
     FRESULT fres;
     uint32_t device_id;
-    int16_t value;
-    int8_t ttl;
+    int value_i, ttl_i;
     char line[32];
 
     if (devices_list_file == NULL) {
@@ -289,9 +290,9 @@ void ha_device_mng::restore(void)
 
     /* read list of devices */
     while( f_gets(line, sizeof(line), &file) ){
-        sscanf(line, devices_list_line_pattern, &device_id, &value, &ttl);
-        set_dev_val(device_id, value);
-        set_dev_ttl(device_id, ttl);
+        sscanf(line, devices_list_line_pattern, &device_id, &value_i, &ttl_i);
+        set_dev_val(device_id, (int16_t)value_i);
+        set_dev_ttl(device_id, (int8_t)ttl_i);
     }
 
     f_close(&file);

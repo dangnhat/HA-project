@@ -58,6 +58,9 @@ static ha_device_mng controller_dev_mng(controller_devs_buffer, controller_max_n
 /* Time to live for every ALIVE messages */
 static const int8_t alive_ttl = 30; /* in second */
 
+/* Time period to save device data */
+static const uint8_t dev_list_save_period = 5; /* in seconds */
+
 /*----------------------------- Controller namespace -------------------------*/
 
 namespace controller_ns {
@@ -93,6 +96,7 @@ void controller_start(void)
 /* Prototypes */
 static void slp_gff_handler(uint8_t *gff_frame, cir_queue *slp_queue, ha_device_mng *dev_mng);
 static void ble_gff_handler(uint8_t *gff_frame, cir_queue *ble_queue, ha_device_mng *dev_mng);
+void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng);
 
 static void *controller_func(void *) {
     msg_t mesg;
@@ -117,8 +121,8 @@ static void *controller_func(void *) {
             HA_DEBUG("controller: BLE_GFF_PENDING\n");
             break;
         case ha_cc_ns::ONE_SEC_INTERRUPT:
-            HA_DEBUG("controller: ONE_SEC_INTERRUPT\n");
             controller_dev_mng.dec_all_devs_ttl();
+            save_dev_list_with_1sec(dev_list_save_period, &controller_dev_mng);
             break;
         default:
             HA_DEBUG("controller: Unknown message %d\n", mesg.type);
@@ -139,8 +143,8 @@ static void slp_gff_handler(uint8_t *gff_frame, cir_queue *slp_queue, ha_device_
 
     /* Check data */
     data_len = slp_queue->preview_data(false);
-    if ((data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE) != slp_queue->get_size()) {
-        HA_DEBUG("slp_gff_handler: Err, data len %d + cmd_size + len_size != queue_size %d\n",
+    if ((data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE) > slp_queue->get_size()) {
+        HA_DEBUG("slp_gff_handler: Err, data len %hu + cmd_size + len_size != queue_size %ld\n",
                 data_len, slp_queue->get_size());
         return;
     }
@@ -158,6 +162,7 @@ static void slp_gff_handler(uint8_t *gff_frame, cir_queue *slp_queue, ha_device_
         HA_DEBUG("slp_gff_handler: SET_DEV_VAL (%lx, %d)\n", device_id, value);
 
         dev_mng->set_dev_val(device_id, value);
+        dev_mng->set_dev_ttl(device_id, alive_ttl);
         /* TODO: forward to BLE */
         break;
     case ha_ns::ALIVE:
@@ -179,6 +184,21 @@ void second_int_callback(void)
 
     mesg.type = ha_cc_ns::ONE_SEC_INTERRUPT;
     msg_send(&mesg, controller_pid, false);
+}
+
+/*----------------------------------------------------------------------------*/
+void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng)
+{
+    static uint8_t time_count = 0;
+
+    time_count++;
+    if (time_count > save_period) {
+        time_count = 0;
+        HA_DEBUG("save_dev_list: Saving devices list\n");
+        dev_mng->save();
+        HA_DEBUG("save_dev_list: Saved\n");
+    }
+
 }
 
 /*----------------------------------------------------------------------------*/
