@@ -40,9 +40,6 @@ void ble_init()
 	USART3_RxInit();
 	bglib_output = &sendBTMessage;
 	MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_USART3, usart3_receive);
-
-	//reset device
-//	ble_cmd_sm_set_bondable_mode(1);
 }
 
 void usart3_receive()
