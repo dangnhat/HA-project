@@ -12,7 +12,7 @@
 #include "shell_cmds_dev_config.h"
 #include "shell_cmds_fatfs.h"
 #include "ha_sixlowpan.h"
-//#include "ha_node_dev_config.h"
+#include "ha_gff_misc.h"
 #include "ff.h"
 #include "device_id.h"
 
@@ -75,7 +75,8 @@ const char linear_sensor_usage[] =
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
  */
-static void gpio_common_config(int argc, char** argv, int *endpoint_id);
+static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
+        int8_t *sub_type);
 
 /**
  * @brief configure pure ADC devices (port/pin and adc/adc_channel).
@@ -85,7 +86,7 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id);
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
  */
-static void adc_common_config(int argc, char** argv, int *endpoint_id);
+static void adc_common_config(int argc, char** argv, int8_t *endpoint_id);
 
 /**
  * @brief configure pure PWM devices (port/pin and timer/pwm_channel).
@@ -95,7 +96,7 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id);
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
  */
-static void pwm_common_config(int argc, char** argv, int *endpoint_id);
+static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id);
 
 static bool check_port(char src, char* port);
 
@@ -138,9 +139,10 @@ void rst_endpoint_callback(int argc, char** argv)
 
 void button_config(int argc, char** argv)
 {
-    int ep_id = -1;
+    int8_t ep_id = -1;
+    int8_t sub_type = -1;
 
-    gpio_common_config(argc, argv, &ep_id);
+    gpio_common_config(argc, argv, &ep_id, &sub_type);
     if (ep_id < 0) {
         return;
     }
@@ -152,9 +154,10 @@ void button_config(int argc, char** argv)
 
 void switch_config(int argc, char** argv)
 {
-    int ep_id = -1;
+    int8_t ep_id = -1;
+    int8_t sub_type = -1;
 
-    gpio_common_config(argc, argv, &ep_id);
+    gpio_common_config(argc, argv, &ep_id, &sub_type);
     if (ep_id < 0) {
         return;
     }
@@ -164,37 +167,41 @@ void switch_config(int argc, char** argv)
     return;
 }
 
-void on_off_bulb_config(int argc, char** argv)
+void on_off_output_config(int argc, char** argv)
 {
-    int ep_id = -1;
+    int8_t ep_id = -1;
+    int8_t sub_type = -1;
 
-    gpio_common_config(argc, argv, &ep_id);
-    if (ep_id < 0) {
+    gpio_common_config(argc, argv, &ep_id, &sub_type);
+    if (ep_id < 0 || sub_type < 0) {
+        printf("ERR: invalid sub type\n");
         return;
     }
 
-    modify_dev_list_file(ep_id, (uint8_t) ha_ns::ON_OFF_BULB);
+    modify_dev_list_file(ep_id, combine_dev_type(ha_ns::ON_OFF_OPUT, (uint8_t) sub_type));
 
     return;
 }
 
 void sensor_event_config(int argc, char** argv)
 {
-    int ep_id = -1;
+    int8_t ep_id = -1;
+    int8_t sub_type = -1;
 
-    gpio_common_config(argc, argv, &ep_id);
-    if (ep_id < 0) {
+    gpio_common_config(argc, argv, &ep_id, &sub_type);
+    if (ep_id < 0 || sub_type < 0) {
+        printf("ERR: invalid sub type\n");
         return;
     }
 
-    modify_dev_list_file(ep_id, (uint8_t) ha_ns::EVT_SENSOR);
+    modify_dev_list_file(ep_id, combine_dev_type(ha_ns::EVT_SENSOR, (uint8_t) sub_type));
 
     return;
 }
 
 void dimmer_config(int argc, char** argv)
 {
-    int ep_id = -1;
+    int8_t ep_id = -1;
 
     /* write input to "endpoint" file */
     adc_common_config(argc, argv, &ep_id);
@@ -210,7 +217,7 @@ void dimmer_config(int argc, char** argv)
 
 void level_bulb_config(int argc, char** argv)
 {
-    int ep_id = -1;
+    int8_t ep_id = -1;
 
     pwm_common_config(argc, argv, &ep_id);
     if (ep_id < 0) {
@@ -224,7 +231,7 @@ void level_bulb_config(int argc, char** argv)
 
 void servo_config(int argc, char** argv)
 {
-    int ep_id = -1;
+    int8_t ep_id = -1;
 
     pwm_common_config(argc, argv, &ep_id);
     if (ep_id < 0) {
@@ -524,7 +531,7 @@ void adc_sensor_config(int argc, char** argv)
     char f_name[4];
 
     int8_t ep_id = -1;
-    uint8_t dev_type = (uint8_t) ha_ns::LIN_SENSOR;
+    int8_t sub_type = -1;
 
     char port = '0';
     uint16_t pin = 0;
@@ -555,6 +562,14 @@ void adc_sensor_config(int argc, char** argv)
             case 'h': //get help
                 printf(rgb_usage);
                 return;
+            case 's':
+                count++;
+                if (count > argc) {
+                    printf("ERR: too few argument. Try -h to get help.\n");
+                    return;
+                }
+                sub_type = atoi(argv[count]);
+                break;
             case 'e': //set endpoint id
                 count++;
                 if (count > argc) {
@@ -700,6 +715,11 @@ void adc_sensor_config(int argc, char** argv)
         return;
     }
 
+    if (sub_type < 0) {
+        printf("ERR: missing -s option.\n");
+        return;
+    }
+
     /* Write configurations to file */
     f_res = f_open(&fil, f_name, FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
@@ -736,12 +756,13 @@ void adc_sensor_config(int argc, char** argv)
     f_close(&fil);
 
     /* modify device list file */
-    modify_dev_list_file(ep_id, dev_type);
+    modify_dev_list_file(ep_id, combine_dev_type(ha_ns::LIN_SENSOR, (uint8_t) sub_type));
 
     return;
 }
 
-static void gpio_common_config(int argc, char** argv, int *endpoint_id)
+static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
+        int8_t *sub_type)
 {
     FRESULT f_res;
     FIL fil;
@@ -750,7 +771,7 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     UINT byte_written = 0;
     uint8_t count = 0;
 
-    int8_t ep_id = -1;
+    *endpoint_id = -1;
     char port = '0';
     uint16_t pin = 0;
 
@@ -768,6 +789,14 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
             case 'h': //get help
                 printf(gpio_usage, argv[0]);
                 return;
+            case 's':
+                count++;
+                if (count > argc) {
+                    printf("ERR: too few argument. Try -h to get help.\n");
+                    return;
+                }
+                *sub_type = atoi(argv[count]);
+                break;
             case 'e': //set endpoint id
                 count++;
                 if (count > argc) {
@@ -775,13 +804,14 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
                     return;
                 }
                 /* save endpoint id */
-                ep_id = atoi(argv[count]);
-                if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+                *endpoint_id = atoi(argv[count]);
+                if (*endpoint_id < 0
+                        || *endpoint_id > ha_node_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
                 /* get file name from ep id */
-                snprintf(f_name, sizeof(f_name), "%x", ep_id);
+                snprintf(f_name, sizeof(f_name), "%x", *endpoint_id);
                 /* open "ep id" file */
                 f_res = f_open(&fil, f_name, FA_READ | FA_OPEN_ALWAYS);
                 if (f_res != FR_OK) {
@@ -833,7 +863,7 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
         }
     }
 
-    if (ep_id < 0) {
+    if (*endpoint_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -858,8 +888,6 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     }
     f_close(&fil);
 
-    *endpoint_id = ep_id;
-
     /* read back */
     f_open(&fil, f_name, FA_READ);
     if (f_res != FR_OK) {
@@ -875,15 +903,14 @@ static void gpio_common_config(int argc, char** argv, int *endpoint_id)
     return;
 }
 
-static void adc_common_config(int argc, char** argv, int *endpoint_id)
+static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read;
-    UINT byte_written;
+    UINT byte_read, byte_written;
     char f_name[4];
 
-    int8_t ep_id = -1;
+    *endpoint_id = -1;
     char port = '0';
     uint16_t pin = 0;
     uint16_t adc_x = 0;
@@ -910,13 +937,14 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
                     return;
                 }
                 /* save endpoint id */
-                ep_id = atoi(argv[count]);
-                if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+                *endpoint_id = atoi(argv[count]);
+                if (*endpoint_id < 0
+                        || *endpoint_id > ha_node_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
                 /* get file name from ep id */
-                snprintf(f_name, sizeof(f_name), "%x", ep_id);
+                snprintf(f_name, sizeof(f_name), "%x", *endpoint_id);
                 /* open "ep id" file */
                 f_res = f_open(&fil, f_name, FA_READ | FA_OPEN_ALWAYS);
                 if (f_res != FR_OK) {
@@ -992,7 +1020,7 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
         }
     }
 
-    if (ep_id < 0) {
+    if (*endpoint_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -1017,8 +1045,6 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
     }
     f_close(&fil);
 
-    *endpoint_id = ep_id;
-
     /* read back */
     f_open(&fil, f_name, FA_READ);
     if (f_res != FR_OK) {
@@ -1034,14 +1060,14 @@ static void adc_common_config(int argc, char** argv, int *endpoint_id)
     return;
 }
 
-static void pwm_common_config(int argc, char** argv, int *endpoint_id)
+static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
 {
     FRESULT f_res;
     FIL fil;
     UINT byte_read, byte_written;
     char f_name[4];
 
-    int8_t ep_id = -1;
+    *endpoint_id = -1;
     char port = '0';
     uint16_t pin = 0;
     uint16_t timer_x = 0;
@@ -1060,20 +1086,21 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
             switch (argv[count][1]) {
             case 'h': //get help
                 printf(gpio_usage, argv[0]);
-                return;
+                break;
             case 'e': //set endpoint id
                 count++;
                 if (count > argc) {
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                ep_id = atoi(argv[count]);
-                if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+                *endpoint_id = atoi(argv[count]);
+                if (*endpoint_id < 0
+                        || *endpoint_id > ha_node_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
                 /* get file name from ep id */
-                snprintf(f_name, sizeof(f_name), "%x", ep_id);
+                snprintf(f_name, sizeof(f_name), "%x", *endpoint_id);
                 /* open "ep id" file */
                 f_res = f_open(&fil, f_name, FA_READ | FA_OPEN_ALWAYS);
                 if (f_res != FR_OK) {
@@ -1146,7 +1173,7 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
         }
     }
 
-    if (ep_id < 0) {
+    if (*endpoint_id < 0) {
         printf("ERR: missing -e option.\n");
         return;
     }
@@ -1170,8 +1197,6 @@ static void pwm_common_config(int argc, char** argv, int *endpoint_id)
         return;
     }
     f_close(&fil);
-
-    *endpoint_id = ep_id;
 
     /* read back */
     f_open(&fil, f_name, FA_READ);
@@ -1299,7 +1324,7 @@ void run_endpoint(int8_t ep_id)
 
     memset(dev_list, 0, sizeof(dev_list));
 
-    if (ep_id < 0 || ep_id > 15) {
+    if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
         printf("ERR: invalid input endpoint id.\n");
         return;
     }
@@ -1320,10 +1345,10 @@ void run_endpoint(int8_t ep_id)
     f_close(&fil);
 
     if (!check_devid(dev_list[ep_id])) {
-        printf("Device id is invalid!!.\n");
+        printf("EP%d: No device!!\n", ep_id);
         return;
     } else {
-        printf("Device id is valid.\n");
+        printf("EP%d: Device id is valid.\n", ep_id);
     }
 
     msg_t msg;

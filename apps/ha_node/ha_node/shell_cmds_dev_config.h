@@ -18,7 +18,7 @@ void button_config(int argc, char** argv);
 
 void switch_config(int argc, char** argv);
 
-void on_off_bulb_config(int argc, char** argv);
+void on_off_output_config(int argc, char** argv);
 
 void sensor_event_config(int argc, char** argv);
 
