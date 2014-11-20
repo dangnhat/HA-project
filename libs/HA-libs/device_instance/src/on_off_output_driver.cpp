@@ -5,54 +5,58 @@
  * @date 20-10-2014
  * @brief This is source file for on-off bulb device instance for HA system.
  */
-#include "on_off_bulb_driver.h"
+#include "on_off_output_driver.h"
 
-const uint8_t bulb_active_level = 0;
-
-on_off_bulb_instance::on_off_bulb_instance(void) :
+on_off_output_instance::on_off_output_instance(void) :
         gpio_dev_class(false)
 {
+    this->active_level = 0;
     this->is_turn_on = false;
 }
 
-void on_off_bulb_instance::device_configure(
+void on_off_output_instance::device_configure(
         gpio_config_params_t *gpio_config_params)
 {
     gpio_dev_configure(gpio_config_params->device_port,
             gpio_config_params->device_pin);
-    bulb_turn_off();
+    dev_turn_off();
 }
 
-void on_off_bulb_instance::bulb_turn_on(void)
+void on_off_output_instance::set_active_level(uint8_t active_level)
+{
+    this->active_level = active_level;
+}
+
+void on_off_output_instance::dev_turn_on(void)
 {
     this->is_turn_on = true;
-    if (bulb_active_level == 0) {
+    if (active_level == 0) {
         gpio_dev_off();
     } else {
         gpio_dev_on();
     }
 }
 
-void on_off_bulb_instance::bulb_turn_off(void)
+void on_off_output_instance::dev_turn_off(void)
 {
     this->is_turn_on = false;
-    if (bulb_active_level == 0) {
+    if (active_level == 0) {
         gpio_dev_on();
     } else {
         gpio_dev_off();
     }
 }
 
-void on_off_bulb_instance::bulb_toggle(void)
+void on_off_output_instance::dev_toggle(void)
 {
     if (this->is_turn_on) {
-        bulb_turn_off();
+        dev_turn_off();
     } else {
-        bulb_turn_on();
+        dev_turn_on();
     }
 }
 
-bool on_off_bulb_instance::bulb_get_state(void)
+bool on_off_output_instance::dev_get_state(void)
 {
     return this->is_turn_on;
 }
