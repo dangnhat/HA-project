@@ -11,7 +11,6 @@
 #include "MB1_System.h"
 #include "apitypes.h"
 #include "cmd_def.h"
-#include "ble_message.h"
 #include "cir_queue.h"
 
 #ifdef __cplusplus
@@ -31,18 +30,11 @@ namespace ble_thread_ns {
 extern int16_t ble_thread_pid;
 }
 
-struct ble_serv_stt_s {
-    uint8_t ready;
-    uint8_t connected;
-};
-
 void USART3_RxInit(void);
 void ble_init(void);
 void usart3_receive(void);
 void sendBTMessage(uint8_t len1, uint8_t* data1, uint16_t len2, uint8_t* data2);
 void receiveBTMessage(void);
-
-extern ble_serv_stt_s BTFlags;
 
 #ifdef __cplusplus
 }
