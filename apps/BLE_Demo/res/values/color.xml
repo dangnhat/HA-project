@@ -6,10 +6,14 @@
     <color name="white">#ffffff</color>
     <color name="blue">#1794ed</color>
     <color name="orange">#e8ad1b</color>
+    <color name="deep_orange">#FF5722</color>
     <color name="deep_purple">#673ab7</color>
+    
     <color name="cyan">#00bcd4</color>
+    <color name="cyan200">#80DEEA</color>
     <color name="accent_pink">#ff4081</color>
-    <color name="background_grey">#fafaff</color>
+    <color name="pink_press">#F48FB1</color>
+    <color name="background_grey">#EEEEEE</color>
     <color name="red">#e51c23</color>
     <color name="brown">#795548</color>
     <color name="transparent">#00000000</color>

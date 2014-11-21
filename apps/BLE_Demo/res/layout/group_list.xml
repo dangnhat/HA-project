@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:padding="10dp"
     android:layout_margin="15dp"
-    android:background="@color/cyan" >"
+    android:background="@color/deep_orange" >"
     <TextView
         android:layout_marginLeft="20dp" 
         android:id="@+id/roomName"

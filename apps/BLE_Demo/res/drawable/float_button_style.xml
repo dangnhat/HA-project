@@ -3,13 +3,13 @@
     android:shape="oval">
      
     <solid 
-        android:color="@color/cyan"/>
+        android:color="@color/accent_pink"/>
     <size 
         android:width="45dp"
         android:height="45dp" />
-    <stroke 
+    <!-- <stroke 
         android:color="@color/brown"
         android:dashWidth="1dp"
-        android:width="2dp"/>
+        android:width="2dp"/> -->
 
 </shape>

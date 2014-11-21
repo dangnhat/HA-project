@@ -1,5 +1,6 @@
 package anh.trinh.ble_demo.list_view;
 
+import android.R;
 import anh.trinh.ble_demo.data.DeviceTypeDef;
 
 public class Device_c {
@@ -21,7 +22,7 @@ public class Device_c {
 		return name;
 	}
 	
-	public int getVal(){
+	public short getVal(){
 		return val;
 	}
 	
@@ -37,29 +38,23 @@ public class Device_c {
 		case DeviceTypeDef.DIMMER:
 			this.name = "Dimmer";
 			break;	
-		case DeviceTypeDef.GAS_SENSOR:
+		case DeviceTypeDef.EVENT_SENSOR:
 			this.name = "Gas Sensor";
 			break;
 		case DeviceTypeDef.LEVEL_BULB:
 			this.name = "Level Bulb";
 			break;
-		case DeviceTypeDef.LIGHT_SENSOR:
+		case DeviceTypeDef.LINEAR_SENSOR:
 			this.name = "Light Sensor";
 			break;
-		case DeviceTypeDef.MOTOR:
-			this.name = "Motor";
+		case DeviceTypeDef.SERVO_SG90:
+			this.name = "Servo SG90";
 			break;
 		case DeviceTypeDef.ON_OFF_BULB:
-			this.name = "On/Off Bulb";
-			break;
-		case DeviceTypeDef.PIR_SENSOR:
-			this.name = "PIR Sensor";
+			this.name = "ON/OFF Bulb";
 			break;
 		case DeviceTypeDef.RGB_LED:
 			this.name = "RGB Led";
-			break;
-		case DeviceTypeDef.TEMP_SENSOR:
-			this.name = "Temp Sensor";
 			break;
 		default:
 			this.name = "Unknown Device";

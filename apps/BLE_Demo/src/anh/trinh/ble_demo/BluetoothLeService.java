@@ -120,7 +120,7 @@ public class BluetoothLeService extends Service {
                                             BluetoothGattCharacteristic characteristic) {
 //            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             broadcastUpdate(ACTION_DATA_NOTIFY, characteristic);
-//            Log.i("Notify", "New data");
+            Log.i("Notify", "New data");
         }
         
         @Override
@@ -305,8 +305,7 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return false;
         }
-        mBluetoothGatt.writeCharacteristic(characteristic);
-        return true;
+        return mBluetoothGatt.writeCharacteristic(characteristic);
     }
     
     /**
@@ -330,10 +329,11 @@ public class BluetoothLeService extends Service {
                UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
        
        if(descriptor == null){
+    	   Log.i(TAG, "description null");
     	   return false;
        }
        if(enabled){
-    	   descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+    	   descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
     	   Log.i(TAG, "enable notification");
        }
        
@@ -341,7 +341,7 @@ public class BluetoothLeService extends Service {
     	   descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
     	   Log.i(TAG, "disable notification");
        }
-        return mBluetoothGatt.writeDescriptor(descriptor);
+       return mBluetoothGatt.writeDescriptor(descriptor);
     }
 
     /**

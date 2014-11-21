@@ -1,67 +1,41 @@
 package anh.trinh.ble_demo;
 
-import java.sql.Array;
+import java.io.ObjectOutputStream.PutField;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.crypto.spec.OAEPParameterSpec;
-
-import org.apache.http.entity.ByteArrayEntity;
-
-import android.R.integer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
-import android.app.Activity;
 import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Resources.Theme;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.renderscript.Byte4;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.text.Html;
+import android.text.format.Time;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View.OnTouchListener;
-import android.widget.Button;
-import android.widget.ExpandableListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import anh.trinh.ble_demo.data.BTMsgTypeDef;
 import anh.trinh.ble_demo.data.BluetoothMessage;
+import anh.trinh.ble_demo.data.DataConversion;
 import anh.trinh.ble_demo.data.DeviceInfo;
-import anh.trinh.ble_demo.data.DeviceTypeDef;
-import anh.trinh.ble_demo.data.NodeInfoDefination;
-import anh.trinh.ble_demo.data.ProcessMsgPacket;
+import anh.trinh.ble_demo.data.CommandID;
+import anh.trinh.ble_demo.data.ProcessBTMsg;
 
 public class HomeActivity extends FragmentActivity implements TabListener{
 	
@@ -85,11 +59,11 @@ public class HomeActivity extends FragmentActivity implements TabListener{
     private boolean 					mConnected 				= false;
     public boolean						mServerReady			= false;
     
-    public BluetoothGattCharacteristic  mWriteCharacteristic;
+    public BluetoothGattCharacteristic  mWriteCharacteristic, mNotifyCharateristic;
     private ArrayList<BluetoothMessage> mBTMsg 					= new ArrayList<BluetoothMessage>();
     public int							mNumOfDev;
     public ArrayList<DeviceInfo>        mDevInfoList 			= new ArrayList<DeviceInfo>();
-    private ProcessMsgPacket            mProcessMsg				= new ProcessMsgPacket(this);
+    public ProcessBTMsg            		mProcessMsg				= new ProcessBTMsg(HomeActivity.this);
 
     // Code to manage Service life cycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -131,29 +105,17 @@ public class HomeActivity extends FragmentActivity implements TabListener{
                 Log.i(TAG, "BLE Disconnected");
                 showDialog("Server Device Disconnected");
                 finish();
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                // Get Characteristic support to write
-            	mWriteCharacteristic = getWriteCharacteristic(mBluetoothLeService.getSupportedGattServices());
-            	if(mWriteCharacteristic == null){
-            		showDialog("BLE device don't support to write :(");
-            		finish();
-            	}
-            	mBluetoothLeService.setCharacteristicNotification(mWriteCharacteristic, true);
-            	
-            	mServerReady = true;
-            	receiveBTMessage(intent);        	
-            	// Request number of devices
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)){
+            	//get Server's data
+               initServerDevice();
             } else if (BluetoothLeService.ACTION_DATA_NOTIFY.equals(action)){
+            	Log.i(TAG,"new data coming");
             	mBluetoothLeService.readCharacteristic(mWriteCharacteristic);
-            	
             } else if (BluetoothLeService.ACTION_DATA_READ.equals(action)){
-//            	Log.i(TAG, intent.getStringExtra(mBluetoothLeService.EXTRA_DATA));
-            	
-            	//------- TEST--------<<<<<<<<<<
-//            	receiveBTMessage(intent);
-            	//------------ end of test -->>>>>>>>>>>
+            	// receive message from CC
+            	receiveBTMessage(intent);
             } else if (BluetoothLeService.ACTION_DATA_WRITE.equals(action)){
-            	showDialog("Receive ACK");
+            	Log.i(TAG, "Receive ACK");
             }
         }
     };
@@ -166,19 +128,29 @@ public class HomeActivity extends FragmentActivity implements TabListener{
     	
     	@Override
     	public void handleMessage(Message msg) {
+    		BluetoothMessage btMsg = (BluetoothMessage)msg.obj;
     		switch (msg.what) {
-			case NodeInfoDefination.NUM_OF_DEVS:
-				
+
+			case CommandID.NUM_OF_DEVS:
+				BluetoothMessage mMsg = new BluetoothMessage();
+	        	mMsg.setLength((byte) 4);
+	        	mMsg.setCmdIdH((byte)CommandID.GET);
+	        	mMsg.setCmdIdL((byte)CommandID.DEV_WITH_INDEX);
+//	        	mMsg.setPayload(new byte[]{(byte) 0xff,(byte) 0xff,(byte) 0xff,(byte) 0xff});
+	        	mMsg.setPayload(DataConversion.int2ByteArr(0xFFFFFFFF));
+	        	mProcessMsg.putBLEMessage(mWriteCharacteristic, mMsg);
+	        	Log.i(TAG, "send DEV WITH INDEX");
 				break;
-			case NodeInfoDefination.DEV_WITH_INDEX:
+			case CommandID.DEV_WITH_INDEX:
 				 // Get DeviceControlFragment from its index
 				Log.i(TAG, "Received Msg");
-                DeviceControlFragment mDeviceFrag = (DeviceControlFragment)getSupportFragmentManager()
-                																.getFragments().get(0);
-                mDeviceFrag.updateUI(mDevInfoList);
+				DeviceControlFragment mDeviceFrag = (DeviceControlFragment)getSupportFragmentManager()
+														.getFragments().get(0);
+				mDeviceFrag.updateUI(mDevInfoList);
+                
 				break;
-			case NodeInfoDefination.DEV_VAL:
-				
+			case CommandID.DEV_VAL: 
+				mProcessMsg.putBLEMessage(mWriteCharacteristic, btMsg);
 				break;
 
 			default:
@@ -291,31 +263,23 @@ public class HomeActivity extends FragmentActivity implements TabListener{
 	         case R.id.menu_disconnect:
 	             mBluetoothLeService.disconnect();
 	             return true;
-	         case android.R.id.home:
-	             onBackPressed();
-	             return true;
+//	         case R.id.menu_write:
+//	        	 	// Request number of devices
+//            	BluetoothMessage msg = new BluetoothMessage();
+//            	msg.setLength((byte) 0);
+//            	msg.setCmdIdH((byte)CommandID.GET);
+//            	msg.setCmdIdL((byte)CommandID.NUM_OF_DEVS);
+//            	mProcessMsg.putBLEMessage(mWriteCharacteristic, msg);
+//	             return true;
 		 }
 		return super.onOptionsItemSelected(item);
 	}
 	
-	
-	private Thread processBTMessageQueue = new Thread(new Runnable() {
-		
-		@Override
-		public void run() {
-			mProcessMsg.processBTMessageQueue(mBTMsg);
-		}
-	});
-	
-	 private void updateConnectionState(final int resourceId) {
-		 runOnUiThread(new Runnable() {
-			 @Override
-			 public void run() {
-				 mConnectionState.setText(resourceId);
-	         }
-	      });
-	 }
-	 
+	/**
+	 * Add action to intentfilter
+	 * 
+	 * @return
+	 */
 	 private static IntentFilter makeGattUpdateIntentFilter() {
 	        final IntentFilter intentFilter = new IntentFilter();
 	        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
@@ -329,6 +293,7 @@ public class HomeActivity extends FragmentActivity implements TabListener{
 	 }
 	 
 	 /***
+	  * Get writable characteristic of BLE device
 	  * 
 	  * @param gattServices
 	  * @return
@@ -356,59 +321,59 @@ public class HomeActivity extends FragmentActivity implements TabListener{
 		 return null;
 	 }
 	 
+	 private void initServerDevice(){
+		 // Get Characteristic support to write
+     	mWriteCharacteristic = getWriteCharacteristic(mBluetoothLeService.getSupportedGattServices());
+     	Log.i(TAG,"uuid:" + mWriteCharacteristic.getUuid().toString());
+     	if(mWriteCharacteristic == null){
+     		showDialog("BLE device don't support to write :(");
+     		finish();
+     	}
+     	  	
+     	if((mWriteCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0){
+     		mBluetoothLeService.setCharacteristicNotification(mWriteCharacteristic, true);
+     	}
+     	
+     	// Request Number of devices
+     	new CountDownTimer(300, 300) {
+				
+				@Override
+				public void onTick(long arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void onFinish() {
+					// TODO Auto-generated method stub
+					showDialog("loading");
+					BluetoothMessage msg = new BluetoothMessage();
+	            	msg.setLength((byte) 0);
+	            	msg.setCmdIdH((byte)CommandID.GET);
+	            	msg.setCmdIdL((byte)CommandID.NUM_OF_DEVS);
+	            	mProcessMsg.putBLEMessage(mWriteCharacteristic, msg);
+				}
+			}.start();
+	 }
+	 
 	 /**
 	  * Receive and process Bluetooth Message
 	  * 
 	  * @param intent
 	  */
 	 private void receiveBTMessage(Intent intent){
-		// Receive Messages from CC
-		
-//     	mBTMsg.add(mProcessMsg.getBLEMessage(intent));
-     	mBTMsg = mProcessMsg.createMessageQueue();
+//		final byte tempBuf[] = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
+//		for(int i = 0; i < tempBuf.length; i++){
+//			System.out.println(tempBuf[i]);
+//		}
+     	mBTMsg.add(mProcessMsg.getBLEMessage(intent));
+//     	mBTMsg = mProcessMsg.createMessageQueue();
      	if(!mBTMsg.isEmpty()){
      		Log.i(TAG, " msgQueue available");
      	}
-     	
-     	
-     	// Loading dialog window
-//     	final ProgressDialog mProgressDialog = new ProgressDialog(
-//     												HomeActivity.this, 
-//     												R.style.CustomDialog);
-//     	mProgressDialog.getWindow().setGravity(Gravity.BOTTOM);
-//     	mProgressDialog.setMessage("Loading...");
-//     	mProgressDialog.setCancelable(true);
-//     	mProgressDialog.show();
-     	
-//        processBTMessageQueue.start();
-     	
-//     	new CountDownTimer(2000, 1000) {
-//			
-//			@Override
-//			public void onTick(long arg0) {
-//				// TODO Auto-generated method stub
-//				
-//			}
-//			
-//			@Override
-//			public void onFinish() {
-//				// TODO Auto-generated method stub
-//				mProgressDialog.dismiss();
-//				mProcessMsg.processBTMessageQueue(mBTMsg);
-//				if(!mDevInfoList.isEmpty()){
-//					Log.i(TAG, "Device List Available");
-//				}
-//				DeviceControlFragment mDeviceFrag = (DeviceControlFragment)getSupportFragmentManager()
-//						.getFragments().get(0);
-//				mDeviceFrag.updateUI(mDevInfoList);
-//			}
-//		};
-     	
-     	
+     	    	    	
 		mProcessMsg.processBTMessageQueue(mBTMsg);
-		if(!mDevInfoList.isEmpty()){
-			Log.i(TAG, "Device List Available");
-		}
+		mBTMsg.clear();
 	 }
 	  
 	 /**

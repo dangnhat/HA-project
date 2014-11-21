@@ -28,8 +28,13 @@ import android.widget.ExpandableListView.OnGroupCollapseListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.TextView;
 import android.widget.Toast;
-import anh.trinh.ble_demo.data.DataUnsigned;
+import android.widget.ToggleButton;
+import anh.trinh.ble_demo.data.BluetoothMessage;
+import anh.trinh.ble_demo.data.CommandID;
+import anh.trinh.ble_demo.data.DataConversion;
 import anh.trinh.ble_demo.data.DeviceInfo;
+import anh.trinh.ble_demo.data.DeviceTypeDef;
+import anh.trinh.ble_demo.data.ProcessBTMsg;
 import anh.trinh.ble_demo.list_view.Device_c;
 import anh.trinh.ble_demo.list_view.ExpandableListViewAdapter;
 import anh.trinh.ble_demo.list_view.Zone_c;
@@ -39,6 +44,7 @@ public class DeviceControlFragment extends Fragment{
 	private ExpandableListViewAdapter mAdapter;
 	private ArrayList<Zone_c> 	listParent 		= new ArrayList<Zone_c>();
 	private final String 		TAG				= "DeviceControlFragment";
+	private HomeActivity        mHomeActivity   = (HomeActivity) getActivity();
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,12 +57,9 @@ public class DeviceControlFragment extends Fragment{
 		
 		Log.i(TAG, "enter process");
 		
-//		initialStaticData();
-		
-		mAdapter = new ExpandableListViewAdapter(getActivity(), listParent);
+		mAdapter = new ExpandableListViewAdapter((HomeActivity) getActivity(), listParent);
 		lvDevControl.setGroupIndicator(null);
 		lvDevControl.setAdapter(mAdapter);
-		
 		
 		return rootView;
 	}
@@ -83,8 +86,14 @@ public class DeviceControlFragment extends Fragment{
 		prepareDataForDisp(deviceList);
 		if(!listParent.isEmpty()){
 			Log.i(TAG, "data available");
-			lvDevControl.invalidateViews();
-//			mAdapter.notifyDataSetChanged();
+//			lvDevControl.invalidateViews();
+			mAdapter.notifyDataSetChanged();
+		}
+		
+		for(int i = 0; i < mAdapter.getGroupCount(); i++){
+			if(!lvDevControl.isGroupExpanded(i)){
+				lvDevControl.expandGroup(i);
+			}
 		}
 	}
 	
@@ -183,10 +192,10 @@ public class DeviceControlFragment extends Fragment{
 		int mZoneId;
 		int mDevId;
 		Zone_c zone = null;
-		
+		listParent.clear();
 		for (int i = 0; i < mDevList.size(); i++){
 //			mZoneId = devID.putInt(mDevList.get(i).getDevID()).get(0);
-			mZoneId = DataUnsigned.byteType( devID.putInt(mDevList.get(i).getDevID()).get(0) );
+			mZoneId = DataConversion.byteType( devID.putInt(mDevList.get(i).getDevID()).get(0) );
 			Log.i(TAG, Integer.toString(mZoneId));
 			devID.clear();
 			mDevId = devID.putInt(mDevList.get(i).getDevID()).get(3);
@@ -203,8 +212,6 @@ public class DeviceControlFragment extends Fragment{
 			device.setVal(mDevList.get(i).getDevVal());
 			listParent.get(getZoneIndex(listParent, mZoneId)).addChildListItem(device);
 		}
-		
-		
 		
 	}
 	
@@ -243,4 +250,5 @@ public class DeviceControlFragment extends Fragment{
 		}
 		return -1;
 	}
+	
 }

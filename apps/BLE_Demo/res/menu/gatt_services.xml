@@ -27,7 +27,7 @@
           android:orderInCategory="101"
           android:showAsAction="ifRoom|withText"/>
     
-   <!--  <item android:id="@+id/menu_write"
+    <!-- <item android:id="@+id/menu_write"
           android:title="@string/write_data"
           android:orderInCategory="110"
           android:showAsAction="ifRoom|withText"

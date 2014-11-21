@@ -13,8 +13,8 @@
 namespace ble_message_ns {
 enum
     :uint16_t {
-        BLE_MESSAGE_GET = 0x0000,
-    BLE_MESSAGE_SET = 0x0001,
+        BLE_MESSAGE_SET = 0x0000,
+    BLE_MESSAGE_GET = 0x0001,
 
     BLE_USART_REC = 0x0010,
     BLE_SERVER_RESET = 0x0011,
@@ -28,18 +28,18 @@ namespace ble_cmd_id_ns {
 enum
     :uint8_t {
         //device def
-        NUM_OF_DEVS = 0x00,
-    DEV_WITH_INDEX = 0x01,
-    DEV_VAL = 0x02,
+        DEV_VAL = 0x00,
+    NUM_OF_DEVS = 0x01,
+    DEV_WITH_INDEX = 0x02,
     //scene def
-    NUM_OF_SCENES = 0x10,
-    ACT_SCENE_WITH_INDEX = 0x11,
-    INACT_SCENE_WITH_INDEX = 0x12,
+    NUM_OF_SCENES = 0x03,
+    ACT_SCENE_WITH_INDEX = 0x04,
+    INACT_SCENE_WITH_INDEX = 0x05,
     //rule def
-    NUM_OF_RULES = 0X20,
-    RULE_WITH_INDEX = 0x21,
+    NUM_OF_RULES = 0X06,
+    RULE_WITH_INDEX = 0x07,
     //zone
-    ZONE_NAME = 0x30
+    ZONE_NAME = 0x08
 };
 }	// ble_cmd_id_ns
 
