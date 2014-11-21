@@ -33,6 +33,7 @@ static port_t get_port(char port_c);
 static pwm_timer_t get_pwm_timer(int timer);
 static bool check_dev_type_value(uint32_t msg_value, uint8_t dev_type);
 static void send_data_over_air(uint16_t cmd, uint32_t dev_id, uint16_t value);
+static uint8_t get_dev_type_common(uint32_t dev_id);
 
 void* end_point_handler(void* arg)
 {
@@ -45,6 +46,19 @@ void* end_point_handler(void* arg)
     while (1) {
         msg_receive(&msg);
         if (msg.type == ha_node_ns::NEW_DEVICE) {
+            switch (get_dev_type_common(msg.content.value)) {
+            case ha_ns::LIN_SENSOR:
+                sensor_linear_handler(msg.content.value);
+                break;
+            case ha_ns::EVT_SENSOR:
+                sensor_event_handler(msg.content.value);
+                break;
+            case ha_ns::ON_OFF_OPUT:
+                on_off_output_handler(msg.content.value);
+                break;
+            default:
+                break;
+            }
             switch (parse_devtype_deviceid(msg.content.value)) {
             case ha_ns::NO_DEVICE:
                 HA_NOTIFY("No device.\n");
@@ -57,15 +71,6 @@ void* end_point_handler(void* arg)
                 break;
             case ha_ns::DIMMER:
                 dimmer_handler(msg.content.value);
-                break;
-            case ha_ns::LIN_SENSOR:
-                sensor_linear_handler(msg.content.value);
-                break;
-            case ha_ns::EVT_SENSOR:
-                sensor_event_handler(msg.content.value);
-                break;
-            case ha_ns::ON_OFF_BULB:
-                on_off_bulb_handler(msg.content.value);
                 break;
             case ha_ns::LEVEL_BULB:
                 level_bulb_handler(msg.content.value);
@@ -168,7 +173,7 @@ void switch_handler(uint32_t dev_id)
     }
 }
 
-void on_off_bulb_handler(uint32_t dev_id)
+void on_off_output_handler(uint32_t dev_id)
 {
     /* get on-off bulb configuration */
     gpio_config_params_t gpio_params;
@@ -177,34 +182,35 @@ void on_off_bulb_handler(uint32_t dev_id)
     }
 
     /* create and configure on-off bulb instance */
-    on_off_bulb_instance on_off_bulb;
-    on_off_bulb.device_configure(&gpio_params);
+    on_off_output_instance on_off_dev;
+    on_off_dev.device_configure(&gpio_params);
 
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
-            on_off_bulb.bulb_get_state() ? ha_ns::bulb_on : ha_ns::bulb_off);
+            on_off_dev.dev_get_state() ? ha_ns::output_on : ha_ns::output_off);
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
         switch (msg.type) {
         case ha_ns::SET_DEV_VAL:
-            if (check_dev_type_value(msg.content.value,
-                    (uint8_t) ha_ns::ON_OFF_BULB)) {
-                if (msg.content.value == ha_ns::bulb_on) {
-                    on_off_bulb.bulb_turn_on();
-                } else if (msg.content.value == ha_ns::bulb_off) {
-                    on_off_bulb.bulb_turn_off();
+            if (get_dev_type_common(msg.content.value >> 16)
+                    == (uint8_t) ha_ns::ON_OFF_OPUT) {
+                printf("%d\n", (uint16_t) msg.content.value);
+                if ((uint16_t) msg.content.value == ha_ns::output_on) {
+                    on_off_dev.dev_turn_on();
+                } else if ((uint16_t) msg.content.value == ha_ns::output_off) {
+                    on_off_dev.dev_turn_off();
                 }
             }
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
-                    on_off_bulb.bulb_get_state() ?
-                            ha_ns::bulb_on : ha_ns::bulb_off);
+                    on_off_dev.dev_get_state() ?
+                            ha_ns::output_on : ha_ns::output_off);
             break;
         case ha_node_ns::SEND_ALIVE:
             send_data_over_air(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
-            on_off_bulb.bulb_turn_off();
+            on_off_dev.dev_turn_off();
             msg_send_to_self(&msg);
             return;
         default:
@@ -266,7 +272,7 @@ void level_bulb_handler(uint32_t dev_id)
         case ha_ns::SET_DEV_VAL:
             if (check_dev_type_value(msg.content.value,
                     (uint8_t) ha_ns::LEVEL_BULB)) {
-                level_bulb.set_percent_intensity(msg.content.value);
+                level_bulb.set_percent_intensity((uint16_t) msg.content.value);
             }
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) level_bulb.get_percent_intensity());
@@ -306,7 +312,9 @@ void servo_sg90_handler(uint32_t dev_id)
         case ha_ns::SET_DEV_VAL:
             if (check_dev_type_value(msg.content.value,
                     (uint8_t) ha_ns::SERVO_SG90)) {
-                sg90.set_angle((uint8_t) (msg.content.value & 0xFF));
+                if ((uint16_t) (msg.content.value) <= 180) {
+                    sg90.set_angle((uint8_t) (msg.content.value));
+                }
             }
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) sg90.get_angle());
@@ -339,6 +347,8 @@ void sensor_linear_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case sensor_linear_ns::SEN_LINEAR_MSG:
+            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                    (uint16_t) msg.content.value);
             break;
         case ha_node_ns::SEND_ALIVE:
             send_data_over_air(ha_ns::ALIVE, dev_id, 0);
@@ -408,7 +418,7 @@ void rgb_led_handler(uint32_t dev_id)
         switch (msg.type) {
         case ha_ns::SET_DEV_VAL:
             if (check_dev_type_value(msg.content.value,
-                    (uint8_t) ha_ns::SERVO_SG90)) {
+                    (uint8_t) ha_ns::RGB_LED)) {
                 rgb_led.rgb_set_color(msg.content.value);
             }
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
@@ -721,4 +731,9 @@ static bool check_dev_type_value(uint32_t msg_value, uint8_t dev_type)
         return true;
     }
     return false;
+}
+
+static uint8_t get_dev_type_common(uint32_t dev_id)
+{
+    return ((uint8_t) dev_id) & 0xF8;
 }

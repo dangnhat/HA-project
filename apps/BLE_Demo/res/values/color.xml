@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="action_bar_color1">#00b034</color>
+    <color name="action_bar_color2">#18dfce</color>
+    <color name="yellow1">#fef668</color>
+    <color name="white">#ffffff</color>
+    <color name="blue">#1794ed</color>
+    <color name="orange">#e8ad1b</color>
+    <color name="deep_orange">#FF5722</color>
+    <color name="deep_purple">#673ab7</color>
+    
+    <color name="cyan">#00bcd4</color>
+    <color name="cyan200">#80DEEA</color>
+    <color name="accent_pink">#ff4081</color>
+    <color name="pink_press">#F48FB1</color>
+    <color name="background_grey">#EEEEEE</color>
+    <color name="red">#e51c23</color>
+    <color name="brown">#795548</color>
+    <color name="transparent">#00000000</color>
+    
+    <integer-array name="groupColor">
+        <item >@color/accent_pink</item>
+        <item >@color/blue</item>
+        <item >@color/deep_purple</item>
+        <item >@color/orange</item>
+        <item >@color/red</item>
+        <item >@color/brown</item>
+    </integer-array>
+    
+</resources>

@@ -11,7 +11,7 @@
 #include "ha_node_msg_id.h"
 #include "ha_node_glb.h"
 #include "button_switch_driver.h"
-#include "on_off_bulb_driver.h"
+#include "on_off_output_driver.h"
 #include "level_bulb_driver.h"
 #include "rgb_driver.h"
 #include "servo_sg90_driver.h"
@@ -49,7 +49,7 @@ void* end_point_handler(void* arg);
 
 void button_handler(uint32_t dev_id);
 void switch_handler(uint32_t dev_id);
-void on_off_bulb_handler(uint32_t dev_id);
+void on_off_output_handler(uint32_t dev_id);
 void level_bulb_handler(uint32_t dev_id);
 void rgb_led_handler(uint32_t dev_id);
 void dimmer_handler(uint32_t dev_id);

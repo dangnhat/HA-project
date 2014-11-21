@@ -71,13 +71,23 @@ uint16_t parse_node_deviceid(uint32_t device_id);
 uint8_t parse_ep_deviceid(uint32_t device_id);
 
 /**
- * @brief   Get device tyep from device id.
+ * @brief   Get device type from device id.
  *
  * @param[in]   device_id
  *
  * @return      device type
  */
 uint8_t parse_devtype_deviceid(uint32_t device_id);
+
+/**
+ * @brief   Get device type from common device type and sub type.
+ *
+ * @param[in]   dev_type_common
+ * @param[in]   sub_type
+ *
+ * @return      device type
+ */
+uint8_t combine_dev_type(uint8_t dev_type_common, uint8_t sub_type);
 
 /**
  * @brief   Convert device type to name.

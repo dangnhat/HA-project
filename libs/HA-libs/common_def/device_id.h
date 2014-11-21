@@ -23,21 +23,37 @@
 
 namespace ha_ns {
 
-enum device_type_e
+enum device_type_common_e
     : uint8_t {
         NO_DEVICE = 0x00,
-    SWITCH = 0x01,
-    BUTTON = 0x02,
-    DIMMER = 0x03,
-    LIN_SENSOR = 0x04,
-    EVT_SENSOR = 0x05,
+    SWITCH = 0x01,          //00|000|---
+    BUTTON = 0x02,          //00|000|---
+    DIMMER = 0x03,          //00|000|---
+    LIN_SENSOR = 0x30,      //00|110|---
+    EVT_SENSOR = 0x38,      //00|111|---
 
-    ON_OFF_BULB = 0x41,
-    LEVEL_BULB = 0x42,
-    RGB_LED = 0x43,
-    SERVO_SG90 = 0x44
-}
-;
+    ON_OFF_OPUT = 0x78,     //01|111|---
+    LEVEL_BULB = 0x42,      //01|000|---
+    RGB_LED = 0x43,         //01|000|---
+    SERVO_SG90 = 0x44       //01|000|---
+};//common type
+
+enum lin_ss_subtype_e
+    : uint8_t {
+        TEMP = 0x00,
+    LUMI = 0x01,
+};
+
+enum evt_ss_subtype_e
+    : uint8_t {
+        PIR = 0x00,
+};
+
+enum on_off_subtype_e
+    : uint8_t {
+        ON_OFF_BULB = 0x00,
+    BUZZER = 0x01,
+};
 
 }
 

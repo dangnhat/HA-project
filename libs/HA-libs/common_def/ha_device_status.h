@@ -24,10 +24,10 @@ enum sw_status_e
     switch_on = 1
 };
 
-enum bulb_status_e
+enum on_off_status_e
     : uint16_t {
-        bulb_off = 0,
-    bulb_on = 1
+        output_off = 0,
+    output_on = 1
 };
 
 enum evt_sensor_status_e

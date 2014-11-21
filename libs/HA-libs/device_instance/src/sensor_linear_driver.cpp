@@ -5,7 +5,10 @@
  * @date 30-10-2014
  * @brief This is source file for ADC-sensors instance having linear graph in HA system.
  */
+#include <math.h>
+#include <string.h>
 #include "sensor_linear_driver.h"
+
 #if AUTO_UPDATE
 #include "ha_node_glb.h"
 #endif
@@ -60,6 +63,8 @@ void sensor_linear_instance::device_configure(
     adc_dev_configure(adc_config_params->device_port,
             adc_config_params->device_pin, adc_config_params->adc_x,
             adc_config_params->adc_channel);
+
+    memcpy(&adc_params, adc_config_params, sizeof(adc_config_params));
 }
 
 void sensor_linear_instance::set_equation(equation_t equation_type,
@@ -67,6 +72,8 @@ void sensor_linear_instance::set_equation(equation_t equation_type,
 {
     if (equation_type == rational) {
         this->equation = &rational_equation_calculate;
+    } else if (equation_type == linear) {
+        this->equation = &linear_equation_calculate;
     }
 
     this->a_factor = a_factor;
@@ -75,6 +82,10 @@ void sensor_linear_instance::set_equation(equation_t equation_type,
 
 float sensor_linear_instance::get_voltage_value(void)
 {
+    /* reconfigure */
+    adc_dev_configure(adc_params.device_port, adc_params.device_pin,
+            adc_params.adc_x, adc_params.adc_channel);
+
     float converted_adc = adc_dev_get_value();
     float converted_volt = converted_adc * ((float) v_ref)
             / ((float) adc_value_max); //mV
@@ -85,7 +96,9 @@ float sensor_linear_instance::get_voltage_value(void)
 uint16_t sensor_linear_instance::get_sensor_value(void)
 {
     float converted_volt = get_voltage_value();
-    return this->equation(converted_volt, this->a_factor, this->b_constant);
+    float sensor_value = this->equation(converted_volt, this->a_factor,
+            this->b_constant);
+    return round(sensor_value);
 }
 
 float linear_equation_calculate(float x_value, float a_factor, float b_constant)
@@ -187,12 +200,14 @@ void sensor_linear_callback_timer_isr(void)
 #if SND_MSG
                 if (sensor_linear_table[i]->is_underlow_or_overflow()
                         || send_msg_time_count
-                                == (send_msg_time_period - sampling_time_cycle)) {
+                                == (send_msg_time_period - sampling_time_cycle)
+                        || sensor_linear_table[i]->is_first_send) {
+                    sensor_linear_table[i]->is_first_send = false;
                     msg_t msg;
                     msg.type = SEN_LINEAR_MSG;
                     msg.content.value = new_value;
                     kernel_pid_t pid = sensor_linear_table[i]->get_pid();
-                    if(pid == KERNEL_PID_UNDEF) {
+                    if (pid == KERNEL_PID_UNDEF) {
                         return;
                     }
                     msg_send(&msg, pid, false);

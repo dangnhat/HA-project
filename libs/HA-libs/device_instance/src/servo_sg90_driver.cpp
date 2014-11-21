@@ -26,6 +26,8 @@ void servo_sg90_instance::device_configure(
     pwm_dev_period_setup(19999);
     /* control servo sg90 in 50Hz (20ms/1period) */
     pwm_dev_output_frequency_setup(50);
+
+    set_angle(this->angle);
 }
 
 void servo_sg90_instance::set_angle(uint8_t angle)

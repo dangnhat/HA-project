@@ -64,11 +64,13 @@ public:
 
 #if SND_MSG
     kernel_pid_t get_pid(void);
+    bool is_first_send = true;
 #endif //SND_MSG
 private:
     float get_voltage_value(void);
     float a_factor = 1;
     float b_constant = 1;
+    adc_config_params_t adc_params;
 
 #if AUTO_UPDATE
     bool is_under_or_overflow;

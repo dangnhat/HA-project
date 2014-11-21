@@ -14,7 +14,7 @@ static void sensor_callback(void *arg);
 sensor_event_instance::sensor_event_instance(void) :
         gpio_dev_class(true)
 {
-    /* activate in high level */
+    /* activate in high level, default */
     this->detective_level = 1;
 #if SND_MSG
     this->thread_pid = thread_getpid();

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="20dp"
+    android:padding="10dp"
+    android:background="@drawable/device_list_style" >
+
+    <!-- <RadioButton
+        android:id="@+id/devStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true" /> -->
+
+	<TextView
+	    android:id="@+id/devVal"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentRight="true"
+	    android:layout_alignParentTop="true"
+	    android:background="@drawable/device_value_bg"
+	    android:gravity="center_horizontal|center_vertical"
+	    android:textColor="@color/white"
+	    android:textSize="16sp" />
+
+	<TextView
+	    android:id="@+id/devName"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignBaseline="@+id/devVal"
+	    android:layout_alignBottom="@+id/devVal"
+	    android:layout_alignParentLeft="true"
+	    android:gravity="center_vertical|center_horizontal"
+	    android:text="name"
+	    android:textSize="16sp" />
+
+</RelativeLayout>

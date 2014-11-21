@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<!--     the theme apply to the application or activity	-->
+	<style 	name="CustomActionBar"
+	    	parent="@android:style/Theme.Holo.Light">
+	    	
+	    <item name="android:actionBarStyle">@style/MyActionBar</item>
+	    <item name="android:actionBarTabBarStyle">@style/MyActionBarTab</item>
+	    <item name="android:actionBarTabTextStyle">@style/MyActionBarTabText</item>
+	    <item name="android:actionMenuTextColor">@color/white</item> 
+	</style>
+	
+	
+	<style 	name="MyActionBar"
+	    	parent="@android:style/Widget.Holo.Light.ActionBar">
+	    	
+	    <item name="android:background">@color/cyan</item>
+	    <item name="android:titleTextStyle">@style/MyActionBarTextStyle</item>
+	</style>
+	
+	<!-- action bar tab background style -->
+	<style 	name="MyActionBarTab"
+	    	parent="@android:style/Widget.ActionBar.TabBar">
+	    <item name="android:background">@drawable/actionbar_tab_indicator</item>
+	</style>
+	
+	<!-- action bar title text style -->
+	<style 	name="MyActionBarTextStyle"
+	    	parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+	    <item name="android:textColor">@color/white</item>
+	</style>
+	
+	<!-- Action Bar tab text style -->
+	<style 	name="MyActionBarTabText"
+	    	parent="@android:style/Widget.Holo.ActionBar.TabText">
+	    	<item name="android:textColor">@color/white</item>
+	    	<item name="android:textAllCaps">true</item>
+	</style>
+	
+	<!-- ProgressDialog Style -->
+	<style name="CustomDialog"
+	       parent="@android:style/Theme.DeviceDefault.Light.Dialog.MinWidth" >
+	    <item name="android:windowBackground">@android:color/transparent</item>
+		<item name="android:textSize">18sp</item>
+		<item name="android:gravity">center</item>
+	    	
+	</style>
+	
+	
+</resources>

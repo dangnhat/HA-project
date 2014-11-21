@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/FrameLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_grey" >
+
+    <ExpandableListView
+        android:id="@+id/elvScene"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+    </ExpandableListView>
+
+    <Button
+        android:id="@+id/btnAddScene"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_gravity="bottom|right"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/add_button_selector"
+        android:text="+"
+        android:textSize="25sp"
+        android:textColor="@color/white"
+        android:gravity="center_vertical|center_horizontal"
+        />
+
+</FrameLayout>
