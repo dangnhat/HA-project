@@ -9,8 +9,9 @@
 #define __HA_DEVICE_HANDLER_H_
 
 #include "ha_node_msg_id.h"
+#include "ha_node_glb.h"
 #include "button_switch_driver.h"
-#include "on_off_bulb_driver.h"
+#include "on_off_output_driver.h"
 #include "level_bulb_driver.h"
 #include "rgb_driver.h"
 #include "servo_sg90_driver.h"
@@ -20,40 +21,35 @@
 
 namespace ha_node_ns {
 const uint8_t dev_list_pattern_maxsize = 16;
-const uint8_t gpio_pattern_size = 8;
+const uint8_t gpio_pattern_size = 10;
 const uint8_t adc_pwm_pattern_size = 20;
-const uint8_t dev_pattern_maxsize = 96;
+const uint8_t dev_pattern_maxsize = 110;
 const char ha_dev_list_file[] = "dev_list";
 
-const char dev_list_pattern[dev_list_pattern_maxsize] = "EP%d: 0x%lX\n";
+const char dev_list_pattern[dev_list_pattern_maxsize] = "dID: 0x%lx\n";
 
-const char gpio_dev_config_pattern[gpio_pattern_size] =
-        "P%c%d\n";
+const char gpio_dev_config_pattern[gpio_pattern_size] = "P%c%hu\n";
 
-const char adc_dev_config_pattern[adc_pwm_pattern_size] =
-        "P%c%d A%d_IN%d\n";
+const char adc_dev_config_pattern[adc_pwm_pattern_size] = "P%c%hu A%hu_IN%hu\n";
 
-const char pwm_dev_config_pattern[adc_pwm_pattern_size] =
-        "P%c%d T%d_CH%d\n";
+const char pwm_dev_config_pattern[adc_pwm_pattern_size] = "P%c%hu T%hu_CH%hu\n";
 
-const char rgb_config_pattern[dev_pattern_maxsize] =
-        "R: P%c%d T%d_CH%d\n"
-        "G: P%c%d T%d_CH%d\n"
-        "B: P%c%d T%d_CH%d\n"
-        "Cal: %%R=%d, %%G=%d, %%B=%d\n";
+const char rgb_config_pattern[dev_pattern_maxsize] = "R: P%c%hu T%hu_CH%hu\n"
+        "G: P%c%hu T%hu_CH%hu\n"
+        "B: P%c%hu T%hu_CH%hu\n"
+        "Cal: %%R=%hu, %%G=%hu, %%B=%hu\n";
 
-const char senlnr_config_pattern[dev_pattern_maxsize] =
-        "P%c%d A%d_IN%d\n"
+const char senlnr_config_pattern[dev_pattern_maxsize] = "P%c%hu A%hu_IN%hu\n"
         "E-type: %c\n" //type: l (linear), r (rational)
         "A B: %s %s\n"
-        "Thr: F=%d U=%d O=%d\n"; //F: filter, U:underflow, O=overflow
+        "Thr: F=%d U=%d O=%d\n";//F: filter, U:underflow, O=overflow
 }
 
 void* end_point_handler(void* arg);
 
 void button_handler(uint32_t dev_id);
 void switch_handler(uint32_t dev_id);
-void on_off_bulb_handler(uint32_t dev_id);
+void on_off_output_handler(uint32_t dev_id);
 void level_bulb_handler(uint32_t dev_id);
 void rgb_led_handler(uint32_t dev_id);
 void dimmer_handler(uint32_t dev_id);

@@ -36,6 +36,7 @@
 #endif
 
 #ifdef HA_CC                /* CC specific includes */
+#include "controller.h"
 #endif
 
 /* Typedefs */

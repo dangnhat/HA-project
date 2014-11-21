@@ -12,16 +12,18 @@
 
 using namespace dev_param_ns;
 
-class on_off_bulb_instance: public gpio_dev_class {
+class on_off_output_instance: public gpio_dev_class {
 public:
-    on_off_bulb_instance(void);
+    on_off_output_instance(void);
 
     void device_configure(gpio_config_params_t *gpio_config_params);
-    void bulb_turn_on(void);
-    void bulb_turn_off(void);
-    void bulb_toggle(void);
-    bool bulb_get_state(void);
+    void dev_turn_on(void);
+    void dev_turn_off(void);
+    void dev_toggle(void);
+    void set_active_level(uint8_t active_level);
+    bool dev_get_state(void);
 private:
+    uint8_t active_level;
     bool is_turn_on;
 };
 

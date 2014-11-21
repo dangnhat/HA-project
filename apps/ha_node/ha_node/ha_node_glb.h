@@ -13,7 +13,7 @@ extern "C" {
 }
 
 namespace ha_node_ns {
-const uint8_t max_end_point = 12;
+const uint8_t max_end_point = 6;
 extern kernel_pid_t end_point_pid[max_end_point];
 }
 

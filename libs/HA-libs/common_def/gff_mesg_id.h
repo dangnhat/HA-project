@@ -37,8 +37,17 @@ enum mesg_type_e: uint16_t { /* in GFF format */
     ALIVE = 0x0200,
 };
 
+const uint16_t GFF_MAX_DATA_SIZE = 255;
+const uint16_t GFF_CMD_SIZE = 2;
+const uint16_t GFF_LEN_SIZE = 1;
+const uint16_t GFF_MAX_FRAME_SIZE = GFF_MAX_DATA_SIZE + GFF_CMD_SIZE + GFF_LEN_SIZE;
+
+const uint8_t GFF_LEN_POS = 0;
+const uint8_t GFF_CMD_POS = GFF_LEN_POS + GFF_LEN_SIZE;
+const uint8_t GFF_DATA_POS = GFF_CMD_POS + GFF_CMD_SIZE;
+
 const uint8_t SET_DEV_VAL_DATA_LEN = 6; /* device_id + value */
-const uint8_t ALIVE_DATA_LEN = 0;
+const uint8_t ALIVE_DATA_LEN = 4; /* device_id */
 
 };
 

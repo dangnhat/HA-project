@@ -25,7 +25,7 @@ extern "C" {
 namespace ha_ns {
 kernel_pid_t sixlowpan_sender_pid;
 
-const uint16_t sixlowpan_sender_gff_queue_size = 256;
+const uint16_t sixlowpan_sender_gff_queue_size = 900;
 uint8_t sixlowpan_sender_gff_queue_buf[sixlowpan_sender_gff_queue_size];
 cir_queue sixlowpan_sender_gff_queue(
         sixlowpan_sender_gff_queue_buf,
@@ -36,7 +36,7 @@ cir_queue sixlowpan_sender_gff_queue(
 
 /*--------------------- Configurations ---------------------------------------*/
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (0)
+#define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
 static const char slp_sender_prio = PRIORITY_MAIN - 2;
@@ -181,7 +181,8 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
     /* get data from queue */
     gff_data_size = gff_cir_queue->preview_data(false);
     if (gff_cir_queue->get_size() < (gff_data_size + 2 + 1)) {
-        HA_DEBUG("send_data_gff: Size of GFF frame in queue < gff_data_size + 3\n");
+        HA_DEBUG("send_data_gff: Size of GFF frame in queue(%ld) < gff_data_size(%hhu) + 3\n",
+                gff_cir_queue->get_size(), gff_data_size);
         return -1;
     }
 
@@ -193,7 +194,12 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
     switch (gff_cmd_id) {
     case ha_ns::SET_DEV_VAL:
         HA_DEBUG("send_data_gff: SET_DEV_VAL message.\n");
+#ifdef HA_CC
         node_id = parse_node_deviceid(buf2uint32(&payload_buffer[3]));
+#endif
+#ifdef HA_NODE
+        node_id = ha_ns::sixlowpan_ha_cc_node_id;
+#endif
         break;
     case ha_ns::ALIVE:
         HA_DEBUG("send_data_gff: ALIVE message.\n");

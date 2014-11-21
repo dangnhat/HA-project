@@ -42,7 +42,8 @@ const shell_command_t shell_commands[] = {
 
 #ifdef HA_NODE
     /* device configuration cmds */
-    {"rst", "Run spcified thread with a device", rst_endpoint_callback},
+    {"rst", "Run the specified thread with a device", rst_endpoint_callback},
+    {"stop", "Stop device in the specified thread", stop_endpoint_callback},
     {"btn", "Configure button device", button_config},
     {"sw", "Configure switch device", switch_config},
     {"bulb", "Configure on-off bulb device", on_off_bulb_config},
@@ -52,6 +53,11 @@ const shell_command_t shell_commands[] = {
     {"servo", "Configure servo device", servo_config},
     {"rgb", "Configure RGB-led device", rgb_led_config},
     {"senlnr", "Configure ADC linear sensor device", adc_sensor_config},
+#endif
+
+#ifdef HA_CC
+    /* Device list command */
+    {"lsdev", "List all devices and endpoint connected to CC", controller_list_devices},
 #endif
     {NULL, NULL, NULL}
 };

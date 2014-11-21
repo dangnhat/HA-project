@@ -26,6 +26,8 @@ void servo_sg90_instance::device_configure(
     pwm_dev_period_setup(19999);
     /* control servo sg90 in 50Hz (20ms/1period) */
     pwm_dev_output_frequency_setup(50);
+
+    set_angle(this->angle);
 }
 
 void servo_sg90_instance::set_angle(uint8_t angle)
@@ -41,6 +43,16 @@ void servo_sg90_instance::set_angle(uint8_t angle)
 
     pulse_width = angle * delta_pulse + pos_0_degree;
     pwm_dev_level_setup(pulse_width);
+}
+
+void servo_sg90_instance::restart(void)
+{
+    pwm_dev_start_stop(true);
+}
+
+void servo_sg90_instance::stop(void)
+{
+    pwm_dev_start_stop(false);
 }
 
 uint8_t servo_sg90_instance::get_angle(void)

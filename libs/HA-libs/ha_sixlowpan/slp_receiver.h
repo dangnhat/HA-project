@@ -28,6 +28,6 @@ void slp_receiver_start(void);
  *
  * @param[in]   GFF_buffer, buffer holding GFF frame.
  */
-void slp_received_GFF_handler(void *GFF_buffer);
+void slp_received_GFF_handler(uint8_t *GFF_buffer);
 
 #endif /* CC_SLP_RECEIVER_H_ */

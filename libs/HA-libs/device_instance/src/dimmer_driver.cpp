@@ -5,6 +5,7 @@
  * @date 20-10-2014
  * @brief This is source file for dimmer device instance for HA system.
  */
+#include <string.h>
 #include "dimmer_driver.h"
 #if AUTO_UPDATE
 #include "ha_node_glb.h"
@@ -14,7 +15,7 @@ using namespace dimmer_ns;
 
 #if AUTO_UPDATE
 /* configurable variables */
-const static uint8_t delta_threshold = 2; //delta = 2%;
+const static uint8_t delta_threshold = 3; //delta = 3%;
 const static uint8_t timer_period = 1; //ms
 const static uint16_t dimmer_sampling_time_cycle = 100 / timer_period; //sampling every 100ms (tim6_period = 1ms)
 
@@ -55,6 +56,8 @@ void dimmer_instance::device_configure(adc_config_params_t *adc_config_params)
     adc_dev_configure(adc_config_params->device_port,
             adc_config_params->device_pin, adc_config_params->adc_x,
             adc_config_params->adc_channel);
+
+    memcpy(&adc_params, adc_config_params, sizeof(adc_config_params));
 #if AUTO_UPDATE
     this->assign_dimmer();
 #endif //AUTO_UPDATE
@@ -63,6 +66,10 @@ void dimmer_instance::device_configure(adc_config_params_t *adc_config_params)
 uint8_t dimmer_instance::get_percent(void)
 {
     uint16_t adc_value;
+
+    adc_dev_configure(adc_params.device_port,
+                adc_params.device_pin, adc_params.adc_x,
+                adc_params.adc_channel);
 
     adc_value = adc_dev_get_value();
 
@@ -144,7 +151,8 @@ void dimmer_callback_timer_isr(void)
             if (dimmer_table[i] != NULL) {
                 uint8_t new_value = dimmer_table[i]->dimmer_processing();
 #if SND_MSG
-                if (dimmer_table[i]->is_over_delta_thres()) {
+                if (dimmer_table[i]->is_over_delta_thres() || dimmer_table[i]->is_first_send) {
+                    dimmer_table[i]->is_first_send = false;
                     msg_t msg;
                     msg.type = DIMMER_MSG;
                     msg.content.value = new_value;

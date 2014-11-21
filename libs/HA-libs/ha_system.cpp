@@ -35,7 +35,7 @@ void ha_system_init(void)
     MB1_system_init();
     HA_NOTIFY("MB1_system initialized.\n");
 
-    /* Reinit CC1101 module. TODO: need to check channel, freq again */
+    /* Reinit CC1101 module. */
     cc110x_reconfig();
     HA_NOTIFY("CC1101 configured to 390MHz, 0dBm.\n");
 
@@ -55,7 +55,6 @@ void ha_system_init(void)
     slp_sender_start();
     slp_receiver_start();
 
-
 #ifdef HA_NODE
     /* Node's specific initializations */
     ha_node_init();
@@ -65,6 +64,8 @@ void ha_system_init(void)
 
 #ifdef HA_CC
     /* CC's specific initializations */
+    controller_start();
+    MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_RTC, second_int_callback);
 #endif
 
     /* Prompt and restart 6LoWPAN thread */

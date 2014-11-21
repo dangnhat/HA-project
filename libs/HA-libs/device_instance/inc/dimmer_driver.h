@@ -55,8 +55,10 @@ public:
 
 #if SND_MSG
     kernel_pid_t get_pid(void);
+    bool is_first_send = true;
 #endif
 private:
+    adc_config_params_t adc_params;
 #if AUTO_UPDATE
     uint8_t new_value_1 = 0;
     uint8_t new_value_2 = 0;
