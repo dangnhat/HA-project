@@ -25,7 +25,7 @@ extern "C" {
 namespace ha_ns {
 kernel_pid_t sixlowpan_sender_pid;
 
-const uint16_t sixlowpan_sender_gff_queue_size = 900;
+const uint16_t sixlowpan_sender_gff_queue_size = 500;
 uint8_t sixlowpan_sender_gff_queue_buf[sixlowpan_sender_gff_queue_size];
 cir_queue sixlowpan_sender_gff_queue(
         sixlowpan_sender_gff_queue_buf,
@@ -36,7 +36,7 @@ cir_queue sixlowpan_sender_gff_queue(
 
 /*--------------------- Configurations ---------------------------------------*/
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 static const char slp_sender_prio = PRIORITY_MAIN - 2;
