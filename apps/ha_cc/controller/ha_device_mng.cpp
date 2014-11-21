@@ -27,7 +27,7 @@
 using namespace ha_device_mng_ns;
 
 /* print list of devices */
-static const char print_line_pattern[] = "| %-3d | %08lx | %-8d | %-3d | %-4d | %-10s |\n";
+static const char print_line_pattern[] = "| %-3d | %08lx | %-8d | %-3d | %-4d | %-17s |\n";
 
 /* save and restore */
 static const char devices_list_line_pattern[] = "%lx %d %d\n";
@@ -200,7 +200,7 @@ void ha_device_mng::print_all_devices(void)
     uint16_t num_of_dev_count = 0;
     uint16_t count;
 
-    HA_NOTIFY("| %-3s | %-8s | %-8s | %-3s | %-4s | %-10s |\n", "#", "id",
+    HA_NOTIFY("| %-3s | %-8s | %-8s | %-3s | %-4s | %-17s |\n", "#", "id",
             "value", "i/o", "ttl", "name");
     HA_NOTIFY("-----\n");
 
@@ -217,7 +217,7 @@ void ha_device_mng::print_all_devices(void)
 
             num_of_dev_count++;
             if (num_of_dev_count == cur_size) {
-                return;
+                break;
             }
         }/* end a device */
     }/* end for */

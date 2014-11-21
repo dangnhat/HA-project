@@ -36,7 +36,7 @@ cir_queue sixlowpan_sender_gff_queue(
 
 /*--------------------- Configurations ---------------------------------------*/
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 static const char slp_sender_prio = PRIORITY_MAIN - 2;

@@ -18,7 +18,7 @@ extern "C" {
 #include "cc_msg_id.h"
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 void slp_received_GFF_handler(uint8_t *GFF_buffer)
