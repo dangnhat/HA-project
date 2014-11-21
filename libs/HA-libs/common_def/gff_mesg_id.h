@@ -46,8 +46,15 @@ const uint8_t GFF_LEN_POS = 0;
 const uint8_t GFF_CMD_POS = GFF_LEN_POS + GFF_LEN_SIZE;
 const uint8_t GFF_DATA_POS = GFF_CMD_POS + GFF_CMD_SIZE;
 
-const uint8_t SET_DEV_VAL_DATA_LEN = 6; /* device_id + value */
-const uint8_t ALIVE_DATA_LEN = 4; /* device_id */
+enum gff_data_len_e: uint8_t {
+    SET_DEV_VAL_DATA_LEN = 6, /* device_id + value */
+    ALIVE_DATA_LEN = 4, /* device_id */
+
+    SET_NUM_OF_DEVS_DATA_LEN = 4,
+    SET_DEVICE_WITH_INDEX_DATA_LEN = 10,
+};
+
+const uint32_t SET_DEV_WITH_INDEX_ALL_DEVS = 0xFFFFFFFF;
 
 };
 

@@ -64,6 +64,17 @@ public:
     int8_t get_dev_val(uint32_t device_id, int16_t &value);
 
     /**
+     * @brief   Get device id and value at a index position in devices buffer.
+     *
+     * @param[in]   index
+     * @param[out]  device_id.
+     * @param[out]  value.
+     *
+     * @return      0,
+     */
+    int8_t get_dev_val_with_index(uint16_t index, uint32_t &device_id, int16_t &value);
+
+    /**
      * @brief   Find and set TTL of a device.
      *
      * @param[in]   device_id.
