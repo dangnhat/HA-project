@@ -42,6 +42,7 @@ enum lin_ss_subtype_e
     : uint8_t {
         TEMP = 0x00,
     LUMI = 0x01,
+    GAS = 0x02
 };
 
 enum evt_ss_subtype_e

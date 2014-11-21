@@ -580,19 +580,43 @@ bool sensor_linear_get_config(uint32_t dev_id, sensor_linear_instance *senlnr)
     uint16_t adc = 0;
     uint16_t chann = 0;
 
-    char e_type = '0';
-    char a[6];
-    char b[6];
+    char e1_type = '0';
+    char a1[6];
+    char b1[6];
+    char c1[6];
+    char e2_type = '0';
+    char a2[6];
+    char b2[6];
+    char c2[6];
 
     int filter_thres = 0;
     int under_thres = 0;
     int over_thres = 0;
 
     sscanf(config_str, ha_node_ns::senlnr_config_pattern, &port_c, &pin, &adc,
-            &chann, &e_type, a, b, &filter_thres, &under_thres, &over_thres);
+            &chann, &e1_type, &e2_type, a1, b1, c1, a2, b2, c2, &filter_thres,
+            &under_thres, &over_thres);
 
-    float a_factor = strtof(a, NULL);
-    float b_constant = strtof(b, NULL);
+    uint8_t num_equation = 0;
+    float a1_value, b1_value, c1_value;
+
+    if (e1_type == 'l' || e1_type == 'r' || e1_type == 'p') {
+        num_equation++;
+        a1_value = strtof(a1, NULL);
+        b1_value = strtof(b1, NULL);
+        c1_value = strtof(c1, NULL);
+    }
+    float a2_value, b2_value, c2_value;
+    if (e2_type == 'l' || e2_type == 'r' || e2_type == 'p') {
+        num_equation++;
+        a2_value = strtof(a2, NULL);
+        b2_value = strtof(b2, NULL);
+        c2_value = strtof(c2, NULL);
+    }
+
+    if (num_equation == 0) {
+        return false;
+    }
 
     adc_config_params_t adc_params;
 
@@ -601,12 +625,29 @@ bool sensor_linear_get_config(uint32_t dev_id, sensor_linear_instance *senlnr)
     adc_params.adc_x = (adc_t) (adc - 1);
     adc_params.adc_channel = chann;
 
-    if (e_type == 'l') {
-        senlnr->set_equation(sensor_linear_ns::linear, a_factor, b_constant);
-    } else {
-        senlnr->set_equation(sensor_linear_ns::rational, a_factor, b_constant);
+    if (e1_type == 'l') {
+        senlnr->set_equation(sensor_linear_ns::linear, 1, a1_value,
+                b1_value, c1_value);
+    } else if (e1_type == 'r') {
+        senlnr->set_equation(sensor_linear_ns::rational, 1, a1_value,
+                b1_value, c1_value);
+    } else if (e1_type == 'p') {
+        senlnr->set_equation(sensor_linear_ns::polynomial, 1, a1_value,
+                b1_value, c1_value);
     }
 
+    if (e2_type == 'l') {
+        senlnr->set_equation(sensor_linear_ns::linear, 2, a2_value,
+                b2_value, c2_value);
+    } else if (e2_type == 'r') {
+        senlnr->set_equation(sensor_linear_ns::rational, 2, a2_value,
+                b2_value, c2_value);
+    } else if (e2_type == 'p') {
+        senlnr->set_equation(sensor_linear_ns::polynomial, 2, a2_value,
+                b2_value, c2_value);
+    }
+
+    senlnr->set_num_equation(num_equation);
     senlnr->set_delta_threshold(filter_thres);
     senlnr->set_underflow_threshold(under_thres);
     senlnr->set_overflow_threshold(over_thres);
