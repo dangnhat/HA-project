@@ -26,6 +26,11 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>BGLib</name>
+			<type>2</type>
+			<location>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</location>
+		</link>
+		<link>
 			<name>MBoard1-libs</name>
 			<type>2</type>
 			<locationURI>PARENT-2-PROJECT_LOC/libs/MBoard1-libs</locationURI>

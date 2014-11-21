@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+      <description>Generic Access Profile</description>
+
+      <characteristic uuid="2a00">
+        <properties read="true" const="true" />
+        <value>Home Automation</value>
+      </characteristic>
+
+      <characteristic uuid="2a01">
+        <properties read="true" const="true" />
+        <value type="hex">8000</value>
+      </characteristic>
+    </service>
+	
+	<service uuid="82fe44c9-12f4-4bec-8d02-3c639c73a98e">
+		<description>Custom Service</description>
+		
+		<characteristic uuid="01763871-da24-4d8b-b6ce-6458e544e94a">
+			<description>Characteristic 1</description>
+			<properties read="true" const="true" />
+			<value>Value of Characteristic 1</value>
+		</characteristic>
+		
+		<characteristic uuid="1ba118ea-8f4d-44d5-ac55-69bed3853242" id="attData">
+			<description>Characteristic 2</description>
+			<properties read="true" notify="true" write="true" />
+            <value variable_length="true" length="255"/>
+			<!-- <descriptor uuid="93290670-5d25-11e4-8ed6-0800200c9a66">
+				<properties	read="true" notify="true" />
+				<value type="hex">0001</value>
+			</descriptor> -->
+		</characteristic>
+		
+	</service>
+	
+</configuration>

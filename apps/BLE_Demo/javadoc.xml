@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" author="true" classpath="libs/android-support-v4.jar" destdir="E:\Android%20OS\Lap%20trinh\Data\BLE_Demo\doc" doctitle="ble_dev" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="anh.trinh.ble_demo,anh.trinh.ble_demo.list_view,anh.trinh.ble_demo.data" source="1.6" sourcepath="src;gen" splitindex="true" use="true" version="true"/>
+    </target>
+</project>

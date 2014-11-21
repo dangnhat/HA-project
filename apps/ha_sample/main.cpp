@@ -17,68 +17,51 @@ extern "C" {
 #include "MB1_System.h"
 #include "cc110x_reconfig.h"
 
-/* definitions */
-#define RECV_HANDLER_STACK_SIZE    (KERNEL_CONF_STACKSIZE_DEFAULT + KERNEL_CONF_STACKSIZE_PRINTF)
-#define RCV_BUFFER_SIZE     (64)
+using namespace Btn_ns;
 
-#define RSSI_OFFSET	(74)
+using namespace std;
 
-#define NODE_ID	(1)
+/*******************************************************************************
+ * Variables & Data Buffer
+ *
+ ******************************************************************************/
+uint8_t 			rxBuf[MAX_BUF_SIZE]		= "\0";	// hold usart3 rx data
+uint8_t 			idxBuf					= 0;
+ble_serv_stt_s 		BTFlags;
+uint8_t 			msgBuf[]				=  "This is default data of BLE112A";
+uint8_t				attBuf[MAX_MSGBUF_SIZE];
 
-typedef enum
-    : uint8_t {
-        set_rgb_on = 0x01,
-    set_rgb_off = 0x02,
-    set_rgb_value = 0x03, // 3 values follow
-    blink_rgb = 0x04,
-    toggle_rgb = 0x05,
-    set_ledw_on = 0x06,
-    set_ledw_off = 0x07,
-    set_ledw_value = 0x08, // 1 value follows
-    blink_ledw = 0x09,
-    toggle_ledw = 0x0A,
-} command_t;
 
-const char command_string[][128] { "", "set_rgb_on", "set_rgb_off",
-        "set_rgb_value", "blink_rgb", "toggle_rgb", "set_ledw_on",
-        "set_ledw_off", "set_ledw_value", "blink_ledw", "toggle_ledw", };
+/*******************************************************************************
+ * Private Functions
+ *
+ ******************************************************************************/
 
-/* RGB color */
-const uint8_t RGBColors[15][3] = { { 0, 0, 0 }, // black
-        { 255, 0, 0 }, // red
-        { 0, 255, 0 }, // green
-        { 0, 0, 255 }, // blue
-        { 255, 255, 0 }, // yellow
-        { 0, 255, 255 }, // aqua
-        { 255, 0, 255 }, // magenta
-        { 192, 192, 192 }, // silver
-        { 128, 128, 128 }, // gray
-        { 128, 0, 0 }, // maroon
-        { 128, 128, 0 }, // olive
-        { 0, 128, 0 }, // green
-        { 128, 0, 128 }, //purple
-        { 0, 128, 128 }, // teal
-        { 0, 0, 128 } // navy
-};
 
-/* global vars */
-static msg_t mesg;
-static transceiver_command_t tcmd;
-static radio_packet_t p;
 
-static bool rgb_state = 0;
-static uint8_t ledw_duty = 0;
+/* main */
+int main() {
+	/* Initial MBoard-1 system */
+	MB1_system_init();
+	/* Initial BLE interface */
+	ble_init();
 
-static int taskled_pid;
 
-/* Send data buffer */
-uint8_t send_data_buffer[CC1100_MAX_DATA_LENGTH];
+//	while(BTFlags.ready != 0x01){
+//
+//	}
+//	ble_cmd_attributes_write(0x000b, 0, 31, msgBuf);
+	while(1){
 
-/* recv_handler stack */
-char recv_handler_stack_buffer[RECV_HANDLER_STACK_SIZE];
+		if(newKey == MB1_usrBtn0.pressedKey_get()){
+			MB1_Led_green.toggle();	//DEBUG
+			/* Set BLE device discoverable */
+			ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
+		}
 
-/* taskled_stack */
-char taskled_stack[KERNEL_CONF_STACKSIZE_PRINTF];
+		if(newKey == MB1_usrBtn1.pressedKey_get()){
+			ble_cmd_attributes_write(0x000b, 0, 31, msgBuf);
+		}
 
 /* recv_handler queue */
 msg_t msg_q[RCV_BUFFER_SIZE];
@@ -330,4 +313,5 @@ int cal_rssi_dbm(uint8_t rssi_dec)
     }
 
     return rssi_dBm;
+
 }

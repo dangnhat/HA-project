@@ -129,6 +129,8 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/boards/mboard_1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/cpu/stm32f1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/cpu/cortex-m3_common/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../libs/STM32F10x_StdPeriph_Driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../libs/MBoard1-libs&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.438860254" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STDPERIPH_DRIVER"/>
@@ -172,6 +174,8 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/boards/mboard_1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/cpu/stm32f1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/cpu/cortex-m3_common/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../libs/STM32F10x_StdPeriph_Driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../libs/MBoard1-libs&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.486420942" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STDPERIPH_DRIVER"/>
@@ -215,6 +219,8 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/boards/mboard_1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/cpu/stm32f1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../RIOT/cpu/cortex-m3_common/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../libs/STM32F10x_StdPeriph_Driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../libs/MBoard1-libs&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.711792134" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STDPERIPH_DRIVER"/>
@@ -315,6 +321,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.prof.962518168.1379535500" name="Generate prof information (-p)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.prof.962518168"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.gprof.444996563.132322581" name="Generate gprof information (-pg)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.gprof.444996563"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.other.335823599.478651959" name="Other debugging flags" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.other.335823599"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.667417915" name="Cross ARM GNU Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1818853502">
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.102819430" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -333,7 +340,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="STM32F10x_StdPeriph_Driver|MBoard1-libs|RIOT" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="BGLib|STM32F10x_StdPeriph_Driver|MBoard1-libs|RIOT" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="BGLib"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="MBoard1-libs"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="RIOT"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="STM32F10x_StdPeriph_Driver"/>

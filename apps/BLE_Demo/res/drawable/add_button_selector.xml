@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" >
+
+<item android:state_pressed="true">
+	<shape 
+    android:shape="oval">
+     
+    <solid 
+        android:color="@color/pink_press"/>
+    <size 
+        android:width="45dp"
+        android:height="45dp" />
+
+	</shape>
+</item>
+
+<item android:state_pressed="false">
+	<shape 
+    android:shape="oval">
+     
+    <solid 
+        android:color="@color/accent_pink"/>
+    <size 
+        android:width="45dp"
+        android:height="45dp" />
+
+	</shape>
+</item>
+
+
+
+
+</selector>
