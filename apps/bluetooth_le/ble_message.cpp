@@ -13,12 +13,12 @@
 
 using namespace ble_cmd_id_ns;
 using namespace ble_message_ns;
-using namespace dev_id_ns;
 
 void parse_ble_msg(uint8_t* dataBuf, uint8_t len)
 {
+    const uint8_t max_buf_size = 5;
     bleMsg bt_msg;
-    devInfo devList[4];
+    devInfo devList[max_buf_size];
     int16_t devVal;
 
     switch (dataBuf[2]) {
@@ -27,21 +27,18 @@ void parse_ble_msg(uint8_t* dataBuf, uint8_t len)
         bt_msg.len = 4;
         bt_msg.cmdIDh = BLE_MESSAGE_SET;
         bt_msg.cmdIDl = NUM_OF_DEVS;
-        intToUint8(0x00000004, bt_msg.data);
+        intToUint8(max_buf_size, bt_msg.data);
         send_ble_msg(bt_msg);
         break;
 
     case DEV_WITH_INDEX:
         // send device info to mobile
-        init_ble_database(devList, sizeof(devList) / sizeof(*devList));
+        init_ble_database(devList, max_buf_size);
         bt_msg.len = 10 * (sizeof(devList) / sizeof(*devList));
         bt_msg.cmdIDh = BLE_MESSAGE_SET;
         bt_msg.cmdIDl = DEV_WITH_INDEX;
 //        intToUint8(0x12345678, bt_msg.data);
         getMsgData(devList, bt_msg.data, bt_msg.len);
-//        for(uint8_t i = 0; i < bt_msg.len; i++){
-//            printf("%x\n", bt_msg.data[i]);
-//        }
         send_ble_msg(bt_msg);
         break;
     case DEV_VAL:
@@ -53,14 +50,14 @@ void parse_ble_msg(uint8_t* dataBuf, uint8_t len)
 //        }
         devVal = convertArr8bitTo16bit(dataBuf[7], dataBuf[8]);
         switch (dataBuf[6]) {
-            case ON_OFF_BULB:
+            case dev_id_ns::ON_OFF_BULB:
                 if(devVal != 0){
                     MB1_Led_green.on();
                  }else{
                      MB1_Led_green.off();
                  }
             break;
-            case EVENT_SENSOR:
+            case dev_id_ns::EVENT_SENSOR:
             break;
 
             default:
@@ -99,17 +96,20 @@ void init_ble_database(devInfo* devList, uint8_t len)
         devList[i].devIdx = i;
     }
 
-    devList[0].devID = buildDevID(0, 0, 0, BUTTON);
+    devList[0].devID = buildDevID(0, 0, 0, dev_id_ns::BUTTON);
     devList[0].devVal = 0;
 
-    devList[1].devID = buildDevID(1, 0, 0, ON_OFF_BULB);
+    devList[1].devID = buildDevID(1, 0, 0, dev_id_ns::ON_OFF_BULB);
     devList[1].devVal = 1;
 
-    devList[2].devID = buildDevID(0, 0, 0, EVENT_SENSOR);
+    devList[2].devID = buildDevID(0, 0, 0, dev_id_ns::EVENT_SENSOR);
     devList[2].devVal = 1;
 
-    devList[3].devID = buildDevID(1, 0, 0, SERVO_SG90);
-    devList[3].devVal = 0xfa;
+    devList[3].devID = buildDevID(1, 0, 0, dev_id_ns::DIMMER);
+    devList[3].devVal = 45;
+
+    devList[4].devID = buildDevID(2, 0, 0, dev_id_ns::RGB_LED);
+    devList[4].devVal = 0xfa12;
 }
 
 void send_ble_msg(bleMsg msg)
@@ -119,8 +119,19 @@ void send_ble_msg(bleMsg msg)
     for (uint8_t i = 0; i < sizeof(sendDataBuf); i++) {
         printf("%x\n", sendDataBuf[i]);
     }
+//    printf("%d\n", sizeof(sendDataBuf));
     ble_cmd_attributes_write(ATT_WRITE_ADDR, 0x00, sizeof(sendDataBuf),
             sendDataBuf);
+}
+
+
+void init_ble_msg(bleMsg msg)
+{
+    uint8_t sendDataBuf[msg.len + 3];
+    bleMsgToArray(msg, sendDataBuf, sizeof(sendDataBuf));
+    for (uint8_t i = 0; i < sizeof(sendDataBuf); i++) {
+        printf("%x\n", sendDataBuf[i]);
+    };
 }
 
 bleMsg arrToBTMsg(uint8_t dataBuf[])

@@ -63,7 +63,7 @@ int main()
 
     ble_thread_ns::ble_thread_pid = thread_create(ble_thread_stack,
                                     ble_thread_stack_size,
-                                    PRIORITY_MAIN - 1,
+                                    PRIORITY_MAIN - 2,
                                     0,
                                     ble_transaction,
                                     NULL, "ble thread");

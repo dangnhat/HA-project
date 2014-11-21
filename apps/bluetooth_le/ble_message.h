@@ -62,6 +62,8 @@ typedef struct devInfo_t {
  */
 void init_ble_database(devInfo* devList, uint8_t len);
 
+
+void init_ble_msg(bleMsg msg);
 /**
  *  Create Bluetooth Message
  */
