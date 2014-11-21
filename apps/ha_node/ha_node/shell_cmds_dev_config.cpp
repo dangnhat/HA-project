@@ -51,21 +51,21 @@ const char rgb_usage[] =
                 "rgb -h, get this help.\n"
                 "Note: multiple options can be combined together.\n";
 
-const char linear_sensor_usage[] =
-        "Usage:\n"
-                "senlnr -e [EP id], set end point id.\n"
-                "senlnr -e [EP id] -p [port], set port.\n"
-                "senlnr -e [EP id] -n [pin], set pin.\n"
-                "senlnr -e [EP id] -a [adc], set adc.\n"
-                "senlnr -e [EP id] -c [channel], set channel.\n"
-                "senlnr -e [EP id] -t [equa-type], choose equation type (linear or rational).\n"
-                "senlnr -e [EP id] -k [a_factor], set A factor for equation.\n"
-                "senlnr -e [EP id] -b [b_constant], set B constant for equation.\n"
-                "senlnr -e [EP id] -f [filter thres], set filter threshold.\n"
-                "senlnr -e [EP id] -u [under thres], set underflow threshold.\n"
-                "senlnr -e [EP id] -o [over thres], set overflow threshold.\n"
-                "senlnr -h, get this help.\n"
-                "Note: multiple options can be combined together.\n";
+const char linear_sensor_usage[] = "Usage:\n"
+        "senlnr -e [EP id], set end point id.\n"
+        "senlnr -e [EP id] -s [sensor type], set sensor type.\n" //0=temp, 1=lumi
+        "senlnr -e [EP id] -p [port], set port.\n"
+        "senlnr -e [EP id] -n [pin], set pin.\n"
+        "senlnr -e [EP id] -a [adc], set adc.\n"
+        "senlnr -e [EP id] -c [channel], set channel.\n"
+        "senlnr -e [EP id] -t [equa-type], choose equation type (linear or rational).\n"
+        "senlnr -e [EP id] -k [a_factor], set A factor for equation (-t must be entered).\n"
+        "senlnr -e [EP id] -b [b_constant], set B constant for equation (-t must be entered).\n"
+        "senlnr -e [EP id] -f [filter thres], set filter threshold.\n"
+        "senlnr -e [EP id] -u [under thres], set underflow threshold.\n"
+        "senlnr -e [EP id] -o [over thres], set overflow threshold.\n"
+        "senlnr -h, get this help.\n"
+        "Note: multiple options can be combined together.\n";
 
 /**
  * @brief configure pure GPIO devices (port/pin).
@@ -178,7 +178,8 @@ void on_off_output_config(int argc, char** argv)
         return;
     }
 
-    modify_dev_list_file(ep_id, combine_dev_type(ha_ns::ON_OFF_OPUT, (uint8_t) sub_type));
+    modify_dev_list_file(ep_id,
+            combine_dev_type(ha_ns::ON_OFF_OPUT, (uint8_t) sub_type));
 
     return;
 }
@@ -194,7 +195,8 @@ void sensor_event_config(int argc, char** argv)
         return;
     }
 
-    modify_dev_list_file(ep_id, combine_dev_type(ha_ns::EVT_SENSOR, (uint8_t) sub_type));
+    modify_dev_list_file(ep_id,
+            combine_dev_type(ha_ns::EVT_SENSOR, (uint8_t) sub_type));
 
     return;
 }
@@ -529,6 +531,7 @@ void adc_sensor_config(int argc, char** argv)
     FIL fil;
     UINT byte_read, byte_written;
     char f_name[4];
+    uint8_t num_equation = 0;
 
     int8_t ep_id = -1;
     int8_t sub_type = -1;
@@ -538,11 +541,20 @@ void adc_sensor_config(int argc, char** argv)
     uint16_t adc_x = 0;
     uint16_t channel = 0;
 
-    char e_type = '0';
-    uint8_t a_index = 0;
-    uint8_t b_index = 0;
-    char a_factor[16];
-    char b_constant[16];
+    char e1_type = '0';
+    char e2_type = '0';
+    char a1_value[6] = {'0', '\0', '\0', '\0', '\0', '\0'};
+    char b1_value[6];
+    char c1_value[6];
+    char a2_value[6];
+    char b2_value[6];
+    char c2_value[6];
+
+    memcpy(b1_value, a1_value, sizeof(b1_value));
+    memcpy(c1_value, a1_value, sizeof(c1_value));
+    memcpy(a2_value, a1_value, sizeof(a2_value));
+    memcpy(b2_value, a1_value, sizeof(b2_value));
+    memcpy(c2_value, a1_value, sizeof(c2_value));
 
     int filter_thres = 0;
     int under_thres = 0;
@@ -598,7 +610,8 @@ void adc_sensor_config(int argc, char** argv)
                 }
                 f_close(&fil);
                 sscanf(config_str, ha_node_ns::senlnr_config_pattern, &port,
-                        &pin, &adc_x, &channel, &e_type, a_factor, b_constant,
+                        &pin, &adc_x, &channel, &e1_type, &e2_type, a1_value,
+                        b1_value, c1_value, a2_value, b2_value, c2_value,
                         &filter_thres, &under_thres, &over_thres);
                 break;
             case 'p': //set port
@@ -648,33 +661,80 @@ void adc_sensor_config(int argc, char** argv)
                     return;
                 }
                 break;
-            case 't':
+            case 't': //get equation type
                 count++;
                 if (count > argc) {
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                e_type = argv[count][0];
-                if (e_type != 'l' && e_type != 'r') {
-                    printf("ERR: invalid type, linear equation as default\n");
-                    e_type = 'l';
+                e1_type = argv[count][0];
+                if (e1_type != 'l' && e1_type != 'r' && e1_type != 'p') {
+                    printf("ERR: invalid equation type\n");
+                    return;
+                }
+                num_equation++; //number of equation;
+                count++;
+                if (count > argc) {
+                    break;
+                }
+                if (argv[count][0] == '-') {
+                    count--;
+                    break;
+                }
+                e2_type = argv[count][0];
+                if (e2_type != 'l' && e2_type != 'r' && e2_type != 'p') {
+                    printf("ERR: invalid equation type\n");
+                    return;
+                }
+                num_equation++;
+                break;
+            case 'A':
+                count++;
+                if (count > argc) {
+                    printf("ERR: too few argument. Try -h to get help.\n");
+                    return;
+                }
+                memcpy(a1_value, argv[count], sizeof(a1_value));
+                if (num_equation == 2) {
+                    count++;
+                    if (count > argc) {
+                        printf("ERR: too few argument. Try -h to get help.\n");
+                        return;
+                    }
+                    memcpy(a2_value, argv[count], sizeof(a2_value));
                 }
                 break;
-            case 'k':
+            case 'B':
                 count++;
                 if (count > argc) {
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                a_index = count;
+                memcpy(b1_value, argv[count], sizeof(b1_value));
+                if (num_equation == 2) {
+                    count++;
+                    if (count > argc) {
+                        printf("ERR: too few argument. Try -h to get help.\n");
+                        return;
+                    }
+                    memcpy(b2_value, argv[count], sizeof(b2_value));
+                }
                 break;
-            case 'b':
+            case 'C':
                 count++;
                 if (count > argc) {
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                b_index = count;
+                memcpy(c1_value, argv[count], sizeof(c1_value));
+                if (num_equation == 2) {
+                    count++;
+                    if (count > argc) {
+                        printf("ERR: too few argument. Try -h to get help.\n");
+                        return;
+                    }
+                    memcpy(c2_value, argv[count], sizeof(c2_value));
+                }
                 break;
             case 'f':
                 count++;
@@ -731,8 +791,8 @@ void adc_sensor_config(int argc, char** argv)
 
     snprintf(config_str, ha_node_ns::dev_pattern_maxsize,
             ha_node_ns::senlnr_config_pattern, port, pin, adc_x, channel,
-            e_type, argv[a_index], argv[b_index], filter_thres, under_thres,
-            over_thres);
+            e1_type, e2_type, a1_value, b1_value, c1_value, a2_value,
+            b2_value, c2_value, filter_thres, under_thres, over_thres);
 
     f_res = f_write(&fil, config_str, ha_node_ns::dev_pattern_maxsize,
             &byte_written);
@@ -756,7 +816,8 @@ void adc_sensor_config(int argc, char** argv)
     f_close(&fil);
 
     /* modify device list file */
-    modify_dev_list_file(ep_id, combine_dev_type(ha_ns::LIN_SENSOR, (uint8_t) sub_type));
+    modify_dev_list_file(ep_id,
+            combine_dev_type(ha_ns::LIN_SENSOR, (uint8_t) sub_type));
 
     return;
 }
@@ -1345,10 +1406,10 @@ void run_endpoint(int8_t ep_id)
     f_close(&fil);
 
     if (!check_devid(dev_list[ep_id])) {
-        printf("EP%d: No device!!\n", ep_id);
+        printf("-EP%d: No device!!\n", ep_id);
         return;
     } else {
-        printf("EP%d: Device id is valid.\n", ep_id);
+        printf("-EP%d: Device id is valid.\n", ep_id);
     }
 
     msg_t msg;

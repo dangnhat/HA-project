@@ -7,6 +7,7 @@
  */
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 #include "sensor_linear_driver.h"
 
 #if AUTO_UPDATE
@@ -19,7 +20,7 @@ const static uint16_t sampling_time_cycle = 100 / timer_period; //sampling every
 
 /* internal variables */
 #if SND_MSG
-const uint32_t send_msg_time_period = 30 * 1000 / sampling_time_cycle; //send msg every 30s.
+const uint32_t send_msg_time_period = 10 * 1000 / sampling_time_cycle; //send msg every 10s.
 uint16_t send_msg_time_count = 0;
 #endif //SND_MSG
 sensor_linear_instance* sensor_linear_table[ha_node_ns::max_end_point];
@@ -34,8 +35,7 @@ using namespace sensor_linear_ns;
 
 sensor_linear_instance::sensor_linear_instance(void)
 {
-    /* linear equation as default */
-    this->equation = &linear_equation_calculate;
+    init_equation_table();
 
 #if AUTO_UPDATE
     this->is_under_or_overflow = false;
@@ -57,6 +57,16 @@ sensor_linear_instance::~sensor_linear_instance(void)
 #endif //AUTO_UPDATE
 }
 
+void sensor_linear_instance::init_equation_table(void)
+{
+    for (uint8_t i = 0; i < max_equation; i++) {
+        this->equation[i] = NULL;
+        a_value[i] = 0.0f;
+        b_value[i] = 0.0f;
+        c_value[i] = 0.0f;
+    }
+}
+
 void sensor_linear_instance::device_configure(
         adc_config_params_t *adc_config_params)
 {
@@ -68,16 +78,36 @@ void sensor_linear_instance::device_configure(
 }
 
 void sensor_linear_instance::set_equation(equation_t equation_type,
-        float a_factor, float b_constant)
+        uint8_t order_equation, float a_value, float b_value, float c_value)
 {
-    if (equation_type == rational) {
-        this->equation = &rational_equation_calculate;
-    } else if (equation_type == linear) {
-        this->equation = &linear_equation_calculate;
+    if (order_equation > max_equation) {
+        return;
+    }
+    switch (equation_type) {
+    case rational:
+        this->equation[order_equation - 1] = &rational_equation_calculate;
+        break;
+    case linear:
+        this->equation[order_equation - 1] = &linear_equation_calculate;
+        break;
+    case polynomial:
+        this->equation[order_equation - 1] = &polynomial_equation_calculate;
+        break;
+    default:
+        return;
     }
 
-    this->a_factor = a_factor;
-    this->b_constant = b_constant;
+    this->a_value[order_equation - 1] = a_value;
+    this->b_value[order_equation - 1] = b_value;
+    this->c_value[order_equation - 1] = c_value;
+}
+
+void sensor_linear_instance::set_num_equation(uint8_t num_equation)
+{
+    if (num_equation > max_equation) {
+        num_equation = max_equation;
+    }
+    this->num_equation = num_equation;
 }
 
 float sensor_linear_instance::get_voltage_value(void)
@@ -93,25 +123,38 @@ float sensor_linear_instance::get_voltage_value(void)
     return converted_volt / 1000.0f; //V
 }
 
-uint16_t sensor_linear_instance::get_sensor_value(void)
+float sensor_linear_instance::get_sensor_value(void)
 {
-    float converted_volt = get_voltage_value();
-    float sensor_value = this->equation(converted_volt, this->a_factor,
-            this->b_constant);
-    return round(sensor_value);
+    float sensor_value = get_voltage_value();
+
+    for (uint8_t i = 0; i < this->num_equation; i++) {
+        if (this->equation[i] != NULL) {
+            sensor_value = this->equation[i](sensor_value, this->a_value[i],
+                    this->b_value[i], this->c_value[i]);
+        }
+    }
+
+    return sensor_value;
 }
 
-float linear_equation_calculate(float x_value, float a_factor, float b_constant)
+float linear_equation_calculate(float x_value, float a_value, float b_value,
+        float c_value)
 {
     /* y = a*x + b */
-    return x_value * a_factor + b_constant;
+    return x_value * a_value + b_value;
 }
 
-float rational_equation_calculate(float x_value, float a_factor,
-        float b_constant)
+float rational_equation_calculate(float x_value, float a_value, float b_value,
+        float c_value)
 {
-    /* y = 1/(a*x +b) */
-    return 1.0f / (x_value * a_factor + b_constant);
+    /* y = 1/(a*x +b) + c*/
+    return 1.0f / (x_value * a_value + b_value) + c_value;
+}
+
+float polynomial_equation_calculate(float x_value, float a_value, float b_value,
+        float c_value)
+{
+    return a_value * pow(x_value, b_value) + c_value;
 }
 
 #if AUTO_UPDATE
@@ -120,9 +163,9 @@ void sensor_linear_instance::start_sensor(void)
     this->assign_sensor();
 }
 
-uint16_t sensor_linear_instance::sensor_linear_processing(void)
+float sensor_linear_instance::sensor_linear_processing(void)
 {
-    uint16_t new_value = get_sensor_value();
+    float new_value = get_sensor_value();
     uint16_t delta_value;
 
     if (new_value > old_sensor_value) {
@@ -131,9 +174,9 @@ uint16_t sensor_linear_instance::sensor_linear_processing(void)
         delta_value = old_sensor_value - new_value;
     }
 
+    is_under_or_overflow = false;
     if (delta_value >= delta_thres) {
         old_sensor_value = new_value;
-        is_under_or_overflow = false;
         if (old_sensor_value >= overflow_thres
                 || old_sensor_value <= underflow_thres) {
             is_under_or_overflow = true;
@@ -148,13 +191,12 @@ void sensor_linear_instance::set_delta_threshold(uint16_t delta_threshold)
     this->delta_thres = delta_threshold;
 }
 
-void sensor_linear_instance::set_overflow_threshold(uint16_t overflow_threshold)
+void sensor_linear_instance::set_overflow_threshold(int overflow_threshold)
 {
     this->overflow_thres = overflow_threshold;
 }
 
-void sensor_linear_instance::set_underflow_threshold(
-        uint16_t underflow_threshold)
+void sensor_linear_instance::set_underflow_threshold(int underflow_threshold)
 {
     this->underflow_thres = underflow_threshold;
 }
@@ -195,8 +237,9 @@ void sensor_linear_callback_timer_isr(void)
 #endif //SND_MSG
         for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
             if (sensor_linear_table[i] != NULL) {
-                uint16_t new_value =
+                sensor_linear_table[i]->average_value +=
                         sensor_linear_table[i]->sensor_linear_processing();
+                sensor_linear_table[i]->average_num++;
 #if SND_MSG
                 if (sensor_linear_table[i]->is_underlow_or_overflow()
                         || send_msg_time_count
@@ -205,7 +248,11 @@ void sensor_linear_callback_timer_isr(void)
                     sensor_linear_table[i]->is_first_send = false;
                     msg_t msg;
                     msg.type = SEN_LINEAR_MSG;
-                    msg.content.value = new_value;
+                    msg.content.value = (uint16_t) round(
+                            sensor_linear_table[i]->average_value
+                                    / sensor_linear_table[i]->average_num);
+                    sensor_linear_table[i]->average_value = 0;
+                    sensor_linear_table[i]->average_num = 0;
                     kernel_pid_t pid = sensor_linear_table[i]->get_pid();
                     if (pid == KERNEL_PID_UNDEF) {
                         return;
