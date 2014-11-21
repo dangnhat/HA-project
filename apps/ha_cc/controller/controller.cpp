@@ -97,7 +97,7 @@ void controller_start(void)
 /* Prototypes */
 static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *ble_queue,
-        kernel_pid_t slp_pid, cir_queue *slp_queue)
+        kernel_pid_t slp_pid, cir_queue *slp_queue);
 
 static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *ble_queue,

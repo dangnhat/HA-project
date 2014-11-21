@@ -25,7 +25,13 @@ extern "C" {
 namespace ha_ns {
 kernel_pid_t sixlowpan_sender_pid;
 
-const uint16_t sixlowpan_sender_gff_queue_size = 500;
+const uint16_t sixlowpan_sender_gff_queue_size =
+#ifdef HA_NODE
+        500;
+#endif
+#ifdef HA_CC
+        1024;
+#endif
 uint8_t sixlowpan_sender_gff_queue_buf[sixlowpan_sender_gff_queue_size];
 cir_queue sixlowpan_sender_gff_queue(
         sixlowpan_sender_gff_queue_buf,
