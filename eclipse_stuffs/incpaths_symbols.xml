@@ -2,6 +2,20 @@
 <cdtprojectproperties>
 <section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
 <language name="Assembly Source File">
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/FATFileSystem/src</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/common_def</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/device_class/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/device_instance/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/ha_shell</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/ha_sixlowpan</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/misc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/MBoard1-libs</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/misc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/RIOT-libs/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/STM32F10x_StdPeriph_Driver/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/TuLib/Inc</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/core/include</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/core/include/arch</includepath>
@@ -76,15 +90,23 @@
 <includepath>/home/dangnhat/RIOT-working/RIOT/sys/posix/pthread/include</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/sys/quad_math</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/boards/mboard-1/include</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/MBoard1-libs</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/misc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/RIOT-libs/inc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/STM32F10x_StdPeriph_Driver/inc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/TuLib/Inc</includepath>
 
 </language>
 <language name="C Source File">
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/FATFileSystem/src</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/common_def</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/device_class/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/device_instance/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/ha_shell</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/ha_sixlowpan</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/misc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/MBoard1-libs</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/misc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/RIOT-libs/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/STM32F10x_StdPeriph_Driver/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/TuLib/Inc</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/core/include</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/core/include/arch</includepath>
@@ -159,15 +181,23 @@
 <includepath>/home/dangnhat/RIOT-working/RIOT/sys/posix/pthread/include</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/sys/quad_math</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/boards/mboard-1/include</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/MBoard1-libs</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/misc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/RIOT-libs/inc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/STM32F10x_StdPeriph_Driver/inc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/TuLib/Inc</includepath>
 
 </language>
 <language name="C++ Source File">
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/FATFileSystem/src</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/common_def</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/device_class/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/device_instance/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/ha_shell</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/ha_sixlowpan</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/HA-libs/misc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/MBoard1-libs</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/misc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/RIOT-libs/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/STM32F10x_StdPeriph_Driver/inc</includepath>
+<includepath>/home/dangnhat/RIOT-working/HA-project/libs/TuLib/Inc</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/core/include</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/core/include/arch</includepath>
@@ -242,12 +272,6 @@
 <includepath>/home/dangnhat/RIOT-working/RIOT/sys/posix/pthread/include</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/sys/quad_math</includepath>
 <includepath>/home/dangnhat/RIOT-working/RIOT/boards/mboard-1/include</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/BGLib</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/MBoard1-libs</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/misc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/RIOT-libs/inc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/STM32F10x_StdPeriph_Driver/inc</includepath>
-<includepath>/home/dangnhat/RIOT-working/HA-project/libs/TuLib/Inc</includepath>
 
 </language>
 <language name="Object File">

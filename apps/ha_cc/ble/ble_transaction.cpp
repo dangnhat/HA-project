@@ -13,10 +13,6 @@ extern "C" {
 #include "thread.h"
 }
 
-namespace ble_thread_ns {
-int16_t ble_thread_pid;
-}
-
 using namespace ble_thread_ns;
 
 void USART3_RxInit()
@@ -41,17 +37,14 @@ void ble_init()
 
 void usart3_receive()
 {
-//	msg_t 	usartMsg;
-//	usartMsg.type	=  ble_message_ns::BLE_USART_REC;
     USART_ClearFlag(USART3, USART_FLAG_RXNE);
-//	printf("%02x \n", MB1_USART3.Get_ISR()); //DEBUG
+//	printf("%02x \n", MB1_USART3.Get_ISR());            //DEBUG
 
-    rxBuf[idxBuf++] = MB1_USART3.Get_ISR();
+    usart3_rec_buf[idxBuf++] = MB1_USART3.Get_ISR();
 
-    if ((idxBuf > 1) && (idxBuf == (rxBuf[1] + 4))) {	//END of packet
+    if ((idxBuf > 1) && (idxBuf == (usart3_rec_buf[1] + 4))) {	//END of packet
         idxBuf = 0;
-        receiveBTMessage();							// Parse data from packet
-//		msg_send_int(&usartMsg, ble_thread_pid);
+        receiveBTMessage();							    // Parse data from packet
     }
 }
 
@@ -77,23 +70,20 @@ void sendBTMessage(uint8_t len1, uint8_t* data1, uint16_t len2, uint8_t* data2)
 
 void receiveBTMessage()
 {
-    const struct ble_msg *BTMessage;				//holds BLE message
-    struct ble_header BTHeader;				//holds header of message
-    uint8_t data[256] = "\0";	//holds payload of message
-
-//	rxBuf[index++] =	MB1_USART3.Get_ISR();
+    const struct ble_msg *BTMessage;         //holds BLE message
+    struct ble_header BTHeader;				 //holds header of message
+    uint8_t data[256] = "\0";	             //holds payload of message
 
     //read BLE message header
-    BTHeader.type_hilen = rxBuf[0];
-    BTHeader.lolen = rxBuf[1];
-    BTHeader.cls = rxBuf[2];
-    BTHeader.command = rxBuf[3];
+    BTHeader.type_hilen = usart3_rec_buf[0];
+    BTHeader.lolen = usart3_rec_buf[1];
+    BTHeader.cls = usart3_rec_buf[2];
+    BTHeader.command = usart3_rec_buf[3];
 
     //read the payload of the BLE Message
-//	printf("len = %d \n", BTHeader.lolen);
 
     for (uint8_t i = 0; i < BTHeader.lolen; i++) {
-        data[i] = rxBuf[i + 4];
+        data[i] = usart3_rec_buf[i + 4];
     }
 
     //find the appropriate message based on the header, which allows

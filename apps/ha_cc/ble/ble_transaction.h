@@ -12,28 +12,43 @@
 #include "apitypes.h"
 #include "cmd_def.h"
 #include "cir_queue.h"
+#include "ha_debug.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define HA_NOTIFICATION (1)
+#define HA_DEBUG_EN (0)
+
 #define MAX_BUF_SIZE		(512)
 #define MAX_MSGBUF_SIZE		(1024)
 #define ATT_WRITE_ADDR    	(0x0B)
 
-extern uint8_t rxBuf[MAX_BUF_SIZE];
-extern uint8_t idxBuf;
-extern uint8_t attBuf[MAX_MSGBUF_SIZE];
-extern cir_queue ble_msg_queue;
 
 namespace ble_thread_ns {
 extern int16_t ble_thread_pid;
+extern uint8_t idxBuf;
+extern const uint16_t usart3_rec_buf_size;
+extern uint8_t  usart3_rec_buf[usart3_rec_buf_size];
+extern uint8_t attBuf[MAX_MSGBUF_SIZE];
 }
 
+extern uint8_t ble_to_controller_queue_buffer;
+
+/* initial usart3 interrupt */
 void USART3_RxInit(void);
+
+/* BLE device transaction initialation */
 void ble_init(void);
+
+/* usart3 interrupt receive */
 void usart3_receive(void);
+
+/* send Message to BLE device */
 void sendBTMessage(uint8_t len1, uint8_t* data1, uint16_t len2, uint8_t* data2);
+
+/* receive Message from BLE device */
 void receiveBTMessage(void);
 
 #ifdef __cplusplus
