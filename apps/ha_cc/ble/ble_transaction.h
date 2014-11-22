@@ -33,9 +33,9 @@ extern int16_t ble_thread_pid;
 extern uint16_t idxBuf;
 extern uint8_t  usart3_rec_buf[MAX_BUF_SIZE];
 /*controller message queue */
-extern const uint16_t controller_to_ble_msg_queue_size;
-extern uint8_t controller_to_ble_msg_queue_buf[MAX_MSGBUF_SIZE];
-extern cir_queue controller_to_ble_msg_queue;
+extern const uint16_t from_ctlr_queue_size;
+extern uint8_t from_ctlr_queue_buf[MAX_MSGBUF_SIZE];
+extern cir_queue from_ctlr_queue;
 }
 
 

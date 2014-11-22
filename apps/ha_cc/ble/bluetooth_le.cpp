@@ -43,15 +43,16 @@ static void *ble_transaction(void *arg);
 
 namespace ble_thread_ns {
 int16_t ble_thread_pid;
+
 /* USART3 receive buffer */
 uint16_t idxBuf = 0;
 uint8_t usart3_rec_buf[MAX_BUF_SIZE];
 
 /*controller message queue */
-const uint16_t controller_to_ble_msg_queue_size = 1024;
-uint8_t controller_to_ble_msg_queue_buf[controller_to_ble_msg_queue_size];
-cir_queue controller_to_ble_msg_queue = cir_queue(
-        controller_to_ble_msg_queue_buf, controller_to_ble_msg_queue_size);
+const uint16_t from_ctlr_queue_size = 1024;
+uint8_t from_ctlr_queue_buf[from_ctlr_queue_size];
+cir_queue from_ctlr_queue = cir_queue(
+        from_ctlr_queue_buf, from_ctlr_queue_size);
 }
 
 /*******************************************************************************
@@ -147,20 +148,20 @@ void *ble_transaction(void *arg)
 }
 
 /**
- * @brief: Receive message from controller
+ * @brief: Receive message from controller thread
  */
 void receive_msg_from_controller(cir_queue* mCirQueue)
 {
-    uint8_t bufLen = mCirQueue->preview_data(true) + ha_ns::GFF_CMD_SIZE
+    uint8_t bufLen = mCirQueue->preview_data(false) + ha_ns::GFF_CMD_SIZE
             + ha_ns::GFF_LEN_SIZE;
 
     if (bufLen == mCirQueue->get_size()) {
         ble_write_att(
                 (uint8_t*)mCirQueue->get_data(
-                        ble_thread_ns::controller_to_ble_msg_queue_buf, bufLen),
+                        ble_thread_ns::from_ctlr_queue_buf, bufLen),
                 bufLen);
     } else {
-        HA_NOTIFY("Frame error\n");
+        HA_DEBUG("Frame error\n");
     }
 
 }
