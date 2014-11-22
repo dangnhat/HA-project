@@ -341,8 +341,9 @@ static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
             /* pack GFF */
             set_dev_windex_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN;
             uint162buf(ha_ns::SET_DEV_WITH_INDEXS, &set_dev_windex_gff_frame[ha_ns::GFF_CMD_POS]);
-            uint322buf(device_id, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
-            uint162buf((uint16_t) value, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
+            uint322buf(count, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
+            uint322buf(device_id, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
+            uint162buf((uint16_t) value, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 8]);
 
             /* push data to ble_queue */
             to_ble_queue->add_data(set_dev_windex_gff_frame, ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN
@@ -368,8 +369,9 @@ static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
     /* pack GFF */
     set_dev_windex_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN;
     uint162buf(ha_ns::SET_DEV_WITH_INDEXS, &set_dev_windex_gff_frame[ha_ns::GFF_CMD_POS]);
-    uint322buf(device_id, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
-    uint162buf((uint16_t) value, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
+    uint322buf(count, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
+    uint322buf(device_id, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
+    uint162buf((uint16_t) value, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 8]);
 
     /* push data to ble_queue */
     to_ble_queue->add_data(set_dev_windex_gff_frame, ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN
