@@ -37,6 +37,7 @@
 
 #ifdef HA_CC                /* CC specific includes */
 #include "controller.h"
+#include "ble_transaction.h"
 #endif
 
 /* Typedefs */

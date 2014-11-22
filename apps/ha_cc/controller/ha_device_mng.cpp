@@ -86,6 +86,15 @@ int8_t ha_device_mng::get_dev_val(uint32_t device_id, int16_t &value)
 }
 
 /*----------------------------------------------------------------------------*/
+int8_t ha_device_mng::get_dev_val_with_index(uint16_t index, uint32_t &device_id, int16_t &value)
+{
+    device_id = devices_buffer[index].get_device_id();
+    value = devices_buffer[index].get_value();
+
+    return 0;
+}
+
+/*----------------------------------------------------------------------------*/
 int8_t ha_device_mng::set_dev_ttl(uint32_t device_id, int8_t ttl)
 {
     ha_device *device_p;

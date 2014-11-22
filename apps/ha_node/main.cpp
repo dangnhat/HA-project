@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <math.h>
 
 extern "C" {
 #include "vtimer.h"
@@ -11,7 +12,7 @@ extern "C" {
 #include "ha_system.h"
 
 /* configurable variables */
-const int16_t stack_size = 1400;
+const int16_t stack_size = 1450;
 const char thread_name_hdr[] = "endpoint %d";
 
 char stack[ha_node_ns::max_end_point][stack_size];
@@ -22,7 +23,7 @@ int main(void)
 
     /* create end-point's threads */
     char thread_name[16];
-    for (int8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (int i = 0; i < ha_node_ns::max_end_point; i++) {
         snprintf(thread_name, sizeof(thread_name), thread_name_hdr, i);
         ha_node_ns::end_point_pid[i] = thread_create(stack[i], stack_size,
         PRIORITY_MAIN - 1, CREATE_STACKTEST, end_point_handler, NULL,

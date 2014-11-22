@@ -47,18 +47,21 @@ void ble_rsp_hardware_set_soft_timer(
 
 void ble_rsp_sm_set_bondable_mode(const void *nul)
 {
-    HA_NOTIFY("-- bondable --\n");
+//    HA_NOTIFY("-- bondable --\n");
+    HA_DEBUG("-- bondable --\n");
 }
 
 void ble_rsp_gap_set_mode(const struct ble_msg_gap_set_mode_rsp_t *msg)
 {
-    HA_NOTIFY("-- discoverable --\n");
+//    HA_NOTIFY("-- discoverable --\n");
+    HA_DEBUG("-- discoverable --\n");
 }
 
 void ble_evt_connection_disconnected(
         const struct ble_msg_connection_disconnected_evt_t *msg)
 {
-    HA_NOTIFY("-- remote device disconnected --\n");
+//    HA_NOTIFY("-- remote device disconnected --\n");
+    HA_DEBUG("-- remote device disconnected --\n");
     ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
 }
 
@@ -80,6 +83,7 @@ void ble_rsp_attributes_write(const struct ble_msg_attributes_write_rsp_t *msg)
 void ble_evt_connection_status(
         const struct ble_msg_connection_status_evt_t *msg)
 {
-    HA_NOTIFY("-- client connected --\n");
+//    HA_NOTIFY("-- client connected --\n");
+    HA_DEBUG("-- client connected --\n");
 }
 

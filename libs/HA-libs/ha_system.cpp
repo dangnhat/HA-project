@@ -55,6 +55,9 @@ void ha_system_init(void)
     slp_sender_start();
     slp_receiver_start();
 
+    /* Start ble thread */
+    ble_thread_start();
+
 #ifdef HA_NODE
     /* Node's specific initializations */
     ha_node_init();

@@ -46,7 +46,7 @@ const shell_command_t shell_commands[] = {
     {"stop", "Stop device in the specified thread", stop_endpoint_callback},
     {"btn", "Configure button device", button_config},
     {"sw", "Configure switch device", switch_config},
-    {"bulb", "Configure on-off bulb device", on_off_bulb_config},
+    {"onoff", "Configure on-off output device", on_off_output_config},
     {"senevt", "Configure sensor event device", sensor_event_config},
     {"dimmer", "Configure dimmer device", dimmer_config},
     {"lvbulb", "Configure level bulb device", level_bulb_config},

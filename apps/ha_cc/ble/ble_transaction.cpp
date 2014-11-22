@@ -13,6 +13,7 @@ extern "C" {
 #include "thread.h"
 }
 
+
 using namespace ble_thread_ns;
 
 void USART3_RxInit()

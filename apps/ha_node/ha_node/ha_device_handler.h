@@ -40,8 +40,9 @@ const char rgb_config_pattern[dev_pattern_maxsize] = "R: P%c%hu T%hu_CH%hu\n"
         "Cal: %%R=%hu, %%G=%hu, %%B=%hu\n";
 
 const char senlnr_config_pattern[dev_pattern_maxsize] = "P%c%hu A%hu_IN%hu\n"
-        "E-type: %c\n" //type: l (linear), r (rational)
-        "A B: %s %s\n"
+        "E-type: %c %c\n" //type: l (linear), r (rational), p (polynomial)
+        "A1 B1 C1: %s %s %s\n"
+        "A2 B2 C2: %s %s %s\n"
         "Thr: F=%d U=%d O=%d\n";//F: filter, U:underflow, O=overflow
 }
 
