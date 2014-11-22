@@ -55,9 +55,6 @@ void ha_system_init(void)
     slp_sender_start();
     slp_receiver_start();
 
-    /* Start ble thread */
-    ble_thread_start();
-
 #ifdef HA_NODE
     /* Node's specific initializations */
     ha_node_init();
@@ -70,6 +67,8 @@ void ha_system_init(void)
     controller_start();
     MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_RTC, second_int_callback);
 
+    /* Start ble thread */
+    ble_thread_start();
     ble_init();
 #endif
 
