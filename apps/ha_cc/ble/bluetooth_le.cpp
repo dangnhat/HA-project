@@ -110,7 +110,7 @@ void *ble_transaction(void *arg)
             break;
         case ha_cc_ns::BLE_CLIENT_WRITE:
             HA_NOTIFY("--- client write ---\n");
-            //get bluetooth message
+            //get bluetooth message from Mobile
             usartMsgPtr = reinterpret_cast<uint8array*>(msg.content.ptr);
             numOfMsg++;
             sumOfMsgLen += usartMsgPtr->len;
@@ -136,6 +136,7 @@ void *ble_transaction(void *arg)
             }
 
         case ha_ns::GFF_PENDING:
+            // Get message from thread Controller, and send to Mobile
             receive_msg_from_controller((cir_queue *) msg.content.ptr);
             break;
         default:
