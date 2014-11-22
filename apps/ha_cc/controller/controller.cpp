@@ -26,6 +26,7 @@ extern "C" {
 #include "ha_device_mng.h"
 #include "cc_msg_id.h"
 #include "ble_transaction.h"
+#include "ha_sixlowpan.h"
 
 /*----------------------------- Configurations -------------------------------*/
 #define HA_NOTIFICATION (1)
@@ -103,7 +104,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *ble_queue,
         kernel_pid_t slp_pid, cir_queue *slp_queue);
 
-void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng, );
+void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng);
 
 static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *ble_queue);
@@ -269,7 +270,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         slp_queue->add_data(gff_frame, gff_frame[ha_ns::GFF_LEN_POS]
                              + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
-        mesg.content.ptr = (char)slp_queue;
+        mesg.content.ptr = (char *)slp_queue;
         msg_send(&mesg, slp_pid, false);
 
         HA_DEBUG("slp_gff_handler: forward GFF SET_DEV_VAL to slp\n");
