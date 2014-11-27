@@ -16,6 +16,12 @@ extern "C" {
 
 using namespace ble_thread_ns;
 
+
+/* USART3 receive buffer */
+static const uint16_t usart3_buf_size = 256;
+static uint16_t idxBuf = 0;
+static uint8_t usart3_rec_buf[usart3_buf_size];
+
 void USART3_RxInit()
 {
     NVIC_InitTypeDef NVIC_InitStructure;
