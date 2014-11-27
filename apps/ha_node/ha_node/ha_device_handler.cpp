@@ -236,7 +236,8 @@ void dimmer_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case dimmer_ns::DIMMER_MSG:
-            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, msg.content.value);
+            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                    (uint16_t) msg.content.value);
             break;
         case ha_node_ns::SEND_ALIVE:
             send_data_over_air(ha_ns::ALIVE, dev_id, 0);
@@ -419,7 +420,7 @@ void rgb_led_handler(uint32_t dev_id)
         case ha_ns::SET_DEV_VAL:
             if (check_dev_type_value(msg.content.value,
                     (uint8_t) ha_ns::RGB_LED)) {
-                rgb_led.rgb_set_color(msg.content.value);
+                rgb_led.rgb_set_color((uint16_t) msg.content.value);
             }
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) rgb_led.get_current_color());
@@ -626,22 +627,22 @@ bool sensor_linear_get_config(uint32_t dev_id, sensor_linear_instance *senlnr)
     adc_params.adc_channel = chann;
 
     if (e1_type == 'l') {
-        senlnr->set_equation(sensor_linear_ns::linear, 1, a1_value,
-                b1_value, c1_value);
+        senlnr->set_equation(sensor_linear_ns::linear, 1, a1_value, b1_value,
+                c1_value);
     } else if (e1_type == 'r') {
-        senlnr->set_equation(sensor_linear_ns::rational, 1, a1_value,
-                b1_value, c1_value);
+        senlnr->set_equation(sensor_linear_ns::rational, 1, a1_value, b1_value,
+                c1_value);
     } else if (e1_type == 'p') {
         senlnr->set_equation(sensor_linear_ns::polynomial, 1, a1_value,
                 b1_value, c1_value);
     }
 
     if (e2_type == 'l') {
-        senlnr->set_equation(sensor_linear_ns::linear, 2, a2_value,
-                b2_value, c2_value);
+        senlnr->set_equation(sensor_linear_ns::linear, 2, a2_value, b2_value,
+                c2_value);
     } else if (e2_type == 'r') {
-        senlnr->set_equation(sensor_linear_ns::rational, 2, a2_value,
-                b2_value, c2_value);
+        senlnr->set_equation(sensor_linear_ns::rational, 2, a2_value, b2_value,
+                c2_value);
     } else if (e2_type == 'p') {
         senlnr->set_equation(sensor_linear_ns::polynomial, 2, a2_value,
                 b2_value, c2_value);
