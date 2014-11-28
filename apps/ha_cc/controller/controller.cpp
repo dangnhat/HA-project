@@ -30,7 +30,7 @@ extern "C" {
 
 /*----------------------------- Configurations -------------------------------*/
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (0)
+#define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
 /* Data Cir_queues */

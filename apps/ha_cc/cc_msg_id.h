@@ -22,6 +22,7 @@ enum cc_msg_id: uint16_t {
     BLE_USART_REC,
     BLE_SERVER_RESET,
     BLE_CLIENT_CONNECT,
+    BLE_CLIENT_DISCONNECT,
     BLE_CLIENT_WRITE,
 };
 
