@@ -7,8 +7,8 @@
  */
 #include "servo_sg90_driver.h"
 
-const uint16_t pos_0_degree = 650; //us
-const uint16_t pos_180_degree = 2450; //us
+const uint16_t pos_0_degree = 600; //us
+const uint16_t pos_180_degree = 2400; //us
 
 servo_sg90_instance::servo_sg90_instance(void)
 {
