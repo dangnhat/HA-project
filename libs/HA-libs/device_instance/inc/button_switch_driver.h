@@ -25,9 +25,9 @@ namespace btn_sw_ns {
 typedef enum
     : uint8_t {
         /* button status */
-        btn_no_pressed = 0x01,
-    btn_pressed = 0x02,
-    btn_on_hold = 0x03,
+        btn_no_pressed = 0x00,
+    btn_pressed = 0x01,
+    btn_on_hold = 0x02,
     /* switch status */
     sw_on = 0x10,
     sw_off = 0x20

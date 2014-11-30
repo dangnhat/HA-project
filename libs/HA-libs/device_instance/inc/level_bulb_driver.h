@@ -26,6 +26,7 @@ public:
     void stop(void);
     void blink_on(uint8_t freq_in_hz);
     void blink_off(void);
+    bool bulb_is_blink(void);
     uint16_t get_level_intensity(void);
     uint8_t get_percent_intensity(void);
 private:
