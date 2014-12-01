@@ -97,14 +97,14 @@ void controller_start(void)
 /*----------------------------- Static functions -----------------------------*/
 /* Prototypes */
 static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
-        kernel_pid_t ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
+        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
 
 static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
-        kernel_pid_t ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
+        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
 
-void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng);
+static void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng);
 
 static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *to_ble_queue);
@@ -156,8 +156,8 @@ static void *controller_func(void *) {
 
 /*----------------------------------------------------------------------------*/
 static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
-        kernel_pid_t ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
+        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
 {
     uint8_t data_len;
     uint16_t cmd_id;
@@ -193,7 +193,7 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
                                 + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
         mesg.content.ptr = (char *)to_ble_queue;
-        msg_send(&mesg, ble_pid, false);
+        msg_send(&mesg, to_ble_pid, false);
         HA_DEBUG("slp_gff_handler: SET_DEV_VAL forwarded to ble\n");
 
         break;
@@ -213,15 +213,13 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
 
 /*----------------------------------------------------------------------------*/
 static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
-        kernel_pid_t ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
+        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
 {
     uint8_t data_len;
     uint16_t cmd_id;
     msg_t mesg;
     uint8_t count;
-    uint32_t device_id;
-    int16_t value;
 
     /* Check data */
     data_len = from_ble_queue->preview_data(false);
@@ -250,36 +248,36 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
                 gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
         mesg.content.ptr = (char*)to_ble_queue;
-        msg_send(&mesg, ble_pid, false);
+        msg_send(&mesg, to_ble_pid, false);
 
         HA_DEBUG("ble_gff_handler: sent SET_NUM_OF_DEVS (%hu) to ble\n",
                 dev_mng->get_current_numofdev());
         break;
 
     case ha_ns::GET_DEV_WITH_INDEXS:
-        HA_DEBUG("ble_gff_handler: GET_DEV_WITH_INDEXS (len)\n",
+        HA_DEBUG("ble_gff_handler: GET_DEV_WITH_INDEXS\n",
                 gff_frame[ha_ns::GFF_LEN_POS]);
 
         for (count = 0; count < gff_frame[ha_ns::GFF_LEN_POS]; count += 4) {
             set_dev_with_index_to_ble(buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + count*4]),
                     dev_mng,
-                    ble_pid, to_ble_queue);
+                    to_ble_pid, to_ble_queue);
         }
         break;
 
     case ha_ns::SET_DEV_VAL:
-        device_id = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS]);
-        value = (int16_t)buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 4]);
-        HA_DEBUG("slp_gff_handler: SET_DEV_VAL (%lx, %d)\n", device_id, value);
+        HA_DEBUG("ble_gff_handler: SET_DEV_VAL (%lx, %d)\n",
+                buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS]),
+                (int16_t)buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 4]));
 
         /* forward to slp */
         to_slp_queue->add_data(gff_frame, gff_frame[ha_ns::GFF_LEN_POS]
                              + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
         mesg.content.ptr = (char *)to_slp_queue;
-        msg_send(&mesg, slp_pid, false);
+        msg_send(&mesg, to_slp_pid, false);
 
-        HA_DEBUG("ble_gff_handler: forward GFF SET_DEV_VAL to slp\n");
+        HA_DEBUG("ble_gff_handler: forwarded GFF SET_DEV_VAL to slp\n");
         break;
 
     default:
@@ -298,7 +296,7 @@ void second_int_callback(void)
 }
 
 /*----------------------------------------------------------------------------*/
-void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng)
+static void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng)
 {
     static uint8_t time_count = 0;
 
@@ -369,7 +367,7 @@ static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
     /* pack GFF */
     set_dev_windex_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN;
     uint162buf(ha_ns::SET_DEV_WITH_INDEXS, &set_dev_windex_gff_frame[ha_ns::GFF_CMD_POS]);
-    uint322buf(count, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
+    uint322buf(index, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
     uint322buf(device_id, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
     uint162buf((uint16_t) value, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 8]);
 
