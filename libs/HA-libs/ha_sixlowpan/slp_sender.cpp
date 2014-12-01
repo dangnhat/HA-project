@@ -199,7 +199,9 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
 
     switch (gff_cmd_id) {
     case ha_ns::SET_DEV_VAL:
-        HA_DEBUG("send_data_gff: SET_DEV_VAL message.\n");
+        HA_DEBUG("send_data_gff: SET_DEV_VAL message (%hu, %lx, %hd).\n",
+                payload_buffer[0], buf2uint32(&payload_buffer[3]),
+                (int16_t)buf2uint16(&payload_buffer[7]));
 #ifdef HA_CC
         node_id = parse_node_deviceid(buf2uint32(&payload_buffer[3]));
 #endif
