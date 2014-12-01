@@ -38,18 +38,22 @@
 #include "cmd_def.h"
 #include <stdio.h>
 
+#define HA_NOTIFICATION (1)
+#define HA_DEBUG_EN (0)
+#include "ha_debug.h"
+
 void ble_default(const void *v)
 {
 }
 
 //void ble_rsp_system_reset(const void *nul)
 //{
-//	printf("--- system reset ---\n");
+//	HA_DEBUG("--- system reset ---\n");
 //}
 
 //void ble_rsp_system_hello(const void *nul)
 //{
-//	printf("-- system hello --\n");
+//	HA_DEBUG("-- system hello --\n");
 //}
 
 void ble_rsp_system_address_get(const struct ble_msg_system_address_get_rsp_t *msg)
@@ -79,7 +83,7 @@ void ble_rsp_system_read_memory(const struct ble_msg_system_read_memory_rsp_t *m
 // IMPLEMENTED IN APPLICATION CODE
 //void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
 //{
-//	printf("-- system get info -- \n");
+//	HA_DEBUG("-- system get info -- \n");
 //}
 
 void ble_rsp_system_endpoint_tx(const struct ble_msg_system_endpoint_tx_rsp_t *msg)
@@ -150,13 +154,15 @@ void ble_rsp_attributes_read_type(const struct ble_msg_attributes_read_type_rsp_
 {
 }
 
-void ble_rsp_attributes_user_read_response(const void *nul)
-{
-}
-
-void ble_rsp_attributes_user_write_response(const void *nul)
-{
-}
+//void ble_rsp_attributes_user_read_response(const void *nul)
+//{
+//    HA_DEBUG("ble_rsp_attributes_user_read_response\n");
+//}
+//
+//void ble_rsp_attributes_user_write_response(const void *nul)
+//{
+//    HA_DEBUG("ble_rsp_attributes_user_write_response\n");
+//}
 
 void ble_rsp_connection_disconnect(const struct ble_msg_connection_disconnect_rsp_t *msg)
 {
@@ -200,10 +206,12 @@ void ble_rsp_attclient_find_by_type_value(const struct ble_msg_attclient_find_by
 
 void ble_rsp_attclient_read_by_group_type(const struct ble_msg_attclient_read_by_group_type_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_read_by_group_type\n");
 }
 
 void ble_rsp_attclient_read_by_type(const struct ble_msg_attclient_read_by_type_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_read_by_type\n");
 }
 
 void ble_rsp_attclient_find_information(const struct ble_msg_attclient_find_information_rsp_t *msg)
@@ -212,22 +220,26 @@ void ble_rsp_attclient_find_information(const struct ble_msg_attclient_find_info
 
 void ble_rsp_attclient_read_by_handle(const struct ble_msg_attclient_read_by_handle_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_read_by_handle\n");
 }
 
 void ble_rsp_attclient_attribute_write(const struct ble_msg_attclient_attribute_write_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_attribute_write\n");
 }
 
 void ble_rsp_attclient_write_command(const struct ble_msg_attclient_write_command_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_write_command\n");
 }
 
-void ble_rsp_attclient_indicate_confirm(const struct ble_msg_attclient_indicate_confirm_rsp_t *msg)
-{
-}
+//void ble_rsp_attclient_indicate_confirm(const struct ble_msg_attclient_indicate_confirm_rsp_t *msg)
+//{
+//}
 
 void ble_rsp_attclient_read_long(const struct ble_msg_attclient_read_long_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_read_long\n");
 }
 
 void ble_rsp_attclient_prepare_write(const struct ble_msg_attclient_prepare_write_rsp_t *msg)
@@ -236,10 +248,12 @@ void ble_rsp_attclient_prepare_write(const struct ble_msg_attclient_prepare_writ
 
 void ble_rsp_attclient_execute_write(const struct ble_msg_attclient_execute_write_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_execute_write\n");
 }
 
 void ble_rsp_attclient_read_multiple(const struct ble_msg_attclient_read_multiple_rsp_t *msg)
 {
+    HA_DEBUG("ble_rsp_attclient_read_multiple\n");
 }
 
 void ble_rsp_sm_encrypt_start(const struct ble_msg_sm_encrypt_start_rsp_t *msg)
@@ -276,7 +290,7 @@ void ble_rsp_gap_set_privacy_flags(const void *nul)
 
 //void ble_rsp_gap_set_mode(const struct ble_msg_gap_set_mode_rsp_t *msg)
 //{
-//	printf("sent gap_set_mode command!!!\n");
+//	HA_DEBUG("sent gap_set_mode command!!!\n");
 //}
 
 void ble_rsp_gap_discover(const struct ble_msg_gap_discover_rsp_t *msg)
@@ -417,7 +431,7 @@ void ble_rsp_dfu_flash_upload_finish(const struct ble_msg_dfu_flash_upload_finis
 
 //void ble_evt_system_boot(const struct ble_msg_system_boot_evt_t *msg)
 //{
-//	printf("--System boot event--\n");
+//	HA_DEBUG("--System boot event--\n");
 //}
 
 void ble_evt_system_debug(const struct ble_msg_system_debug_evt_t *msg)
@@ -452,9 +466,11 @@ void ble_evt_flash_ps_key(const struct ble_msg_flash_ps_key_evt_t *msg)
 //{
 //}
 
-void ble_evt_attributes_user_read_request(const struct ble_msg_attributes_user_read_request_evt_t *msg)
-{
-}
+//void ble_evt_attributes_user_read_request(const struct ble_msg_attributes_user_read_request_evt_t *msg)
+//{
+//    HA_DEBUG("ble_evt_attributes_user_read_request\n");
+//    ble_cmd_attributes_user_read_response(msg->connection, 0, 2, "12");
+//}
 
 void ble_evt_attributes_status(const struct ble_msg_attributes_status_evt_t *msg)
 {
@@ -489,6 +505,7 @@ void ble_evt_attclient_indicated(const struct ble_msg_attclient_indicated_evt_t 
 // IMPLEMENTED IN APPLICATION CODE
 void ble_evt_attclient_procedure_completed(const struct ble_msg_attclient_procedure_completed_evt_t *msg)
 {
+    HA_DEBUG("procedure_completed\n");
 }
 
 // IMPLEMENTED IN APPLICATION CODE
@@ -508,10 +525,12 @@ void ble_evt_attclient_find_information_found(const struct ble_msg_attclient_fin
 // IMPLEMENTED IN APPLICATION CODE
 void ble_evt_attclient_attribute_value(const struct ble_msg_attclient_attribute_value_evt_t *msg)
 {
+    HA_DEBUG(" ble_evt_attclient_attribute_value\n");
 }
 
 void ble_evt_attclient_read_multiple_response(const struct ble_msg_attclient_read_multiple_response_evt_t *msg)
 {
+    HA_DEBUG("ble_evt_attclient_read_multiple_response\n");
 }
 
 void ble_evt_sm_smp_data(const struct ble_msg_sm_smp_data_evt_t *msg)

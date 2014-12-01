@@ -73,9 +73,11 @@ btn_sw_status_t button_switch_instance::get_status(void)
 {
     btn_sw_status_t status = current_status;
 
+#if !SND_MSG
     if (current_status == btn_pressed) {
         current_status = btn_no_pressed;
     }
+#endif // !SND_MSG
 
     old_status = current_status;
 
@@ -132,7 +134,14 @@ void button_switch_instance::button_processing(void)
                 }
                 hold_time_count = 0;
             }
-        } // end if()
+        } //end if()
+#if SND_MSG
+        else { //not change state
+            if (new_state_reg_1 == !btn_sw_active_state) { //not activate -> btn isn't pressed
+                current_status = btn_no_pressed;
+            }
+        }
+#endif //SND_MSG
     } // end if()
 }
 

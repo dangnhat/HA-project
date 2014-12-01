@@ -27,7 +27,23 @@ enum sw_status_e
 enum on_off_status_e
     : uint16_t {
         output_off = 0,
-    output_on = 1
+    output_on = 1,
+    toggle = 2
+};
+
+enum lvbulb_status_e
+    : uint16_t {
+        //0-100: level intensity
+        blink_1hz = 101,
+    blink_2hz = 102,
+    blink_3hz = 103,
+    blink_4hz = 104,
+    blink_5hz = 105,
+    blink_6hz = 106,
+    blink_7hz = 107,
+    blink_8hz = 108,
+    blink_9hz = 109,
+    blink_10hz = 110,
 };
 
 enum evt_sensor_status_e

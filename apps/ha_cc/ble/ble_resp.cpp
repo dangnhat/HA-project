@@ -8,13 +8,18 @@
 #include "cmd_def.h"
 #include "ble_transaction.h"
 #include <stdio.h>
-#include "ha_debug.h"
 #include "controller.h"
 
 extern "C" {
 #include "msg.h"
 #include "thread.h"
 }
+
+#define HA_NOTIFICATION (1)
+#define HA_DEBUG_EN (1)
+#include "ha_debug.h"
+
+extern bool isReadSuccessed;
 
 void ble_evt_system_boot(const struct ble_msg_system_boot_evt_t *msg)
 {
@@ -25,23 +30,23 @@ void ble_evt_system_boot(const struct ble_msg_system_boot_evt_t *msg)
 
 void ble_rsp_system_reset(const void *nul)
 {
-    HA_NOTIFY("--- system reset ---\n");
+    HA_DEBUG("--- system reset ---\n");
 }
 
 void ble_rsp_system_hello(const void *nul)
 {
-    HA_NOTIFY("-- hello --\n");
+    HA_DEBUG("-- hello --\n");
 }
 
 void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
 {
-    HA_NOTIFY("-- system get info -- \n");
+    HA_DEBUG("-- system get info -- \n");
 }
 
 void ble_rsp_hardware_set_soft_timer(
         const struct ble_msg_hardware_set_soft_timer_rsp_t *msg)
 {
-    HA_NOTIFY("-- set soft timer --\n");
+    HA_DEBUG("-- set soft timer --\n");
 
 }
 
@@ -63,10 +68,14 @@ void ble_evt_connection_disconnected(
 //    HA_NOTIFY("-- remote device disconnected --\n");
     HA_DEBUG("-- remote device disconnected --\n");
     ble_cmd_gap_set_mode(gap_general_discoverable, gap_undirected_connectable);
+    msg_t bleThreadMsg;
+    bleThreadMsg.type = ha_cc_ns::BLE_CLIENT_DISCONNECT;
+    msg_send(&bleThreadMsg, ble_thread_ns::ble_thread_pid, false);
 }
 
 void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
 {
+    ble_cmd_attributes_user_write_response(msg->connection, 0);
     msg_t msg_ble_thread;
     controller_ns::ble_to_controller_queue.add_data((uint8_t*) msg->value.data,
             msg->value.len);
@@ -77,13 +86,38 @@ void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
 
 void ble_rsp_attributes_write(const struct ble_msg_attributes_write_rsp_t *msg)
 {
-    HA_NOTIFY("-- write local--\n");
+    HA_DEBUG("-- write local--\n");
+}
+
+
+void ble_evt_attributes_user_read_request(const struct ble_msg_attributes_user_read_request_evt_t *msg)
+{
+    HA_DEBUG("ble_evt_attributes_user_read_request %d\n", msg->maxsize);
+    ble_cmd_attributes_user_read_response(msg->connection, 0, 1, "0");
+}
+
+void ble_rsp_attributes_user_read_response(const void *nul)
+{
+    HA_DEBUG("ble_rsp_attributes_user_read_response\n");
+    isReadSuccessed = true;
+}
+
+void ble_rsp_attributes_user_write_response(const void *nul)
+{
+    HA_DEBUG("ble_rsp_attributes_user_write_response\n");
+}
+
+void ble_rsp_attclient_indicate_confirm(const struct ble_msg_attclient_indicate_confirm_rsp_t *msg)
+{
+    HA_DEBUG("ble_rsp_attclient_indicate_confirm\n");
 }
 
 void ble_evt_connection_status(
         const struct ble_msg_connection_status_evt_t *msg)
 {
-//    HA_NOTIFY("-- client connected --\n");
     HA_DEBUG("-- client connected --\n");
+    msg_t bleThreadMsg;
+    bleThreadMsg.type = ha_cc_ns::BLE_CLIENT_CONNECT;
+    msg_send(&bleThreadMsg, ble_thread_ns::ble_thread_pid, false);
 }
 

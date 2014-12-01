@@ -106,6 +106,11 @@ void level_bulb_instance::blink_off(void)
     pwm_dev_level_setup(this->level_intensity);
 }
 
+bool level_bulb_instance::bulb_is_blink(void)
+{
+    return this->is_blink;
+}
+
 uint16_t level_bulb_instance::get_level_intensity(void)
 {
     return this->level_intensity;

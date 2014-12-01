@@ -195,11 +195,12 @@ void on_off_output_handler(uint32_t dev_id)
         case ha_ns::SET_DEV_VAL:
             if (get_dev_type_common(msg.content.value >> 16)
                     == (uint8_t) ha_ns::ON_OFF_OPUT) {
-                printf("%d\n", (uint16_t) msg.content.value);
                 if ((uint16_t) msg.content.value == ha_ns::output_on) {
                     on_off_dev.dev_turn_on();
                 } else if ((uint16_t) msg.content.value == ha_ns::output_off) {
                     on_off_dev.dev_turn_off();
+                } else if ((uint16_t) msg.content.value == ha_ns::toggle) {
+                    on_off_dev.dev_toggle();
                 }
             }
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
@@ -263,8 +264,8 @@ void level_bulb_handler(uint32_t dev_id)
     level_bulb_instance level_bulb;
     level_bulb.device_configure(&pwm_params);
 
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
-            (uint16_t) level_bulb.get_percent_intensity());
+    uint8_t old_set_dev_val = level_bulb.get_percent_intensity();
+    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, (uint16_t) old_set_dev_val);
 
     msg_t msg;
     while (1) {
@@ -273,16 +274,26 @@ void level_bulb_handler(uint32_t dev_id)
         case ha_ns::SET_DEV_VAL:
             if (check_dev_type_value(msg.content.value,
                     (uint8_t) ha_ns::LEVEL_BULB)) {
-                level_bulb.set_percent_intensity((uint16_t) msg.content.value);
+                old_set_dev_val = (uint8_t) msg.content.value;
+                if ((uint8_t) msg.content.value <= 100) { //set level intensity
+                    level_bulb.set_percent_intensity(old_set_dev_val);
+                } else { //blink
+                    level_bulb.blink_on(old_set_dev_val - 100);
+                }
             }
-            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
-                    (uint16_t) level_bulb.get_percent_intensity());
+            if (level_bulb.bulb_is_blink()) {
+                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                        (uint16_t) old_set_dev_val);
+            } else {
+                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                        (uint16_t) level_bulb.get_percent_intensity());
+            }
             break;
         case ha_node_ns::SEND_ALIVE:
             send_data_over_air(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
-            level_bulb.set_level_intensity(0);
+            level_bulb.set_level_intensity(0); //turn off before removing device
             level_bulb.stop();
             msg_send_to_self(&msg);
             return;
@@ -313,9 +324,7 @@ void servo_sg90_handler(uint32_t dev_id)
         case ha_ns::SET_DEV_VAL:
             if (check_dev_type_value(msg.content.value,
                     (uint8_t) ha_ns::SERVO_SG90)) {
-                if ((uint16_t) (msg.content.value) <= 180) {
-                    sg90.set_angle((uint8_t) (msg.content.value));
-                }
+                sg90.set_angle((uint8_t) (msg.content.value));
             }
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) sg90.get_angle());
