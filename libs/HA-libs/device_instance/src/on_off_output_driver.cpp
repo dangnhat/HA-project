@@ -18,7 +18,7 @@ void on_off_output_instance::device_configure(
         gpio_config_params_t *gpio_config_params)
 {
     gpio_dev_configure(gpio_config_params->device_port,
-            gpio_config_params->device_pin);
+            gpio_config_params->device_pin, gpio_config_params->mode);
     dev_turn_off();
 }
 
