@@ -96,7 +96,7 @@ USEMODULE += defaulttransceiver
 # to CXXEXFLAGS variable
 CXXEXFLAGS += -fno-exceptions -fno-rtti -std=gnu++11
 CFLAGS += -DUSE_STDPERIPH_DRIVER -ffunction-sections -fdata-sections
-LINKFLAGS += -Wl,--gc-sections
+LINKFLAGS += -Wl,--gc-sections -u _printf_float -u _scanf_float
 
 #----------------------- HA project config processing -------------------------#
 # Collect ha modules
