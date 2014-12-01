@@ -21,14 +21,14 @@
 
 namespace ha_node_ns {
 const uint8_t dev_list_pattern_maxsize = 16;
-const uint8_t gpio_pattern_size = 10;
+const uint8_t gpio_pattern_size = 14;
 const uint8_t adc_pwm_pattern_size = 20;
 const uint8_t dev_pattern_maxsize = 110;
 const char ha_dev_list_file[] = "dev_list";
 
 const char dev_list_pattern[dev_list_pattern_maxsize] = "dID: 0x%lx\n";
 
-const char gpio_dev_config_pattern[gpio_pattern_size] = "P%c%hu\n";
+const char gpio_dev_config_pattern[gpio_pattern_size] = "P%c%hu M:%c\n";
 
 const char adc_dev_config_pattern[adc_pwm_pattern_size] = "P%c%hu A%hu_IN%hu\n";
 

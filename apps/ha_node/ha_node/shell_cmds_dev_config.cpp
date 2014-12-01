@@ -835,6 +835,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
     *endpoint_id = -1;
     char port = '0';
     uint16_t pin = 0;
+    char mode = '0';
 
     char config_str[ha_node_ns::gpio_pattern_size];
 
@@ -889,7 +890,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
                 }
                 f_close(&fil);
                 sscanf(config_str, ha_node_ns::gpio_dev_config_pattern, &port,
-                        &pin);
+                        &pin, &mode);
                 break;
             case 'p':
                 count++;
@@ -913,6 +914,14 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
                     printf("ERR: invalid pin value\n");
                     return;
                 }
+                break;
+            case 'm':
+                count++;
+                if (count > argc) {
+                    printf("ERR: too few argument. Try -h to get help.\n");
+                    return;
+                }
+                mode = argv[count][0];
                 break;
             default:
                 printf("Unknown option.\n");
@@ -938,7 +947,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
     f_sync(&fil);
 
     snprintf(config_str, ha_node_ns::gpio_pattern_size,
-            ha_node_ns::gpio_dev_config_pattern, port, pin);
+            ha_node_ns::gpio_dev_config_pattern, port, pin, mode);
 
     f_res = f_write(&fil, config_str, ha_node_ns::gpio_pattern_size,
             &byte_written);

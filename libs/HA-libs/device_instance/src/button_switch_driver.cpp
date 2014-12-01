@@ -64,7 +64,7 @@ void button_switch_instance::device_configure(
         gpio_config_params_t *gpio_config_params)
 {
     gpio_dev_configure(gpio_config_params->device_port,
-            gpio_config_params->device_pin);
+            gpio_config_params->device_pin, gpio_config_params->mode);
 
     this->assign_btn_sw();
 }

@@ -18,6 +18,7 @@ namespace dev_param_ns {
 typedef struct {
     port_t device_port;
     uint8_t device_pin;
+    uint8_t mode;
 } gpio_config_params_t;
 
 typedef struct {

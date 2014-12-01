@@ -463,11 +463,21 @@ bool gpio_common_get_config(uint32_t dev_id, gpio_config_params_t *gpio_params)
 
     char port_c = '0';
     uint16_t pin = 0;
+    char mode_c = '0';
 
-    sscanf(config_str, ha_node_ns::gpio_dev_config_pattern, &port_c, &pin);
+    sscanf(config_str, ha_node_ns::gpio_dev_config_pattern, &port_c, &pin,
+            &mode_c);
 
     gpio_params->device_port = get_port(port_c);
     gpio_params->device_pin = pin;
+
+    uint8_t mode = (uint8_t) gpio_ns::out_push_pull;
+    if (mode_c == 'p') {
+        mode = (uint8_t) gpio_ns::out_push_pull;
+    } else if (mode_c == 'o') {
+        mode = (uint8_t) gpio_ns::out_open_drain;
+    }
+    gpio_params->mode = mode;
 
     return true;
 }

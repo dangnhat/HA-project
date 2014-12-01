@@ -26,7 +26,7 @@ void gpio_dev_class::gpio_dev_off(void)
     gpio_reset();
 }
 
-void gpio_dev_class::gpio_dev_configure(port_t port, uint8_t pin)
+void gpio_dev_class::gpio_dev_configure(port_t port, uint8_t pin, uint8_t mode)
 {
     this->exti_type = pin;
     gpio_params_t gpio_params;
@@ -34,7 +34,7 @@ void gpio_dev_class::gpio_dev_configure(port_t port, uint8_t pin)
     gpio_params.port = port;
     gpio_params.pin = pin;
     gpio_params.gpio_speed = speed_10MHz;
-    gpio_params.mode = out_push_pull;
+    gpio_params.mode = (gpio_mode_t) mode;
 
     if (this->in_dev) {
         gpio_params.mode = in_floating;

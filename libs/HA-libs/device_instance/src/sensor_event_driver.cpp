@@ -28,7 +28,8 @@ sensor_event_instance::~sensor_event_instance(void)
 
 void sensor_event_instance::device_configure(gpio_config_params_t *gpio_params)
 {
-    gpio_dev_configure(gpio_params->device_port, gpio_params->device_pin);
+    gpio_dev_configure(gpio_params->device_port, gpio_params->device_pin,
+            gpio_params->mode);
     gpio_dev_int_both_edge();
     gpio_dev_assign_callback(&sensor_callback, this);
 }

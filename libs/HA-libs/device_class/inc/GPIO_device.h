@@ -28,7 +28,7 @@ protected:
      * @param[in] port
      * @param[in] pin
      */
-    void gpio_dev_configure(port_t port, uint8_t pin);
+    void gpio_dev_configure(port_t port, uint8_t pin, uint8_t mode);
 
     /**
      * @brief Initialize EXTI in falling-rising edge mode.
