@@ -124,7 +124,7 @@ int16_t ha_slp_init(uint8_t interface, transceiver_type_t transceiver,
     net_if_set_src_address_mode(interface, NET_IF_TRANS_ADDR_M_SHORT);
 
     /* Set hardware address */
-    ret_hwaddr = net_if_set_hardware_address(interface, node_id);
+    ret_hwaddr = net_if_set_hardware_address(interface, (uint8_t)node_id);
     if (ret_hwaddr > 0) {
         HA_DEBUG("ha_slp_init: hardware address set to %u.\n", ret_hwaddr);
     }
