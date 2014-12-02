@@ -30,7 +30,7 @@ using namespace scene_ns;
 static const char save_line_rule[] = "R: %u %u %u %u\n"; /* is_valid, is_active, num_in, num_out */
 static const char save_line_i0[] = "I: %u\n";          /* cond */
 static const char save_line_i1_devval[] = "%lx %d\n"; /* device id, value */
-static const char save_line_i1_time[] = "%lu %lu\n";  /* time start, time end */
+static const char save_line_i1_time[] = "%lx %lx\n";  /* time start, time end */
 static const char save_line_o0[] = "O: %u\n";          /* action */
 static const char save_line_o1_devval[] = "%lx %d\n"; /* device id, value */
 
