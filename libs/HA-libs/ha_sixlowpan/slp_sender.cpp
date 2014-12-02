@@ -187,7 +187,7 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
     /* get data from queue */
     gff_data_size = gff_cir_queue->preview_data(false);
     if (gff_cir_queue->get_size() < (gff_data_size + 2 + 1)) {
-        HA_DEBUG("send_data_gff: Size of GFF frame in queue(%ld) < gff_data_size(%hhu) + 3\n",
+        HA_DEBUG("send_data_gff: Size of GFF frame in queue(%ld) < gff_data_size(%hu) + 3\n",
                 gff_cir_queue->get_size(), gff_data_size);
         return -1;
     }
