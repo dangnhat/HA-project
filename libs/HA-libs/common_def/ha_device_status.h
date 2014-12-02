@@ -28,10 +28,10 @@ enum on_off_status_e
     : uint16_t {
         output_off = 0,
     output_on = 1,
-    toggle = 2
+    toggle = 2,
 };
 
-enum lvbulb_status_e
+enum blink_status_e
     : uint16_t {
         //0-100: level intensity
         blink_1hz = 101,

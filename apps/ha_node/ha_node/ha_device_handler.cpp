@@ -186,8 +186,10 @@ void on_off_output_handler(uint32_t dev_id)
     on_off_dev.device_configure(&gpio_params);
 
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
-            on_off_dev.dev_get_state() ? ha_ns::output_on : ha_ns::output_off);
+            (on_off_dev.dev_get_state() == on_off_dev_ns::dev_on) ?
+                    ha_ns::output_on : ha_ns::output_off);
 
+    uint8_t old_set_dev_val = 0;
     msg_t msg;
     while (1) {
         msg_receive(&msg);
@@ -201,11 +203,19 @@ void on_off_output_handler(uint32_t dev_id)
                     on_off_dev.dev_turn_off();
                 } else if ((uint16_t) msg.content.value == ha_ns::toggle) {
                     on_off_dev.dev_toggle();
+                } else if ((uint16_t) msg.content.value > 100) { //blink
+                    old_set_dev_val = (uint8_t) msg.content.value;
+                    on_off_dev.dev_blink(old_set_dev_val - 100);
                 }
             }
-            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
-                    on_off_dev.dev_get_state() ?
-                            ha_ns::output_on : ha_ns::output_off);
+            if (on_off_dev.dev_get_state() == on_off_dev_ns::dev_blink) {
+                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                        (uint16_t) old_set_dev_val);
+            } else {
+                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                        (on_off_dev.dev_get_state() == on_off_dev_ns::dev_on) ?
+                                ha_ns::output_on : ha_ns::output_off);
+            }
             break;
         case ha_node_ns::SEND_ALIVE:
             send_data_over_air(ha_ns::ALIVE, dev_id, 0);
@@ -275,10 +285,11 @@ void level_bulb_handler(uint32_t dev_id)
             if (check_dev_type_value(msg.content.value,
                     (uint8_t) ha_ns::LEVEL_BULB)) {
                 old_set_dev_val = (uint8_t) msg.content.value;
+
                 if ((uint8_t) msg.content.value <= 100) { //set level intensity
                     level_bulb.set_percent_intensity(old_set_dev_val);
                 } else { //blink
-                    level_bulb.blink_on(old_set_dev_val - 100);
+                    level_bulb.blink(old_set_dev_val - 100);
                 }
             }
             if (level_bulb.bulb_is_blink()) {
