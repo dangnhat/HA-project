@@ -187,7 +187,7 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
     /* get data from queue */
     gff_data_size = gff_cir_queue->preview_data(false);
     if (gff_cir_queue->get_size() < (gff_data_size + 2 + 1)) {
-        HA_DEBUG("send_data_gff: Size of GFF frame in queue(%ld) < gff_data_size(%hhu) + 3\n",
+        HA_DEBUG("send_data_gff: Size of GFF frame in queue(%ld) < gff_data_size(%hu) + 3\n",
                 gff_cir_queue->get_size(), gff_data_size);
         return -1;
     }
@@ -199,7 +199,9 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
 
     switch (gff_cmd_id) {
     case ha_ns::SET_DEV_VAL:
-        HA_DEBUG("send_data_gff: SET_DEV_VAL message.\n");
+        HA_DEBUG("send_data_gff: SET_DEV_VAL message (%hu, %lx, %hd).\n",
+                payload_buffer[0], buf2uint32(&payload_buffer[3]),
+                (int16_t)buf2uint16(&payload_buffer[7]));
 #ifdef HA_CC
         node_id = parse_node_deviceid(buf2uint32(&payload_buffer[3]));
 #endif

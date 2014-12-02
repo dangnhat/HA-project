@@ -23,14 +23,16 @@ extern "C" {
 }
 
 #include "cir_queue.h"
+#include "ha_device_mng.h"
+#include "MB1_rtc.h"
 
 namespace scene_ns {
 
-const uint8_t rule_max_input = 1;
-const uint8_t rule_max_output = 1;
+const uint8_t rule_max_input = 3;
+const uint8_t rule_max_output = 3;
 
-const uint8_t scene_max_name_chars = 8 + 1;
-const uint16_t scene_max_rules = 64;
+const uint8_t scene_max_name_chars = 20;
+const uint16_t scene_max_rules = 25;
 
 /*-------------------------- CONDITION DEFINITIONS ---------------------------*/
 enum cond_e: uint8_t {
@@ -44,32 +46,34 @@ enum cond_e: uint8_t {
                                     parameter: device id, threshold value */
     COND_GREATER_OR_EQUAL_THR = 0x04, /* Condition: greater than or equal to threshold,
                                     parameter: device id, threshold value */
-    COND_TOGGLE_ON_OFF = 0x05,      /* Condition: toggle on/off,
+    COND_CHANGE_VAL = 0x05,         /* Condition: change value,
                                     parameter: device id */
+    COND_CHANGE_VAL_OVER_THR = 0x08,    /* Condition: change value over a threshold,
+                                    parameter: device id, threshold value */
     COND_IN_RANGE = 0x06,           /* Condition: in a time range,
-                                    parameter: time range (start time and end time) */
+                                    parameter: time range (start time and end time)
+                                    Time is packed in 32bit following this format:
+                                    bit 0-4: second / 2.
+                                    bit 5-10: minute.
+                                    bit 11-15: hour.
+                                    bit 16-20: day in month.
+                                    bit 21-24: month.
+                                    bit 25-31: number of years from timebase.year. */
+    COND_IN_RANGE_EVDAY = 0x07,     /* Condition: in a time range of every day,
+                                    parameter: time range (start time and end time)
+                                    Time in packed format, only hour, min, sec will be
+                                    cared */
 };
 
 /*-------------------------- ACTION DEFINITIONS ------------------------------*/
 enum act_e: uint8_t {
-    ACT_ON_ONE = 0x01,      /* Action: turn on one device,
-                            parameter: device id (set device value = 100, on) */
-    ACT_OFF_ONE = 0x02,     /* Action: turn off one device,
-                            parameter: device id (set device value = 0, off) */
-    ACT_TOGGLE_ONE = 0x03,  /* Action: toggle one device,
-                            parameter: device id */
-    ACT_LEVEL_ONE = 0x04,   /* Action: set level of one device to a value,
-                            parameter: device id and a value (1 - 10 * 10%) */
-    ACT_DIM_ONE = 0x05,     /* Action: dim one device,
-                            parameter: device id and a value (should be in percent) */
-    ACT_BLINK_ONE = 0x06,   /* Action: blink one device,
-                            parameter: device id (set device value to 101, blink) */
-    ACT_ON_ALL = 0x10,      /* Action: turn on all device,
-                            parameter: none (set value for all device to 100) */
-    ACT_OFF_ALL = 0x11,     /* Action: turn off all device,
-                            parameter: none (set value for all device to 0) */
-    ACT_BLINK_ALL = 0x12    /* Action: blink all device,
-                            parameter: none (set value for all device to 101) */
+    ACT_SET_DEV_VAL = 0x00,         /* Set value for a device,
+                                    param: device_id, value */
+    ACT_SET_DEV_MULT_VALS = 0x01,   /* Set multiple value for a device, followed by
+                                    ACT_SET_DEV_MULT_VALS, and ended with ACT_SET_DEV_MULT_VALS_END.
+                                    param: device_id, value */ /* TODO: later */
+    ACT_SET_DEV_MULT_VALS_END = 0x02,   /* End value for ACT_SET_DEV_MULT_VALS,
+                                    param: device_id, value */ /* TODO: later */
 };
 
 typedef struct dev_val_s {
@@ -174,21 +178,39 @@ public:
      *
      * @param[in]   trigger_by_report, true if this process action was triggered by report,
      *              otherwise, it was triggered by time.
-     * @param[in]   &out_queue, output action (SET_DEV_VAL) will be pushed to this queue.
-     * @param[in]   *mesg_queue, GFF_PENDING message will be pushed to this queue for
+     * @param[in]   *a_device_rpt, report from an input device (SET_DEV_VAL message). Can be
+     *              Will not be used when this process has been triggered by time.
+     * @param[in]   *cur_device_mng, current devices' status. (hasn't not been applied new report).
+     * @param[in]   *rtc_obj, rtc object.
+     * @param[out]  *out_queue, output action (SET_DEV_VAL) will be pushed to this queue.
+     * @param[in]   out_pid, GFF_PENDING message will be sent to this thread for
      *              every output action.
      */
-    void process(bool trigger_by_report, cir_queue &out_queue, msg_t *mesg_queue);
+    void process(bool trigger_by_report,
+            ha_device *a_device_rpt, ha_device_mng *cur_device_mng,
+            rtc *rtc_obj,
+            cir_queue *out_queue, kernel_pid_t out_pid);
 
     /**
      * @brief   Save data to file.
+     *
+     * @return  0 if success, -1 on error.
      */
-    void save(void);
+    int8_t save(void);
 
     /**
      * @brief   Read data from file.
+     *
+     * @return  0 if success, -1 on error.
      */
-    void restore(void);
+    int8_t restore(void);
+
+    /**
+     * @brief   Print scene via HA_NOTIFY.
+     *
+     * @param[in]   *rtc_obj, rtc object.
+     */
+    void print(rtc *rtc_obj);
 
 private:
 
@@ -196,6 +218,19 @@ private:
      * @brief   Clear all rules to invalid.
      */
     void clear_all_rules(void);
+
+    /* @brief   Print input.
+     *
+     * @param[in]   input, an input to be printed.
+     * @param[in]   *rtc_obj, rtc object.
+     */
+    void print_input(input_t &input, rtc *rtc_obj);
+
+    /* @brief   Print output.
+     *
+     * @param[in]   output, an output to be printed.
+     */
+    void print_output(output_t &output);
 
     char name[scene_max_name_chars];
 
