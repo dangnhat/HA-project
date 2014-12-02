@@ -24,6 +24,7 @@ extern "C" {
 
 #include "controller.h"
 #include "ha_device_mng.h"
+#include "scene_mng.h"
 #include "cc_msg_id.h"
 #include "ble_transaction.h"
 #include "ha_sixlowpan.h"
@@ -63,6 +64,12 @@ static const int8_t alive_ttl = 30; /* in second */
 /* Time period to save device data */
 static const uint8_t dev_list_save_period = 5; /* in seconds */
 
+/* Scene management */
+static scene_mng controller_scene_mng(&controller_dev_mng, &MB1_rtc,
+        &ha_ns::sixlowpan_sender_pid, &ha_ns::sixlowpan_sender_gff_queue);
+
+static const uint8_t scene_processing_period = 60; /* in seconds */
+
 /*----------------------------- Controller namespace -------------------------*/
 
 namespace controller_ns {
@@ -96,15 +103,17 @@ void controller_start(void)
 
 /*----------------------------- Static functions -----------------------------*/
 /* Prototypes */
-static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
         kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
         kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
 
-static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
         kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
         kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
 
-static void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng);
+static void save_dev_list_with_1sec(uint8_t save_period, ha_device_mng *dev_mng);
+
+static void process_scene_with_1sec(uint8_t scene_processing_period, scene_mng *scene_mng_p);
 
 static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *to_ble_queue);
@@ -119,6 +128,7 @@ static void *controller_func(void *) {
 
     /* restore old data */
     controller_dev_mng.restore();
+    controller_scene_mng.restore();
 
     /* Wait for message */
     while (1) {
@@ -127,7 +137,7 @@ static void *controller_func(void *) {
         switch (mesg.type) {
         case ha_cc_ns::SLP_GFF_PENDING:
             HA_DEBUG("controller: SLP_GFF_PENDING\n");
-            slp_gff_handler(gff_frame, &controller_dev_mng,
+            slp_gff_handler(gff_frame, &controller_dev_mng, &controller_scene_mng,
                     ble_thread_ns::ble_thread_pid,
                     NULL, &ble_thread_ns::controller_to_ble_msg_queue,
                     ha_ns::sixlowpan_sender_pid,
@@ -135,7 +145,7 @@ static void *controller_func(void *) {
             break;
         case ha_cc_ns::BLE_GFF_PENDING:
             HA_DEBUG("controller: BLE_GFF_PENDING\n");
-            ble_gff_handler(gff_frame, &controller_dev_mng,
+            ble_gff_handler(gff_frame, &controller_dev_mng, &controller_scene_mng,
                     ble_thread_ns::ble_thread_pid,
                     (cir_queue *)mesg.content.ptr, &ble_thread_ns::controller_to_ble_msg_queue,
                     ha_ns::sixlowpan_sender_pid,
@@ -144,6 +154,7 @@ static void *controller_func(void *) {
         case ha_cc_ns::ONE_SEC_INTERRUPT:
             controller_dev_mng.dec_all_devs_ttl();
             save_dev_list_with_1sec(dev_list_save_period, &controller_dev_mng);
+            process_scene_with_1sec(scene_processing_period, &controller_scene_mng);
             break;
         default:
             HA_DEBUG("controller: Unknown message %d\n", mesg.type);
@@ -155,15 +166,16 @@ static void *controller_func(void *) {
 }
 
 /*----------------------------------------------------------------------------*/
-static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
         kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
         kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
 {
     uint8_t data_len;
     uint16_t cmd_id;
     uint32_t device_id;
-    int16_t value;
+    int16_t value, old_value;
     msg_t mesg;
+    ha_device device_rpt;
 
     /* Check data */
     data_len = from_slp_queue->preview_data(false);
@@ -183,8 +195,19 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
     case ha_ns::SET_DEV_VAL:
         device_id = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS]);
         value = (int16_t)buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 4]);
-        HA_DEBUG("slp_gff_handler: SET_DEV_VAL (%lx, %d)\n", device_id, value);
+        HA_NOTIFY("slp_gff_handler: SET_DEV_VAL (%lx, %d)\n", device_id, value);
 
+        /* Processing scene by report */
+        device_rpt.set_device_id(device_id);
+        device_rpt.set_value(value);
+        dev_mng->get_dev_val(device_id, old_value);
+        if ((device_rpt.get_io_type() == ha_device_ns::input_device) &&
+                value != old_value){
+            HA_NOTIFY("slp_gff_handler: report from input device, processing scene...\n");
+            scene_mng_p->process(true, &device_rpt);
+        }
+
+        /* Save data to device manager */
         dev_mng->set_dev_val(device_id, value);
         dev_mng->set_dev_ttl(device_id, alive_ttl);
 
@@ -212,7 +235,7 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
 }
 
 /*----------------------------------------------------------------------------*/
-static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
         kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
         kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
 {
@@ -255,8 +278,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         break;
 
     case ha_ns::GET_DEV_WITH_INDEXS:
-        HA_DEBUG("ble_gff_handler: GET_DEV_WITH_INDEXS\n",
-                gff_frame[ha_ns::GFF_LEN_POS]);
+        HA_DEBUG("ble_gff_handler: GET_DEV_WITH_INDEXS\n");
 
         for (count = 0; count < gff_frame[ha_ns::GFF_LEN_POS]; count += 4) {
             set_dev_with_index_to_ble(buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + count*4]),
@@ -381,6 +403,18 @@ static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
 
     msg_send(&mesg, ble_pid, false);
 
-    HA_DEBUG("set_dev_windex_2_ble: GFF Sent, index %hu, device_id %lu, value %hd\n",
-                        count, device_id, value);
+    HA_DEBUG("set_dev_windex_2_ble: GFF Sent, index %lu, device_id %lu, value %hd\n",
+                        index, device_id, value);
+}
+
+/*----------------------------------------------------------------------------*/
+static void process_scene_with_1sec(uint8_t scene_processing_period, scene_mng *scene_mng_p)
+{
+    static uint8_t time_count = 0;
+
+    time_count = (time_count + 1) % scene_processing_period;
+    if (time_count == 0) {
+        HA_DEBUG("process_scene_with_1sec: processing scene triggered by time\n");
+        scene_mng_p->process(false, NULL);
+    }
 }
