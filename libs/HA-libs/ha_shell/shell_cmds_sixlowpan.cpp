@@ -24,7 +24,7 @@ extern "C" {
 const char slp_usage[] = "Usage:\n"
                     "6lowpan, show current 6lowpan configurations\n"
                     "6lowpan -p prefix3:prefix2:prefix1:prefix0, set 64bit prefixes\n"
-                    "6lowpan -n node_id, set node id (should always be > 0)\n"
+                    "6lowpan -n node_id (hex), set node id (should always be > 0)\n"
                     "6lowpan -t netdev_type, set network device type,"
                         "r (root router), n (node router), or h (host)\n"
                     "6lowpan -c channel, set channel\n"
@@ -120,7 +120,7 @@ void sixlowpan_config(int argc, char** argv)
                     return;
                 }
                 count++;
-                node_id = atoi(argv[count]);
+                node_id = strtol(argv[count], NULL, 16);
                 if (node_id < 1) {
                     printf("Err: argument for -n should > 0\n");
                     return;

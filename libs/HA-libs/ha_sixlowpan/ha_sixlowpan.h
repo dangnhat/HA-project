@@ -32,7 +32,7 @@ const char sixlowpan_config_file[] = "slp_conf";
 const char sixlowpan_config_pattern[sixlowpan_pattern_maxsize] =
         "6LoWPAN\n"
         "64-bit prefix: %lx:%lx:%lx:%lx\n"
-        "node id: %lx\n"
+        "node id: 0x%lx\n"
         "device type: %c\n"   /* type could be r (root router), n (node router), h (host) */
         "channel: %lu\n";
 
