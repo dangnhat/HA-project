@@ -129,7 +129,6 @@ void level_bulb_instance::blink_processing(void)
         /* toggle */
         if (is_on_in_blink) { //turn off
             is_on_in_blink = false;
-            pwm_dev_duty_cycle_setup(0);
             if (active_level == 0) {
                 pwm_dev_duty_cycle_setup(100);
             } else {
