@@ -238,7 +238,12 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
 
     bytes_sent = socket_base_sendto(sock, payload_buffer, gff_data_size + 3 + 2, 0,
             &saddr, sizeof(saddr));
-    HA_DEBUG("send_data_gff: %ld bytes sent to %d\n", bytes_sent, node_id);
+    if (bytes_sent >= 0) {
+        HA_DEBUG("send_data_gff: %ld bytes sent to %hu\n", bytes_sent, node_id);
+    }
+    else {
+        HA_NOTIFY("send_data_gff: Error when send data to %hu\n", node_id);
+    }
 
     socket_base_close(sock);
 
