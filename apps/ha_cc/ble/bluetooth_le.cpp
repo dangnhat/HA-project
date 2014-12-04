@@ -15,18 +15,18 @@
 extern "C" {
 #include "thread.h"
 #include "msg.h"
+#include "vtimer.h"
 }
 
-#include "gff_mesg_id.h"
 #include "ha_gff_misc.h"
 
 #include "controller.h"
 #include "ha_device_mng.h"
 #include "cc_msg_id.h"
 
+#include <string.h>
 #include "ble_transaction.h"
 #include "gff_mesg_id.h"
-
 
 #define HA_NOTIFICATION (1)
 #define HA_DEBUG_EN (0)
@@ -36,41 +36,55 @@ extern "C" {
  * Variables and buffers
  ******************************************************************************/
 
+/* data structure to process ACK from Mobile */
+ble_ack_s ble_ack;
+
 /* ble message queue */
 static const uint16_t ble_message_queue_size = 64;
 static msg_t ble_message_queue[ble_message_queue_size];
 
-/* Controller thread stack */
-static const uint16_t ble_thread_stack_size = 512;
+/* bluetooth thread stack */
+static const uint16_t ble_thread_stack_size = 1024;
 static char ble_thread_stack[ble_thread_stack_size];
 static const char ble_thread_prio = PRIORITY_MAIN - 1;
 static void *ble_transaction(void *arg);
 
+/* circle queue to save data received from controller thread */
 static const uint16_t controller_to_ble_msg_queue_size = 1024;
 static uint8_t controller_to_ble_msg_queue_buf[controller_to_ble_msg_queue_size];
 
 namespace ble_thread_ns {
-int16_t ble_thread_pid;
+kernel_pid_t ble_thread_pid;
 
 /*controller message queue */
-cir_queue controller_to_ble_msg_queue(
-        controller_to_ble_msg_queue_buf, controller_to_ble_msg_queue_size);
+cir_queue controller_to_ble_msg_queue(controller_to_ble_msg_queue_buf,
+        controller_to_ble_msg_queue_size);
 }
 
-//test
-bool isReadSuccessed = true;
 /*******************************************************************************
  * Private functions declare
  ******************************************************************************/
+
+/**
+ * @brief: write data to BLE
+ */
 static void ble_write_att(uint8_t *dataBuf, uint8_t len);
-static void receive_msg_from_controller(cir_queue* mCirQueue,
-                                        bool       mMoblieConnected);
+/**
+ * @brief:  process message from controller
+ */
+static void receive_msg_from_controller(cir_queue* mCirQueue, uint16_t msgIndex,
+bool mMoblieConnected);
+
+/**
+ * @brief: thread wait ack from Mobile
+ */
+void wait_mobile_ack(uint8_t sec, uint16_t micro_sec);
 /*******************************************************************************
  * Public functions
  ******************************************************************************/
 
 /*
- * @brief: Create ble thread
+ * @brief: Initial ble thread
  */
 
 void ble_thread_start(void)
@@ -86,18 +100,17 @@ void ble_thread_start(void)
  ******************************************************************************/
 
 /*
- * @brief: ble thread implementation
+ * @brief: ble thread function implementation
  */
 
 void *ble_transaction(void *arg)
 {
 
     msg_t msg;
-    uint8_t numOfMsg = 0;
-    uint8array* usartMsgPtr;
-    uint8_t msgLen;
-    uint8_t sumOfMsgLen = 0;
     bool mConnect = false;
+    uint8_t usart_msg_len;
+    uint8_t usartBuf[ha_ns::GFF_MAX_FRAME_SIZE];
+    cir_queue* usartQueue;
 
     msg_init_queue(ble_message_queue, ble_message_queue_size);
     while (1) {
@@ -117,39 +130,35 @@ void *ble_transaction(void *arg)
             break;
         case ha_cc_ns::BLE_CLIENT_DISCONNECT:
             mConnect = false;
+            ble_cmd_gap_set_mode(gap_general_discoverable,
+                    gap_undirected_connectable);
             break;
         case ha_cc_ns::BLE_CLIENT_WRITE:
-            HA_DEBUG("--- client write ---\n");
-            //get bluetooth message from Mobile
-            usartMsgPtr = reinterpret_cast<uint8array*>(msg.content.ptr);
-            numOfMsg++;
-            sumOfMsgLen += usartMsgPtr->len;
-            HA_DEBUG("cnt = %d\n", numOfMsg);
-            HA_DEBUG("clen = %d\n", usartMsgPtr->len);
-            if (1 == numOfMsg) {
-                //the first byte of message is length of data
-                msgLen = usartMsgPtr->data[0] + ha_ns::GFF_CMD_SIZE
-                        + ha_ns::GFF_LEN_SIZE;          //plus 3 bytes of header
-                HA_DEBUG("len= %d\n", msgLen);
-            }
 
-            if (sumOfMsgLen == msgLen) {
-                HA_DEBUG("end of packet\n");
-                numOfMsg = 0;
-                sumOfMsgLen = 0;
-                //TODO Send data to Controller
-                msg_t bleThreadMsg;
-                bleThreadMsg.type = ha_cc_ns::BLE_GFF_PENDING;
-                bleThreadMsg.content.ptr =
+            HA_DEBUG("--- client write ---\n");
+            /* get bluetooth message from Mobile */
+            usartQueue = (cir_queue*) (msg.content.ptr);
+            usart_msg_len = usartQueue->preview_data(false) + ha_ns::GFF_LEN_SIZE
+                    + ha_ns::GFF_CMD_SIZE;
+            if (usart_msg_len == usartQueue->get_size()) {
+                usartQueue->get_data(usartBuf, usart_msg_len);
+                /* put data to controller's queue */
+                controller_ns::ble_to_controller_queue.add_data(usartBuf,
+                        usart_msg_len);
+                /* Send data to Controller thread */
+                msg_t msg_ble_thread;
+                msg_ble_thread.type = ha_cc_ns::BLE_GFF_PENDING;
+                msg_ble_thread.content.ptr =
                         (char*) &controller_ns::ble_to_controller_queue;
-                msg_send(&bleThreadMsg, controller_ns::controller_pid, false);
+                msg_send(&msg_ble_thread, controller_ns::controller_pid, false);
+            } else {
+                HA_DEBUG(" usart queue overflow\n");
             }
             break;
-
         case ha_ns::GFF_PENDING:
             // Get message from thread Controller, and send to Mobile
             receive_msg_from_controller((cir_queue *) msg.content.ptr,
-                    mConnect);
+                    ble_ack.packet_index, mConnect);
             break;
         default:
             HA_DEBUG("error\n");
@@ -163,31 +172,45 @@ void *ble_transaction(void *arg)
 /**
  * @brief: Receive message from controller thread
  */
-void receive_msg_from_controller(cir_queue* mCirQueue, bool mMoblieConnected)
+void receive_msg_from_controller(cir_queue* mCirQueue, uint16_t msgIndex,
+bool mMoblieConnected)
 {
-    HA_DEBUG("from controller\n");
     uint8_t bufLen = mCirQueue->preview_data(false) + ha_ns::GFF_CMD_SIZE
             + ha_ns::GFF_LEN_SIZE;
-    HA_DEBUG("previewed queue\n");
     uint8_t dataBuf[ha_ns::GFF_MAX_FRAME_SIZE];
+
+    uint8_t indexBuf[2];
+    uint162buf(msgIndex, indexBuf);
 
     if (bufLen == mCirQueue->get_size()) {
         mCirQueue->get_data(dataBuf, bufLen);
-        for(uint8_t i = 0 ; i < bufLen; i++){
-            HA_DEBUG("%x ", dataBuf[i]);
-        }
-        HA_DEBUG("\n");
-
+        // add header(msg type + index) to message
+        add_hdr_to_ble_msg(ha_ble_ns::BLE_MSG_DATA, indexBuf, dataBuf);
         if (mMoblieConnected) {
-            isReadSuccessed = false;
             ble_write_att(dataBuf, bufLen);
-//            while(isReadSuccessed == false){};
+            // sleep to wait ack from mobile
+            wait_mobile_ack(0, 10000); // 10ms
         }
 
     } else {
         HA_DEBUG("Frame error\n");
     }
 
+}
+
+/**
+ * @brief: thread wait ack from Mobile
+ */
+void wait_mobile_ack(uint8_t sec, uint16_t micro_sec)
+{
+    timex_t interval;
+    vtimer_t vt_s;
+    interval.seconds = sec;
+    interval.microseconds = micro_sec;
+    ble_ack.need_to_wait_ack = true;
+
+    vtimer_set_wakeup(&vt_s, interval, thread_getpid());
+    thread_sleep();
 }
 
 /**
@@ -198,3 +221,23 @@ void ble_write_att(uint8_t *dataBuf, uint8_t len)
     ble_cmd_attributes_write(ATT_WRITE_ADDR, 0, len, dataBuf);
 }
 
+void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf, uint8_t* payload)
+{
+    uint8_t header[3];
+    header[0] = msgType;
+    header[1] = ack_idx_buf[0];
+    header[2] = ack_idx_buf[1];
+
+    memmove(payload, payload + 3, 3);
+    mempcpy(payload, header, sizeof(header));
+}
+
+void send_ack_to_mobile(uint8_t* ack_idx_buf)
+{
+    uint8_t msgBuf[4];
+    msgBuf[0] = ha_ble_ns::BLE_MSG_ACK;
+    msgBuf[1] = ack_idx_buf[0];
+    msgBuf[2] = ack_idx_buf[1];
+    msgBuf[3] = 0;
+    ble_write_att(msgBuf, 4);
+}
