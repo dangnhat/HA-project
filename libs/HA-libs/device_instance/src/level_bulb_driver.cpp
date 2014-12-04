@@ -136,7 +136,7 @@ void level_bulb_instance::blink_processing(void)
             }
         } else { //turn on
             is_on_in_blink = true;
-            if (this->level_intensity == 0) {
+            if (this->percent_intensity == 0) {
                 if (active_level == 0) {
                     pwm_dev_duty_cycle_setup(0);
                 } else {
@@ -144,9 +144,9 @@ void level_bulb_instance::blink_processing(void)
                 }
             } else {
                 if (active_level == 0) {
-                    pwm_dev_duty_cycle_setup(100 - this->level_intensity);
+                    pwm_dev_duty_cycle_setup(100 - this->percent_intensity);
                 } else {
-                    pwm_dev_duty_cycle_setup(this->level_intensity);
+                    pwm_dev_duty_cycle_setup(this->percent_intensity);
                 }
             }
         }
