@@ -17,12 +17,12 @@ extern "C" {
 #include "ha_node_glb.h"
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 void slp_received_GFF_handler(uint8_t *GFF_buffer)
 {
-    HA_DEBUG("slp_received_GFF_handler: ret.\n");
+    HA_DEBUG("slp_received_GFF_handler:\n");
     if (!GFF_buffer) {
         HA_NOTIFY("GFF buffer is null.\n");
         return;
