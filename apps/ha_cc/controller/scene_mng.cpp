@@ -217,7 +217,7 @@ void scene_mng::print_default_scene(void)
 /*----------------------------------------------------------------------------*/
 scene *scene_mng::get_scene_ptr_with_index(uint8_t index)
 {
-    if (index >= max_num_scenes || !scenes_list[index].valid) {
+    if (index >= max_num_scenes) {
         return NULL;
     }
     return &scenes_list[index].scene_obj;
@@ -406,14 +406,14 @@ void scene_mng_cmd(scene_mng &scene_mng_obj, rtc &rtc_obj, int argc, char **argv
                     in_time.min = atoi(argv[++count]);
                     in_time.sec = atoi(argv[++count]);
 
-                    input.time_range.start = rtc_obj.time_to_packed(in_time) & 0x00FF;
+                    input.time_range.start = rtc_obj.time_to_packed(in_time) & 0x0000FFFF;
 
                     /* end time */
                     in_time.hour = atoi(argv[++count]);
                     in_time.min = atoi(argv[++count]);
                     in_time.sec = atoi(argv[++count]);
 
-                    input.time_range.end = rtc_obj.time_to_packed(in_time) & 0x00FF;
+                    input.time_range.end = rtc_obj.time_to_packed(in_time) & 0x0000FFFF;
                     break;
 
                 default:
