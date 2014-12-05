@@ -52,6 +52,9 @@ enum gff_data_len_e: uint8_t {
 
     SET_NUM_OF_DEVS_DATA_LEN = 4,
     SET_DEVICE_WITH_INDEX_DATA_LEN = 10,
+
+    GET_ZONE_NAME_DATA_LEN = 1,
+    SET_ZONE_NAME_DATA_LEN = 17,
 };
 
 const uint32_t SET_DEV_WITH_INDEX_ALL_DEVS = 0xFFFFFFFF;
