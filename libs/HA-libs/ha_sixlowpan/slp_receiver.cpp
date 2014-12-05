@@ -27,8 +27,8 @@ kernel_pid_t sixlowpan_receiver_pid;
 #define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
-static const char slp_receiver_prio = PRIORITY_MAIN - 2;
-static const uint16_t slp_receiver_stacksize = 1024;
+static const char slp_receiver_prio = PRIORITY_MAIN-1;
+static const uint16_t slp_receiver_stacksize = 800;
 static char slp_receiver_stack[slp_receiver_stacksize];
 static void *slp_receiver_func(void *arg);
 
@@ -97,7 +97,9 @@ static void start_receiver_loop(void)
     uint8_t payload_buffer[ha_ns::sixlowpan_payload_maxsize];
     uint32_t from_len;
     uint16_t count;
+#if HA_DEBUG_EN
     char addr_str[IPV6_MAX_ADDR_STR_LEN];
+#endif
 
     /* open socket and bind to addr */
     sock = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);

@@ -45,7 +45,7 @@ cir_queue sixlowpan_sender_gff_queue(
 #define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
-static const char slp_sender_prio = PRIORITY_MAIN - 2;
+static const char slp_sender_prio = PRIORITY_MAIN-1;
 static const uint16_t slp_sender_stacksize = 1536;
 static char slp_sender_stack[slp_sender_stacksize];
 static void *slp_sender_func(void *arg);
@@ -246,6 +246,10 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
     }
 
     socket_base_close(sock);
+
+    /* WORKAROUND: sleep to 10ms so it will not make receiver buffer overflow
+     * TODO(later): apply CoAP with flow control will resolve this issue */
+    vtimer_usleep(10000);
 
     return 0;
 }

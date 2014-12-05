@@ -5,6 +5,11 @@
  * @date 08-Nov-2014
  * @brief This is header holds common function definitions for 6lowpan network
  * of home automation nodes and cc.
+ *
+ * Sixlowpan frame format with flow control: (for now, it will not be used)
+ * | to node id (*) (2) | frame len (1) | flags (1) | index (2) | data |
+ * (8) to node id: just a work around because without ND, we must send to multicast address.
+ * flags: 0x00 if data, 0x01 if ack.
  */
 
 #ifndef HA_SIXLOWPAN_H_
@@ -54,6 +59,13 @@ extern char sixlowpan_netdev_type;
 
 const uint16_t sixlowpan_payload_maxsize = 256;
 const uint16_t sixlowpan_receiving_port = 1001;
+
+/* Frame format (for now, it will not be used) */
+const uint8_t sixlowpan_header_len = 4;
+enum sixlowpan_header_flags_e {
+    DATA = 0,
+    ACK = 1,
+};
 
 }
 
@@ -105,5 +117,29 @@ int16_t ha_slp_init(uint8_t interface, transceiver_type_t transceiver,
  * @param[in]   btn_prompt, string will be printed so user will know the button needed to be pressed.
  */
 void ha_slp_start_on_reset(Button *btn_p, const char *btn_prompt);
+
+/**
+ * @brief   Insert frame header to payload. Data in payload will move forward sixlowpan_header_len
+ *          bytes to give the spaces for header.
+ *
+ * @param[in/out]   payload, buffer holding data payload. This is also used as a workspace
+ *                  for frame.
+ * @param[in]       data_len, len of the data in payload. Frame len = data_len + sixlowpan_header_len
+ * @param[in]       flags, ACK or DATA.
+ * @param[in]       index, frame index.
+ */
+void ha_slp_add_frame_header(uint8_t *payload, uint8_t data_len, uint8_t flags, uint16_t index);
+
+/**
+ * @brief   Remove frame header and retrieve payload. Data in payload will move backward
+ *          sixlowpan_header_len bytes.
+ *
+ * @param[in/out]   frame, buffer holding frame. This is also used as a workspace
+ *                  for payload.
+ * @param[out]      frame_len, len of the frame. Data len = data_len - sixlowpan_header_len
+ * @param[out]      flags, ACK or DATA.
+ * @param[out]      index, frame index.
+ */
+void ha_slp_parse_frame_header(uint8_t *frame, uint8_t &frame_len, uint8_t &flags, uint16_t &index);
 
 #endif /* HA_SIXLOWPAN_H_ */

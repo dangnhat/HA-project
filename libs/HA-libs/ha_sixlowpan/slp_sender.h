@@ -19,8 +19,6 @@ extern "C" {
 
 #include "cir_queue.h"
 
-/*--------------------- Global variable --------------------------------------*/
-
 /**
  * @brief   Create and start 6lowpan thread.
  */

@@ -16,9 +16,10 @@ extern "C" {
 }
 
 #include "ha_sixlowpan.h"
+#include "ha_gff_misc.h"
 #include "ff.h"
 
-#define HA_NOTIFICATION (0)
+#define HA_NOTIFICATION (1)
 #define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
@@ -173,8 +174,7 @@ int16_t ha_slp_init(uint8_t interface, transceiver_type_t transceiver,
         return -1;
     }
     else {
-        HA_DEBUG("ha_slp_init: %s is added to interface %d\n",
-                ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &ipaddr),
+        HA_DEBUG("ha_slp_init: global addr is added to interface %d\n",
                 interface);
     }
 
@@ -244,4 +244,28 @@ void ha_slp_start_on_reset(Button *btn_p, const char *btn_prompt)
     /* start 6lowpan stack */
     mesg.type = ha_ns::SIXLOWPAN_RESTART;
     msg_send(&mesg, ha_ns::sixlowpan_sender_pid, false);
+}
+
+/*----------------------------------------------------------------------------*/
+void ha_slp_add_frame_header(uint8_t *payload, uint8_t data_len, uint8_t flags, uint16_t index)
+{
+    /* move data in payload */
+    memmove(&payload[ha_ns::sixlowpan_header_len], payload, data_len);
+
+    /* fill header */
+    payload[0] = data_len + ha_ns::sixlowpan_header_len;
+    payload[1] = flags;
+    uint162buf(index, &payload[2]);
+}
+
+/*----------------------------------------------------------------------------*/
+void ha_slp_parse_frame_header(uint8_t *frame, uint8_t &frame_len, uint8_t &flags, uint16_t &index)
+{
+    /* get header information */
+    frame_len = frame[0];
+    flags = frame[1];
+    index = buf2uint16(&frame[2]);
+
+    /* remove header */
+    memmove(frame, &frame[ha_ns::sixlowpan_header_len], frame_len - ha_ns::sixlowpan_header_len);
 }
