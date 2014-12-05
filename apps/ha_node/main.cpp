@@ -13,25 +13,33 @@ extern "C" {
 
 /* configurable variables */
 const int16_t stack_size = 1450;
-const char thread_name_hdr[] = "endpoint %d";
+const char thread_name[][5] = {
+"ep_1",
+"ep_2",
+"ep_3",
+"ep_4",
+"ep_5",
+"ep_6",
+"ep_7",
+"ep_8",
+};
 
 char stack[ha_node_ns::max_end_point][stack_size];
 
 int main(void)
 {
+    uint8_t i;
     ha_system_init();
 
     /* create end-point's threads */
-    char thread_name[16];
-    for (int i = 0; i < ha_node_ns::max_end_point; i++) {
-        snprintf(thread_name, sizeof(thread_name), thread_name_hdr, i);
+    for (i = 0; i < ha_node_ns::max_end_point; i++) {
         ha_node_ns::end_point_pid[i] = thread_create(stack[i], stack_size,
         PRIORITY_MAIN, CREATE_STACKTEST, end_point_handler, NULL,
-                thread_name);
+                thread_name[i]);
     }
 
     /* read device list saved in flash and run devices */
-    for (int8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (i = 0; i < ha_node_ns::max_end_point; i++) {
         run_endpoint(i);
     }
 
