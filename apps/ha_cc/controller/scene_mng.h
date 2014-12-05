@@ -181,4 +181,15 @@ private:
     scenes_list_obj_t scenes_list[max_num_scenes];
 };
 
+/*----------------------------- Shell command --------------------------------*/
+/**
+ * @brief   Shell command of scene management.
+ *
+ * @param[in]   &scene_mng_obj, a zone object.
+ * @param[in]   &rtc_obj, a rtc object.
+ * @param[in]   argc,
+ * @param[in]   argv,
+ */
+void scene_mng_cmd(scene_mng &scene_mng_obj, rtc &rtc_obj, int argc, char **argv);
+
 #endif // SCENE_MNG_H_

@@ -51,11 +51,21 @@ void controller_list_devices(int argc, char** argv);
 /**
  * @brief   Scene configuring command.
  *
- * @details Usage:  refer to scene_cmd_usage in controller.cpp.
+ * @details Usage:  refer to scene_cmd_usage in scene_mng.cpp.
  *
  * @param[in] argc  Argument count
  * @param[in] argv  Arguments
  */
 void controller_scene_cmd(int argc, char** argv);
+
+/**
+ * @brief   Zone configuring command.
+ *
+ * @details Usage:  refer to zone_cmd_usage in zone.cpp.
+ *
+ * @param[in] argc  Argument count
+ * @param[in] argv  Arguments
+ */
+void controller_zone_cmd(int argc, char** argv);
 
 #endif // CONTROLLER_H_

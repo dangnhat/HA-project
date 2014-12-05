@@ -28,6 +28,7 @@ extern "C" {
 #include "cc_msg_id.h"
 #include "ble_transaction.h"
 #include "ha_sixlowpan.h"
+#include "zone.h"
 
 /*----------------------------- Configurations -------------------------------*/
 #define HA_NOTIFICATION (1)
@@ -59,32 +60,17 @@ static ha_device_mng controller_dev_mng(controller_devs_buffer, controller_max_n
         controller_dev_list_filename);
 
 /* Time to live for every ALIVE messages */
-static const int8_t alive_ttl = 30; /* in second */
+static const int8_t alive_ttl = 60; /* in second */
 
 /* Time period to save device data */
-static const uint8_t dev_list_save_period = 5; /* in seconds */
+static const uint8_t dev_list_save_period = 10; /* in seconds */
 
 /* Scene management */
 static scene_mng controller_scene_mng(&controller_dev_mng, &MB1_rtc,
         &ha_ns::sixlowpan_sender_pid, &ha_ns::sixlowpan_sender_gff_queue);
 
-static const char scene_cmd_usage[] = "Usage:\n"
-        "scene -l, show current default scene and user active scene.\n"
-        "scene -l -s d|u, list default scene (d) or user active scene (u).\n"
-        "scene -s d|u -a index active(0|1) -i cond (dev(hex) val | start end) -o act dev val, "
-        "add a new rule to a scene.\n"
-        "scene -s d|u -d index, remove a rule from scene.\n"
-        "scene -s d|u -p, halt processing scene. Should be done before adding or removing rules.\n"
-        "scene -s d|u -r, restart scene.\n"
-        "scene -s d|u -v, save scene to file.\n"
-        "scene -s d|u -e, restore scene from file.\n"
-        "scene -h, get help.\n";
-
-enum scene_cmd_type_e: uint8_t {
-    NO_SCENE,
-    DEFAULT_SCENE,
-    USER_SCENE,
-};
+/* Zone management */
+static zone controller_zone_mng;
 
 /*----------------------------- Controller namespace -------------------------*/
 
@@ -262,6 +248,9 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
     msg_t mesg;
     uint8_t count;
 
+    char zone_name[zone_ns::zone_name_max_size];
+    uint8_t zone_id;
+
     /* Check data */
     data_len = from_ble_queue->preview_data(false);
     if ((data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE) > from_ble_queue->get_size()) {
@@ -318,6 +307,40 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
         msg_send(&mesg, to_slp_pid, false);
 
         HA_DEBUG("ble_gff_handler: forwarded GFF SET_DEV_VAL to slp\n");
+        break;
+
+    case ha_ns::GET_ZONE_NAME:
+        HA_DEBUG("ble_gff_handler: GET_ZONE_NAME (id %hu)\n", gff_frame[ha_ns::GFF_DATA_POS]);
+
+        /* get zone name */
+        zone_id = gff_frame[ha_ns::GFF_DATA_POS];
+        controller_zone_mng.get_zone_name(zone_id,
+                zone_ns::zone_name_max_size, zone_name);
+
+        /* pack SET_ZONE_NAME gff frame to send to ble */
+        gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_ZONE_NAME_DATA_LEN;
+        uint162buf(ha_ns::SET_ZONE_NAME, &gff_frame[ha_ns::GFF_CMD_POS]);
+        gff_frame[ha_ns::GFF_DATA_POS] = zone_id;
+        memcpy(&gff_frame[ha_ns::GFF_DATA_POS + 1], zone_name, zone_ns::zone_name_max_size);
+
+        to_ble_queue->add_data(gff_frame,
+                        gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+        mesg.type = ha_ns::GFF_PENDING;
+        mesg.content.ptr = (char*)to_ble_queue;
+        msg_send(&mesg, to_ble_pid, false);
+
+        HA_DEBUG("ble_gff_handler: sent SET_ZONE_NAME (%hu, %s) to ble\n",
+                zone_id, zone_name);
+        break;
+
+    case ha_ns::SET_ZONE_NAME:
+        HA_DEBUG("ble_gff_handler: SET_ZONE_NAME (id %hu)\n", gff_frame[ha_ns::GFF_DATA_POS]);
+
+        /* set zone name */
+        zone_id = gff_frame[ha_ns::GFF_DATA_POS];
+        controller_zone_mng.set_zone_name(zone_id,
+                (char *) &gff_frame[ha_ns::GFF_DATA_POS + 1]);
+
         break;
 
     default:
@@ -438,333 +461,11 @@ static void process_scene_with_1sec(rtc_ns::time_t &cur_time, scene_mng *scene_m
 /*----------------------- Scenes shell command -------------------------------*/
 void controller_scene_cmd(int argc, char** argv)
 {
-    uint8_t count, scene_type = NO_SCENE;
-    scene *scene_p = NULL;
-    scene_ns::rule_t rule;
-    scene_ns::input_t input;
-    scene_ns::output_t output;
-    rtc_ns::time_t in_time;
+    scene_mng_cmd(controller_scene_mng, MB1_rtc, argc, argv);
+}
 
-    uint16_t index;
-    bool active, adding_rule = false;
-    uint8_t num_in = 0, num_out = 0;
-
-    if (argc == 1) {
-        printf("Err: too few argument, scene -h to get help.\n");
-        return;
-    }
-
-    for (count = 0; count < argc; count++) {
-        if (argv[count][0] == '-') { /* option */
-            switch (argv[count][1]){
-            case 's':
-                if (count + 1 > argc) {
-                    if (count + 1 >= argc) {
-                        printf("Err: missing argument for option %s\n", argv[count]);
-                        return;
-                    }
-                }
-
-                count++;
-                if (argv[count][0] == 'd') {
-                    scene_type = DEFAULT_SCENE;
-                    scene_p = controller_scene_mng.get_default_scene_ptr();
-                }
-                else if (argv[count][0] == 'u') {
-                    scene_type = USER_SCENE;
-                    scene_p = controller_scene_mng.get_user_active_scene_ptr();
-                }
-                else {
-                    printf("Err: should be d or u for option -s\n");
-                    return;
-                }
-                break;
-
-            case 'l':
-                if (scene_type == USER_SCENE) { /* can be considered as all scenes with -l */
-                    controller_scene_mng.print_user_active_scene();
-                }
-                else if (scene_type == DEFAULT_SCENE) {
-                    controller_scene_mng.print_default_scene();
-                }
-                else {
-                    controller_scene_mng.print_default_scene();
-                    controller_scene_mng.print_user_active_scene();
-                }
-                return;
-
-            case 'a': /* add new rule to scene */
-                if (scene_type == NO_SCENE) {
-                    printf("Err: scene type is not defined with -s\n");
-                    return;
-                }
-
-                if (count + 2 >= argc) {
-                    printf("Err: to few argument for -a\n");
-                    return;
-                }
-
-                /* get active and valid */
-                index = atoi(argv[++count]);
-                active = atoi(argv[++count]);
-
-                /* get current rule in index position */
-                if (scene_p->get_rule_with_index(rule, index) == -1) {
-                    printf("Err: can't get rule from index %hu\n", index);
-                    return;
-                }
-
-                /* Set active, valid */
-                rule.is_active = active;
-                rule.is_valid = true;
-
-                /* Set to adding rule state */
-                adding_rule = true;
-                break;
-
-            case 'i':
-                if (!adding_rule) {
-                    printf("Err: -i without -a option\n");
-                    return;
-                }
-
-                if (count + 1 >= argc) {
-                    printf("Err: too few argument for option %s\n", argv[count]);
-                    return;
-                }
-
-                /* increase num in */
-                num_in++;
-                if (num_in > scene_ns::rule_max_input) {
-                    printf("Err: too much inputs (max %hu)\n", scene_ns::rule_max_input);
-                    return;
-                }
-
-                /* get one input */
-                input.cond = atoi(argv[++count]);
-                switch (input.cond) {
-                case scene_ns::COND_EQUAL_THR:
-                case scene_ns::COND_GREATER_OR_EQUAL_THR:
-                case scene_ns::COND_GREATER_THAN_THR:
-                case scene_ns::COND_LESS_THAN_THR:
-                case scene_ns::COND_LESS_OR_EQUAL_THR:
-                case scene_ns::COND_CHANGE_VAL_OVER_THR:
-                    /* follow by device id (hex) and threshold */
-                    if (count + 2 >= argc) {
-                        printf("Err: too few argument for this input, cond (%hu)\n",
-                                input.cond);
-                        return;
-                    }
-
-                    input.dev_val.device_id = strtol(argv[++count], NULL, 16);
-                    input.dev_val.value = atoi(argv[++count]);
-
-                    break;
-
-                case scene_ns::COND_CHANGE_VAL:
-                    /* follow by device id only */
-                    if (count + 1 >= argc) {
-                        printf("Err: too few argument for this input, cond (%hu)\n",
-                                input.cond);
-                        return;
-                    }
-
-                    input.dev_val.device_id = strtol(argv[++count], NULL, 16);
-                    input.dev_val.value = 0;
-
-                    break;
-
-                case scene_ns::COND_IN_RANGE:
-                    /* follow by start time (month, day, year, hour, min, sec)
-                     * and end time */
-                    if (count + 12 >= argc) {
-                        printf("Err: too few argument for this input, cond (%hu)\n",
-                                input.cond);
-                        return;
-                    }
-
-                    /* start time */
-                    in_time.month = atoi(argv[++count]);
-                    in_time.day = atoi(argv[++count]);
-                    in_time.year = atoi(argv[++count]);
-                    in_time.hour = atoi(argv[++count]);
-                    in_time.min = atoi(argv[++count]);
-                    in_time.sec = atoi(argv[++count]);
-
-                    input.time_range.start = MB1_rtc.time_to_packed(in_time);
-
-                    /* end time */
-                    in_time.month = atoi(argv[++count]);
-                    in_time.day = atoi(argv[++count]);
-                    in_time.year = atoi(argv[++count]);
-                    in_time.hour = atoi(argv[++count]);
-                    in_time.min = atoi(argv[++count]);
-                    in_time.sec = atoi(argv[++count]);
-
-                    input.time_range.end = MB1_rtc.time_to_packed(in_time);
-
-                    break;
-
-                case scene_ns::COND_IN_RANGE_EVDAY:
-                    /* follow by start time in day (hour, min, sec) and end time */
-                    if (count + 6 >= argc) {
-                        printf("Err: too few argument for this input, cond (%hu)\n",
-                                input.cond);
-                        return;
-                    }
-
-                    /* start time */
-                    in_time.hour = atoi(argv[++count]);
-                    in_time.min = atoi(argv[++count]);
-                    in_time.sec = atoi(argv[++count]);
-
-                    input.time_range.start = MB1_rtc.time_to_packed(in_time) & 0x00FF;
-
-                    /* end time */
-                    in_time.hour = atoi(argv[++count]);
-                    in_time.min = atoi(argv[++count]);
-                    in_time.sec = atoi(argv[++count]);
-
-                    input.time_range.end = MB1_rtc.time_to_packed(in_time) & 0x00FF;
-                    break;
-
-                default:
-                    printf("Err: unknow condtion(%hu)\n", input.cond);
-                    return;
-                }
-
-                /* add input to rule */
-                rule.num_in = num_in;
-                memcpy(&rule.inputs[num_in - 1], &input, sizeof(scene_ns::input_t));
-
-                break;
-
-            case 'o':
-                if (!adding_rule) {
-                    printf("Err: -o without -a option\n");
-                    return;
-                }
-
-                if (count + 1 >= argc) {
-                    printf("Err: too few argument for option %s\n", argv[count]);
-                    return;
-                }
-
-                /* increase num out */
-                num_out++;
-                if (num_out > scene_ns::rule_max_output) {
-                    printf("Err: too much outputs (max %hu)\n", scene_ns::rule_max_output);
-                    return;
-                }
-
-                /* get one output */
-                output.action = atoi(argv[++count]);
-                switch(output.action) {
-                case scene_ns::ACT_SET_DEV_VAL:
-                    /* follow by device id (hex) and value */
-                    if (count + 2 >= argc) {
-                        printf("Err: too few argument for this output, act (%hu)\n",
-                                output.action);
-                        return;
-                    }
-
-                    output.dev_val.device_id = strtol(argv[++count], NULL, 16);
-                    output.dev_val.value = atoi(argv[++count]);
-
-                    break;
-
-                default:
-                    printf("Err: unknow action %hu\n", output.action);
-                    break;
-                }
-
-                /* add output to rule */
-                rule.num_out = num_out;
-                memcpy(&rule.outputs[num_out - 1], &output, sizeof(scene_ns::output_t));
-                break;
-
-            case 'd':
-                if (scene_type == NO_SCENE) {
-                    printf("Err: scene type is not defined with -s\n");
-                    return;
-                }
-
-                if (count + 1 >= argc) {
-                    printf("Err: to few argument for option %s\n", argv[count]);
-                    return;
-                }
-
-                scene_p->remove_rule_with_index(atoi(argv[++count]));
-                printf("Rule %hu removed\n", atoi(argv[++count]));
-                break;
-
-            case 'p':
-                /* halt processing scene */
-                if (scene_type == NO_SCENE) {
-                    printf("Err: scene type is not defined with -s\n");
-                    return;
-                }
-
-                if (scene_type == DEFAULT_SCENE) {
-                    printf("Halt processing default scene\n");
-                    controller_scene_mng.set_default_scene_valid_status(false);
-                }
-                else if (scene_type == USER_SCENE) {
-                    printf("Halt processing user scene\n");
-                    controller_scene_mng.set_user_active_scene_valid_status(false);
-                }
-                break;
-
-            case 'r':
-                /* restart processing scene */
-                if (scene_type == NO_SCENE) {
-                    printf("Err: scene type is not defined with -s\n");
-                    return;
-                }
-
-                if (scene_type == DEFAULT_SCENE) {
-                    printf("Restart processing default scene\n");
-                    controller_scene_mng.set_default_scene_valid_status(true);
-                }
-                else if (scene_type == USER_SCENE) {
-                    printf("Restart processing user scene\n");
-                    controller_scene_mng.set_user_active_scene_valid_status(true);
-                }
-                break;
-
-            case 'v':
-                if (scene_type == NO_SCENE) {
-                    printf("Err: scene type is not defined with -s\n");
-                    return;
-                }
-
-                scene_p->save();
-                break;
-
-            case 'e':
-                if (scene_type == NO_SCENE) {
-                    printf("Err: scene type is not defined with -s\n");
-                    return;
-                }
-
-                scene_p->restore();
-                break;
-
-            case 'h':
-                printf("%s", scene_cmd_usage);
-                break;
-
-            default:
-                break;
-            }/* end switch options */
-        } /* end if options */
-    } /* end for */
-
-    if (adding_rule) {
-        /* add rule to index */
-        if (scene_p->add_rule_with_index(rule, index) == -1) {
-            printf("Err: when adding rule to index %hu\n", index);
-        }
-    }
-
+/*----------------------- Zone shell command ---------------------------------*/
+void controller_zone_cmd(int argc, char** argv)
+{
+    zone_cmd(controller_zone_mng, argc, argv);
 }
