@@ -92,9 +92,9 @@ const char* device_type_to_name(uint8_t device_type)
         return btn_name;
     case ha_ns::DIMMER:
         return dim_name;
-    case ((ha_ns::LIN_SENSOR & 0xF8) | (ha_ns::TEMP & 0x07)):
+    case ((ha_ns::ADC_SENSOR & 0xF8) | (ha_ns::TEMP & 0x07)):
         return temp_name;
-    case ((ha_ns::LIN_SENSOR & 0xF8) | (ha_ns::LUMI & 0x07)):
+    case ((ha_ns::ADC_SENSOR & 0xF8) | (ha_ns::LUMI & 0x07)):
         return lumi_name;
     case ((ha_ns::EVT_SENSOR & 0xF8) | (ha_ns::PIR & 0x07)):
         return pir_name;

@@ -43,7 +43,7 @@ void ha_node_init(void)
     MB1_ISRs.subISR_assign(tim_isr_type, &dimmer_callback_timer_isr);
 
     /* Assign ADC linear-sensor callback function into interrupt timer */
-    MB1_ISRs.subISR_assign(tim_isr_type, &sensor_linear_callback_timer_isr);
+    MB1_ISRs.subISR_assign(tim_isr_type, &adc_sensor_callback_timer_isr);
 
     /* Assign On/Off bulb blink callback function into interrupt timer */
     MB1_ISRs.subISR_assign(tim_isr_type, &on_off_blink_callback_timer_isr);
