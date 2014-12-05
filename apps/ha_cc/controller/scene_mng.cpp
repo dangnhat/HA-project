@@ -143,3 +143,63 @@ void scene_mng::save_user_active_scene(void)
     /* save user active scene */
     scenes_list[user_scene_index].scene_obj.save();
 }
+
+/*----------------------------------------------------------------------------*/
+scene *scene_mng::get_user_active_scene_ptr(void)
+{
+    return (get_scene_ptr_with_index(user_scene_index));
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::set_user_active_scene_valid_status(bool status)
+{
+    scenes_list[user_scene_index].valid = status;
+}
+
+/*----------------------------------------------------------------------------*/
+scene *scene_mng::get_default_scene_ptr(void)
+{
+    return (get_scene_ptr_with_index(default_scene_index));
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::set_default_scene_valid_status(bool status)
+{
+    scenes_list[default_scene_index].valid = status;
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::print_user_active_scene(void)
+{
+    if (scenes_list[user_scene_index].valid) {
+        HA_NOTIFY("User active scene:\n"
+                    "---\n");
+        scenes_list[user_scene_index].scene_obj.print(rtc_p);
+    }
+    else {
+        HA_NOTIFY("User scene: Invalid\n");
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::print_default_scene(void)
+{
+    if (scenes_list[default_scene_index].valid) {
+        HA_NOTIFY("Default scene:\n"
+                "---\n");
+        scenes_list[default_scene_index].scene_obj.print(rtc_p);
+    }
+    else {
+        HA_NOTIFY("Default scene: Invalid\n");
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+scene *scene_mng::get_scene_ptr_with_index(uint8_t index)
+{
+    if (index >= max_num_scenes || !scenes_list[index].valid) {
+        return NULL;
+    }
+    return &scenes_list[index].scene_obj;
+}
+

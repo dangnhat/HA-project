@@ -75,16 +75,40 @@ void scene::new_scene(void)
 }
 
 /*----------------------------------------------------------------------------*/
-void scene::add_rule_with_index(rule_t &rule, uint16_t index)
+int8_t scene::add_rule_with_index(rule_t &rule, uint16_t index)
 {
     if (index >= scene_max_rules) {
-        return;
+        return -1;
     }
 
     memcpy(&rules_list[index], &rule, sizeof(rule_t));
     if (index >= cur_num_rules) {
         cur_num_rules = index + 1;
     }
+
+    return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+int8_t scene::get_rule_with_index(rule_t &rule, uint16_t index)
+{
+    if (index >= scene_max_rules) {
+        return -1;
+    }
+
+    memcpy(&rule, &rules_list[index], sizeof(rule_t));
+
+    return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+void scene::remove_rule_with_index(uint16_t index)
+{
+    if (index >= scene_max_rules) {
+        return;
+    }
+
+    rules_list[index].is_valid = false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -320,18 +344,18 @@ void scene::process(bool trigger_by_report,
                 HA_DEBUG("scene::process: COND_IN_RANGE_EVDAY\n");
 
                 cur_time = rtc_obj->get_time_packed();
-                cur_time = cur_time & 0xFF;
+                cur_time = cur_time & 0xFFFF;
 
                 /* only hour, min, sec will be cared */
-                if ( cur_time < (input_p->time_range.start & 0xFF) ||
-                        cur_time > (input_p->time_range.end & 0xFF)) {
+                if ( cur_time < (input_p->time_range.start & 0xFFFF) ||
+                        cur_time > (input_p->time_range.end & 0xFFFF)) {
                     all_cond_satisfied = false;
                 }
 
                 HA_DEBUG("scene::process: acs %hd, hts %hd, cur_time %lx, start %lx, end %lx\n",
                         all_cond_satisfied, has_trigger_src,
                         cur_time,
-                        input_p->time_range.start & 0xFF, input_p->time_range.end & 0xFF);
+                        input_p->time_range.start & 0xFFFF, input_p->time_range.end & 0xFFFF);
                 break;
 
             case COND_EQUAL_THR:
@@ -538,22 +562,22 @@ void scene::print(rtc *rtc_obj)
                 c_rule,
                 rules_list[c_rule].is_valid, rules_list[c_rule].is_active,
                 rules_list[c_rule].num_in, rules_list[c_rule].num_out);
-        if (!rules_list[c_rule].is_valid) {
-            continue;
+        if (rules_list[c_rule].is_valid) {
+            for (c_in = 0; c_in < rules_list[c_rule].num_in; c_in++) {
+                print_input(rules_list[c_rule].inputs[c_in], rtc_obj);
+            }
+
+            for (c_out = 0; c_out < rules_list[c_rule].num_out; c_out++) {
+                print_output(rules_list[c_rule].outputs[c_out]);
+            }
         }
 
-        for (c_in = 0; c_in < rules_list[c_rule].num_in; c_in++) {
-            print_input(rules_list[c_rule].inputs[c_in], rtc_obj);
-        }
-
-        for (c_out = 0; c_out < rules_list[c_rule].num_out; c_out++) {
-            print_output(rules_list[c_rule].outputs[c_out]);
-        }
+        HA_NOTIFY("\n");
     }
 }
 
 /*----------------------------------------------------------------------------*/
-void print_input(input_t &input, rtc *rtc_obj)
+void scene::print_input(input_t &input, rtc *rtc_obj)
 {
     rtc_ns::time_t time;
 

@@ -109,13 +109,57 @@ public:
     void save_user_active_scene(void);
 
     /**
-     * @brief   Save user's scene to a file.
+     * @brief   Save user's scene to a file, will not change active scene name.
      *
      * @param[in]   name, file name to be saved.
      */
     void save_user_scene_as(const char *name);
 
+    /**
+     * @brief   Set valid status of user scene.
+     */
+    void set_user_active_scene_valid_status(bool status);
+
+    /**
+     * @brief   Get user active scene pointer.
+     *
+     * @return      pointer to user active scene object, NULL if error.
+     */
+    scene *get_user_active_scene_ptr(void);
+
+    /**
+     * @brief   Set valid status of user scene.
+     */
+    void set_default_scene_valid_status(bool status);
+
+    /**
+     * @brief   Get default scene pointer.
+     *
+     * @return      pointer to default scene object, NULL if error.
+     */
+    scene *get_default_scene_ptr(void);
+
+    /**
+     * @brief   Print user active scene.
+     */
+    void print_user_active_scene(void);
+
+    /**
+     * @brief   Print default scene.
+     */
+    void print_default_scene(void);
+
 private:
+
+    /**
+     * @brief   Get scene pointer by index.
+     *
+     * @param[in]   index.
+     *
+     * @return      pointer to scene object, NULL if error.
+     */
+    scene *get_scene_ptr_with_index(uint8_t index);
+
     /**
      * @brief   Restore scene with index.
      *

@@ -58,6 +58,7 @@ const shell_command_t shell_commands[] = {
 #ifdef HA_CC
     /* Device list command */
     {"lsdev", "List all devices and endpoint connected to CC", controller_list_devices},
+    {"scene", "Scene configuration", controller_scene_cmd},
 #endif
     {NULL, NULL, NULL}
 };

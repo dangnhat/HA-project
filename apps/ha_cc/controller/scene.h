@@ -32,7 +32,7 @@ const uint8_t rule_max_input = 3;
 const uint8_t rule_max_output = 3;
 
 const uint8_t scene_max_name_chars = 20;
-const uint16_t scene_max_rules = 25;
+const uint16_t scene_max_rules = 22;
 
 /*-------------------------- CONDITION DEFINITIONS ---------------------------*/
 enum cond_e: uint8_t {
@@ -161,8 +161,27 @@ public:
      *
      * @param[in]   &rule, new rule to be added.
      * @param[in]   index.
+     *
+     * @return      -1 if error.
      */
-    void add_rule_with_index(rule_t &rule, uint16_t index);
+    int8_t add_rule_with_index(rule_t &rule, uint16_t index);
+
+    /**
+     * @brief   Get a rule in index position.
+     *
+     * @param[out]  &rule, a rule has been retrieved.
+     * @param[in]   index.
+     *
+     * @return      -1 if error.
+     */
+    int8_t get_rule_with_index(rule_t &rule, uint16_t index);
+
+    /**
+     * @brief   Remove rule from index position in rules_list. (Set to invalid)
+     *
+     * @param[in]   index.
+     */
+    void remove_rule_with_index(uint16_t index);
 
     /**
      * @brief   Find the first invalid rule from index 0  to cur_num_rules.
