@@ -26,7 +26,7 @@ int main(void)
     for (int i = 0; i < ha_node_ns::max_end_point; i++) {
         snprintf(thread_name, sizeof(thread_name), thread_name_hdr, i);
         ha_node_ns::end_point_pid[i] = thread_create(stack[i], stack_size,
-        PRIORITY_MAIN - 1, CREATE_STACKTEST, end_point_handler, NULL,
+        PRIORITY_MAIN, CREATE_STACKTEST, end_point_handler, NULL,
                 thread_name);
     }
 

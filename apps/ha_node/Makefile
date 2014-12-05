@@ -87,7 +87,7 @@ USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += vtimer
-USEMODULE += transport_layer
+USEMODULE += udp
 USEMODULE += rpl
 USEMODULE += defaulttransceiver
 
