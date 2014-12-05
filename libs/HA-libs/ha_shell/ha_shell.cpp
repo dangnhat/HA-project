@@ -52,7 +52,7 @@ const shell_command_t shell_commands[] = {
     {"lvbulb", "Configure level bulb device", level_bulb_config},
     {"servo", "Configure servo device", servo_config},
     {"rgb", "Configure RGB-led device", rgb_led_config},
-    {"senlnr", "Configure ADC linear sensor device", adc_sensor_config},
+    {"senadc", "Configure ADC linear sensor device", adc_sensor_config},
 #endif
 
 #ifdef HA_CC

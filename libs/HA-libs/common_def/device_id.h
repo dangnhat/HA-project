@@ -29,7 +29,7 @@ enum device_type_common_e
     SWITCH = 0x01,          //00|000|---
     BUTTON = 0x02,          //00|000|---
     DIMMER = 0x03,          //00|000|---
-    LIN_SENSOR = 0x30,      //00|110|---
+    ADC_SENSOR = 0x30,      //00|110|---
     EVT_SENSOR = 0x38,      //00|111|---
 
     ON_OFF_OPUT = 0x78,     //01|111|---

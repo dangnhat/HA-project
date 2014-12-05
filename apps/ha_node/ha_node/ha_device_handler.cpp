@@ -25,15 +25,23 @@ extern "C" {
 #include "ha_debug.h"
 
 static const uint8_t queue_handler_size = 16;
-static char config_str[ha_node_ns::dev_pattern_maxsize];
+//static char config_str[ha_node_ns::dev_pattern_maxsize];
 
+/* common functions */
 static bool read_config_file(uint32_t dev_id, char *config_str,
         uint8_t str_len);
 static port_t get_port(char port_c);
 static pwm_timer_t get_pwm_timer(int timer);
+static uint8_t get_dev_type_common(uint32_t dev_id);
 static bool check_dev_type_value(uint32_t msg_value, uint8_t dev_type);
 static void send_data_over_air(uint16_t cmd, uint32_t dev_id, uint16_t value);
-static uint8_t get_dev_type_common(uint32_t dev_id);
+
+/* functions for ADC_sensors */
+static bool sensor_read_config(uint32_t dev_id, adc_sensor_instance* adc_ss,
+        uint16_t *num_equation, uint16_t *num_params);
+static bool sensor_read_equa_type_and_params(uint32_t dev_id,
+        char* equa_type_buff, uint8_t e_type_buff_len, float* equa_params_buff,
+        uint8_t e_params_buff_len);
 
 void* end_point_handler(void* arg)
 {
@@ -47,8 +55,8 @@ void* end_point_handler(void* arg)
         msg_receive(&msg);
         if (msg.type == ha_node_ns::NEW_DEVICE) {
             switch (get_dev_type_common(msg.content.value)) {
-            case ha_ns::LIN_SENSOR:
-                sensor_linear_handler(msg.content.value);
+            case ha_ns::ADC_SENSOR:
+                adc_sensor_handler(msg.content.value);
                 break;
             case ha_ns::EVT_SENSOR:
                 sensor_event_handler(msg.content.value);
@@ -353,21 +361,32 @@ void servo_sg90_handler(uint32_t dev_id)
     }
 }
 
-void sensor_linear_handler(uint32_t dev_id)
+void adc_sensor_handler(uint32_t dev_id)
 {
     /* create and configure linear sensor instance */
-    sensor_linear_instance sensor_linear;
-    if (!sensor_linear_get_config(dev_id, &sensor_linear)) {
+    adc_sensor_instance adc_sensor;
+    uint16_t num_equation = 0;
+    uint16_t num_params = 0;
+    if (!sensor_read_config(dev_id, &adc_sensor, &num_equation, &num_params)) {
         return;
     }
 
-    sensor_linear.start_sensor();
+    char e_type[num_equation];
+    float params[num_params];
+    sensor_read_equa_type_and_params(dev_id, e_type, num_equation, params,
+            num_params);
+
+    adc_sensor.set_equation_type(e_type, num_equation);
+    adc_sensor.set_equation_params(params, num_params);
+
+    adc_sensor.start_sensor();
 
     msg_t msg;
     while (1) {
         msg_receive(&msg);
         switch (msg.type) {
-        case sensor_linear_ns::SEN_LINEAR_MSG:
+        case adc_sensor_ns::ADC_SENSOR_MSG:
+            printf("ss: %d\n", (uint16_t) msg.content.value);
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) msg.content.value);
             break;
@@ -403,6 +422,7 @@ void sensor_event_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case sensor_event_ns::SEN_EVT_MSG:
+            printf("ss: %d\n", (uint16_t) msg.content.value);
             if (msg.content.value == sensor_event_ns::high_level) {
                 send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, ha_ns::detected);
             } else if (msg.content.value == sensor_event_ns::low_level) {
@@ -467,8 +487,9 @@ int get_file_name_from_dev_id(uint32_t dev_id, char* file_name)
 
 bool gpio_common_get_config(uint32_t dev_id, gpio_config_params_t *gpio_params)
 {
-//    char config_str[ha_node_ns::gpio_pattern_size];
-    if (!read_config_file(dev_id, config_str, ha_node_ns::gpio_pattern_size)) {
+    char config_str[sizeof(ha_node_ns::gpio_dev_config_pattern)];
+    if (!read_config_file(dev_id, config_str,
+            sizeof(ha_node_ns::gpio_dev_config_pattern))) {
         return false;
     }
 
@@ -495,9 +516,9 @@ bool gpio_common_get_config(uint32_t dev_id, gpio_config_params_t *gpio_params)
 
 bool adc_common_get_config(uint32_t dev_id, adc_config_params_t *adc_params)
 {
-//    char config_str[ha_node_ns::adc_pwm_pattern_size];
+    char config_str[sizeof(ha_node_ns::adc_dev_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            ha_node_ns::adc_pwm_pattern_size)) {
+            sizeof(ha_node_ns::adc_dev_config_pattern))) {
         return false;
     }
 
@@ -519,9 +540,9 @@ bool adc_common_get_config(uint32_t dev_id, adc_config_params_t *adc_params)
 
 bool pwm_common_get_config(uint32_t dev_id, pwm_config_params_t *pwm_params)
 {
-//    char config_str[ha_node_ns::adc_pwm_pattern_size];
+    char config_str[sizeof(ha_node_ns::pwm_dev_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            ha_node_ns::adc_pwm_pattern_size)) {
+            sizeof(ha_node_ns::pwm_dev_config_pattern))) {
         return false;
     }
 
@@ -543,9 +564,9 @@ bool pwm_common_get_config(uint32_t dev_id, pwm_config_params_t *pwm_params)
 
 bool rgb_get_config(uint32_t dev_id, rgb_instance *rgb)
 {
-//    char config_str[ha_node_ns::dev_pattern_maxsize];
+    char config_str[sizeof(ha_node_ns::rgb_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            ha_node_ns::dev_pattern_maxsize)) {
+            sizeof(ha_node_ns::rgb_config_pattern))) {
         return false;
     }
 
@@ -568,10 +589,9 @@ bool rgb_get_config(uint32_t dev_id, rgb_instance *rgb)
     uint16_t green_at_wp = 0;
     uint16_t blue_at_wp = 0;
 
-    sscanf(config_str, ha_node_ns::rgb_config_pattern, &r_port_c, &(r_pin),
-            &r_timer, &(r_chnn), &g_port_c, &(g_pin), &g_timer, &(g_chnn),
-            &b_port_c, &(b_pin), &b_timer, &(b_chnn), &red_at_wp, &green_at_wp,
-            &blue_at_wp);
+    sscanf(config_str, ha_node_ns::rgb_config_pattern, &r_port_c, &r_pin,
+            &r_timer, &r_chnn, &g_port_c, &g_pin, &g_timer, &g_chnn, &b_port_c,
+            &b_pin, &b_timer, &b_chnn, &red_at_wp, &green_at_wp, &blue_at_wp);
 
     pwm_config_params_t red_params;
     pwm_config_params_t green_params;
@@ -594,95 +614,6 @@ bool rgb_get_config(uint32_t dev_id, rgb_instance *rgb)
 
     rgb->set_white_point(red_at_wp, green_at_wp, blue_at_wp);
     rgb->device_configure(&red_params, &green_params, &blue_params);
-
-    return true;
-}
-
-bool sensor_linear_get_config(uint32_t dev_id, sensor_linear_instance *senlnr)
-{
-//    char config_str[ha_node_ns::dev_pattern_maxsize];
-    if (!read_config_file(dev_id, config_str,
-            ha_node_ns::dev_pattern_maxsize)) {
-        return false;
-    }
-
-    char port_c = '0';
-    uint16_t pin = 0;
-    uint16_t adc = 0;
-    uint16_t chann = 0;
-
-    char e1_type = '0';
-    char a1[6];
-    char b1[6];
-    char c1[6];
-    char e2_type = '0';
-    char a2[6];
-    char b2[6];
-    char c2[6];
-
-    int filter_thres = 0;
-    int under_thres = 0;
-    int over_thres = 0;
-
-    sscanf(config_str, ha_node_ns::senlnr_config_pattern, &port_c, &pin, &adc,
-            &chann, &e1_type, &e2_type, a1, b1, c1, a2, b2, c2, &filter_thres,
-            &under_thres, &over_thres);
-
-    uint8_t num_equation = 0;
-    float a1_value, b1_value, c1_value;
-
-    if (e1_type == 'l' || e1_type == 'r' || e1_type == 'p') {
-        num_equation++;
-        a1_value = strtof(a1, NULL);
-        b1_value = strtof(b1, NULL);
-        c1_value = strtof(c1, NULL);
-    }
-    float a2_value, b2_value, c2_value;
-    if (e2_type == 'l' || e2_type == 'r' || e2_type == 'p') {
-        num_equation++;
-        a2_value = strtof(a2, NULL);
-        b2_value = strtof(b2, NULL);
-        c2_value = strtof(c2, NULL);
-    }
-
-    if (num_equation == 0) {
-        return false;
-    }
-
-    adc_config_params_t adc_params;
-
-    adc_params.device_port = get_port(port_c);
-    adc_params.device_pin = pin;
-    adc_params.adc_x = (adc_t) (adc - 1);
-    adc_params.adc_channel = chann;
-
-    if (e1_type == 'l') {
-        senlnr->set_equation(sensor_linear_ns::linear, 1, a1_value, b1_value,
-                c1_value);
-    } else if (e1_type == 'r') {
-        senlnr->set_equation(sensor_linear_ns::rational, 1, a1_value, b1_value,
-                c1_value);
-    } else if (e1_type == 'p') {
-        senlnr->set_equation(sensor_linear_ns::polynomial, 1, a1_value,
-                b1_value, c1_value);
-    }
-
-    if (e2_type == 'l') {
-        senlnr->set_equation(sensor_linear_ns::linear, 2, a2_value, b2_value,
-                c2_value);
-    } else if (e2_type == 'r') {
-        senlnr->set_equation(sensor_linear_ns::rational, 2, a2_value, b2_value,
-                c2_value);
-    } else if (e2_type == 'p') {
-        senlnr->set_equation(sensor_linear_ns::polynomial, 2, a2_value,
-                b2_value, c2_value);
-    }
-
-    senlnr->set_num_equation(num_equation);
-    senlnr->set_delta_threshold(filter_thres);
-    senlnr->set_underflow_threshold(under_thres);
-    senlnr->set_overflow_threshold(over_thres);
-    senlnr->device_configure(&adc_params);
 
     return true;
 }
@@ -808,4 +739,84 @@ static bool check_dev_type_value(uint32_t msg_value, uint8_t dev_type)
 static uint8_t get_dev_type_common(uint32_t dev_id)
 {
     return ((uint8_t) dev_id) & 0xF8;
+}
+
+static bool sensor_read_config(uint32_t dev_id, adc_sensor_instance* adc_ss,
+        uint16_t *num_equation, uint16_t *num_params)
+{
+    char config_str[sizeof(ha_node_ns::adc_sensor_config_pattern)];
+    if (!read_config_file(dev_id, config_str,
+            sizeof(ha_node_ns::adc_sensor_config_pattern))) {
+        return false;
+    }
+
+    char port_c = '0';
+    uint16_t pin = 0;
+    uint16_t adc = 0;
+    uint16_t chann = 0;
+
+    int filter_thres = 0;
+    int under_thres = 0;
+    int over_thres = 0;
+
+    sscanf(config_str, ha_node_ns::adc_sensor_config_pattern, &port_c, &pin,
+            &adc, &chann, &filter_thres, &under_thres, &over_thres,
+            num_equation, num_params);
+
+    adc_config_params_t adc_params;
+
+    adc_params.device_port = get_port(port_c);
+    adc_params.device_pin = pin;
+    adc_params.adc_x = (adc_t) (adc - 1);
+    adc_params.adc_channel = chann;
+
+    adc_ss->set_delta_threshold(filter_thres);
+    adc_ss->set_underflow_threshold(under_thres);
+    adc_ss->set_overflow_threshold(over_thres);
+    adc_ss->device_configure(&adc_params);
+
+    return true;
+}
+
+static bool sensor_read_equa_type_and_params(uint32_t dev_id,
+        char* equa_type_buff, uint8_t e_type_buff_len, float* equa_params_buff,
+        uint8_t e_params_buff_len)
+{
+    char f_name[4];
+    get_file_name_from_dev_id(dev_id, f_name);
+
+    FIL fil;
+    if (f_open(&fil, f_name, FA_READ)) {
+        HA_DEBUG("Error on opening config file\n");
+        return false;
+    }
+    f_sync(&fil);
+
+    uint8_t equa_line = 0;
+    uint8_t index = 0;
+
+    /* read equation type */
+    char config_str[ha_node_ns::dev_pattern_maxsize];
+    while (f_gets(config_str, ha_node_ns::dev_pattern_maxsize, &fil)) {
+        if (equa_line >= 3) {
+            equa_type_buff[index] = config_str[0];
+            index++;
+        }
+        equa_line++;
+        if (index == e_type_buff_len) {
+            break;
+        }
+    }
+
+    /* continue reading parameter of equations */
+    for (index = 0; index < e_params_buff_len; index++) {
+        if (f_gets(config_str, ha_node_ns::dev_pattern_maxsize, &fil)) {
+            equa_params_buff[index] = strtof(config_str, NULL);
+        } else {
+            break;
+        }
+    }
+    f_close(&fil);
+
+    return true;
 }
