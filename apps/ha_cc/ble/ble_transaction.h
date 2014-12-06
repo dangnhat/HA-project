@@ -59,7 +59,7 @@ void ble_thread_start(void);
 
 /* attach header to ble message */
 void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf,
-        uint8_t* payload);
+        uint8_t* payload, uint8_t bufLen);
 
 /* send ack to mobile */
 void send_ack_to_mobile(uint8_t* ack_idx_buf);
