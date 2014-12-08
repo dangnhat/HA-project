@@ -95,21 +95,25 @@ void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
     msg_t msg_ble_thread;
     numOfMsg++;
     totalMsgLen += msg->value.len;
+    HA_DEBUG("client write \n");
     if (1 == numOfMsg) {
 
         ack_index_buf[0] = msg->value.data[1];      // get 2 byte index
         ack_index_buf[1] = msg->value.data[2];      //
-        if (msg->value.data[0] == ha_ble_ns::BLE_MSG_ACK) {
-            msgLen = msg->value.data[3] + 3;        //plus 3 bytes of header
+        if (msg->value.data[0] == ha_ble_ns::BLE_MSG_ACK) { //case message is ACK
+//            msgLen = msg->value.data[3] + 3;        //plus 3 bytes of header
             /* get index, if true wake-up ble_thread */
-            if (( buf2uint16(ack_index_buf) == ble_ack.packet_index)
+            if ((buf2uint16(ack_index_buf) == ble_ack.packet_index)
                     && ble_ack.need_to_wait_ack) {
+                HA_DEBUG(" receive ACK\n");
+                numOfMsg = 0;                      // reset counter
+                totalMsgLen = 0;                   //
                 ble_ack.need_to_wait_ack = false;
                 ble_ack.packet_index++;
                 thread_wakeup(ble_thread_ns::ble_thread_pid);
                 return;
             }
-        } else {          // if message is data
+        } else {                                    // case message is data
             msgLen = msg->value.data[3] + ha_ns::GFF_CMD_SIZE
                     + ha_ns::GFF_LEN_SIZE + 3;      //plus 3 bytes of header
             /* if message from mobile is data, then send ACK back to mobile */
@@ -117,14 +121,15 @@ void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
         }
     }
 
-    usart_queue.add_data((uint8_t*)msg->value.data, msg->value.len);
+    usart_queue.add_data((uint8_t*) msg->value.data, msg->value.len);
 
     /* Consider if received data payload as its length */
     if (totalMsgLen == msgLen) {
+        HA_DEBUG(" end of packet \n");
         numOfMsg = 0;
         totalMsgLen = 0;
         /* detach message header */
-        for(uint8_t i = 0; i < 3; i++){
+        for (uint8_t i = 0; i < 3; i++) {
             usart_queue.get_data();
         }
         /* send message to ble_thread */
