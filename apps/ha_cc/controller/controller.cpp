@@ -94,7 +94,7 @@ void controller_start(void)
 {
     /* Create controller thread */
     controller_pid = thread_create(controller_stack, controller_stack_size,
-            controller_prio, CREATE_STACKTEST, controller_func, NULL, "CC Controller");
+            controller_prio, CREATE_STACKTEST, controller_func, NULL, "CC_controller");
     if (controller_pid > 0) {
         HA_NOTIFY("CC Controller thread created.\n");
     }
