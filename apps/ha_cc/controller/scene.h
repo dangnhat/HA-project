@@ -32,6 +32,7 @@ const uint8_t rule_max_input = 3;
 const uint8_t rule_max_output = 3;
 
 const uint8_t scene_max_name_chars = 20;
+const uint8_t scene_max_name_chars_wout_folders = 8 + 1;
 const uint16_t scene_max_rules = 22;
 
 /*-------------------------- CONDITION DEFINITIONS ---------------------------*/

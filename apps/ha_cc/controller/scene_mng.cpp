@@ -16,6 +16,7 @@
 
 #include "scene_mng.h"
 #include "ff.h"
+#include "shell_cmds_fatfs.h"
 
 #define HA_NOTIFICATION (1)
 #define HA_DEBUG_EN (0)
@@ -24,9 +25,9 @@
 static const uint8_t default_scene_index = 0;
 static const uint8_t user_scene_index = 1;
 
-static const char default_scene[] = "default";
-static const char scenes_folder[] = "scenes/";
-static const char active_user_scene_file[] = "actscene";
+#define SCENES_FOLDER       "scenes"
+#define DEFAULT_SCENE_FILE  "default"
+#define ACTIVE_SCENE_FILE   "actscene"
 
 static const char scene_cmd_usage[] = "Usage:\n"
         "scene -l, show current default scene and user active scene.\n"
@@ -80,69 +81,238 @@ void scene_mng::process(bool trigger_by_rpt, ha_device *a_device_rpt)
 }
 
 /*----------------------------------------------------------------------------*/
-void set_user_active_scene(const char *name)
+void scene_mng::save(void)
 {
-    /* TODO: */
-}
-
-/*----------------------------------------------------------------------------*/
-void get_user_active_scene(char *name)
-{
-    /* TODO: */
+    /* TODO: this seems to be really useless, implement when needed */
 }
 
 /*----------------------------------------------------------------------------*/
 void scene_mng::restore(void)
 {
+    char user_active_name[scene_max_name_chars_wout_folders];
+
     restore_default_scene();
-//    restore_user_active_scene(); /* TODO: change this one */
+
+    /* restore user active scene */
+    get_active_scene(user_active_name);
+    set_user_scene(user_active_name);
+    restore_user_scene();
+}
+
+/*------------------------ Current running user's scene ----------------------*/
+void scene_mng::set_user_scene(const char *name)
+{
+    char name_with_folder[scene_max_name_chars];
+
+    /* Build path name */
+    strcpy(name_with_folder, SCENES_FOLDER);
+    strcat(name_with_folder, name);
+
+    scenes_list[user_scene_index].scene_obj.set_name(name_with_folder);
 }
 
 /*----------------------------------------------------------------------------*/
-void scene_mng::restore_default_scene(void)
+void scene_mng::get_user_scene(char *name)
 {
-    char default_name[scene_max_name_chars];
-    strcpy(default_name, scenes_folder);
-    strcat(default_name, default_scene);
+    strcpy(name, scenes_list[user_scene_index].scene_obj.get_name());
+    not_dir(name);
+}
 
+/*----------------------------------------------------------------------------*/
+scene *scene_mng::get_user_scene_ptr(void)
+{
+    return (get_scene_ptr_with_index(user_scene_index));
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::restore_user_scene(void)
+{
     /* set name for default scene */
-    scenes_list[default_scene_index].scene_obj.set_name(default_name);
-    if (scenes_list[default_scene_index].scene_obj.restore() != 0) {
-        HA_DEBUG("scene_mng::restore_default_scene: failed to restore %s\n", default_name);
-        scenes_list[default_scene_index].valid = false;
-    }
-    else {
-        HA_DEBUG("scene_mng::restore_default_scene: %s restored\n", default_name);
-        scenes_list[default_scene_index].valid = true;
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-void scene_mng::restore_user_active_scene(void)
-{
-    char user_active_scene_name[scene_max_name_chars];
-
-    /* get name of user active scene from file */
-    get_user_active_scene(user_active_scene_name);
-
-    /* set name and restore user scene */
-    scenes_list[user_scene_index].scene_obj.set_name(user_active_scene_name);
     if (scenes_list[user_scene_index].scene_obj.restore() != 0) {
-        HA_DEBUG("scene_mng::restore_user_active_scene: failed to restore %s\n",
-                user_active_scene_name);
+        HA_NOTIFY("Failed to restore user scene (%s)\n",
+                scenes_list[user_scene_index].scene_obj.get_name());
         scenes_list[user_scene_index].valid = false;
     }
     else {
-        HA_DEBUG("scene_mng::restore_default_scene: %s restored\n", user_active_scene_name);
+        HA_NOTIFY("User scene (%s) restored\n",
+                scenes_list[user_scene_index].scene_obj.get_name());
         scenes_list[user_scene_index].valid = true;
     }
 }
 
 /*----------------------------------------------------------------------------*/
-void scene_mng::save(void)
+void scene_mng::set_user_scene_valid_status(bool status)
 {
-    save_default_scene();
-    save_user_active_scene();
+    scenes_list[user_scene_index].valid = status;
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::print_user_scene(void)
+{
+    if (scenes_list[user_scene_index].valid) {
+        HA_NOTIFY("Current running user scene (%s):\n"
+                    "---\n", scenes_list[user_scene_index].scene_obj.get_name());
+        scenes_list[user_scene_index].scene_obj.print(rtc_p);
+    }
+    else {
+        HA_NOTIFY("Current running user scene (%s): Invalid\n",
+                scenes_list[user_scene_index].scene_obj.get_name());
+    }
+}
+
+/*------------------------ Active scene --------------------------------------*/
+void scene_mng::set_active_scene(const char *name)
+{
+    FIL file;
+    FRESULT fres;
+
+    fres = f_open(&file, ACTIVE_SCENE_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+    if (fres != FR_OK) {
+        HA_DEBUG("scene_mng::set_active_scene: Error when open file %s\n", ACTIVE_SCENE_FILE);
+        print_ferr(fres);
+        return;
+    }
+    f_sync(&file);
+
+    /* write data to file */
+    f_printf(&file, "%s\n", name);
+
+    /* close file */
+    f_close(&file);
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::get_active_scene(char *name)
+{
+    FIL file;
+    FRESULT fres;
+    char line[16];
+
+    fres = f_open(&file, ACTIVE_SCENE_FILE, FA_READ | FA_OPEN_ALWAYS);
+    if (fres != FR_OK) {
+        HA_DEBUG("scene_mng::get_active_scene: Error when open file %s\n", ACTIVE_SCENE_FILE);
+        print_ferr(fres);
+        return;
+    }
+
+    /* read data from file */
+    f_gets(line, 16, &file);
+}
+
+/*------------------------ Inactive scene --------------------------------------*/
+uint8_t scene_mng::get_num_of_inactive_scenes(void)
+{
+    DIR dir;
+    FRESULT fres;
+    FILINFO finfo;
+    uint8_t retval = 0;
+    char current_running_scene[scene_max_name_chars_wout_folders];
+
+    /* get current running scene name */
+    get_user_scene(current_running_scene);
+
+    /* open dir */
+    fres = f_opendir(&dir, SCENES_FOLDER);
+    if (fres != FR_OK) {
+        print_ferr(fres);
+        return 0;
+    }
+
+    /* read dir */
+    while (1) {
+        fres = f_readdir(&dir, &finfo);
+        if (fres != FR_OK) { /* error when read dir */
+            print_ferr(fres);
+            return 0;
+        }
+
+        if (finfo.fname[0] == 0) { /* end of dir */
+            break;
+        }
+
+        /* compare with default scene name and .., ., and active scene name */
+        if (strcmp(finfo.fname, DEFAULT_SCENE_FILE) == 0 ||
+                strcmp(finfo.fname, current_running_scene) == 0 ||
+                finfo.fname[0] == '.') {
+            continue;
+        }
+
+        retval++;
+    }
+
+    /* close dir */
+    f_closedir(&dir);
+
+    return retval;
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::get_inactive_scene_with_index(uint8_t index, char *name)
+{
+    DIR dir;
+    FRESULT fres;
+    FILINFO finfo;
+    uint8_t count;
+    char current_running_scene[scene_max_name_chars_wout_folders];
+
+    /* get current running scene name */
+    get_user_scene(current_running_scene);
+
+    /* open dir */
+    fres = f_opendir(&dir, SCENES_FOLDER);
+    if (fres != FR_OK) {
+        print_ferr(fres);
+        return;
+    }
+
+    /* read dir */
+    count = 0;
+    while (1) {
+        fres = f_readdir(&dir, &finfo);
+        if (fres != FR_OK) { /* error when read dir */
+            print_ferr(fres);
+            return;
+        }
+
+        if (finfo.fname[0] == 0) { /* end of dir */
+            break;
+        }
+
+        /* compare with default scene name and .., . */
+        if (strcmp(finfo.fname, DEFAULT_SCENE_FILE) == 0 ||
+                strcmp(finfo.fname, current_running_scene) == 0 ||
+                finfo.fname[0] == '.') {
+            continue;
+        }
+
+        /* an scene is here */
+        if (count == index) {
+            /* it's here */
+            memcpy(name, finfo.fname, scene_max_name_chars_wout_folders);
+            name[scene_max_name_chars_wout_folders-1] = '\0';
+            break;
+        }
+    }
+
+    /* close dir */
+    f_closedir(&dir);
+}
+
+/*------------------------ Default scene -------------------------------------*/
+void scene_mng::restore_default_scene(void)
+{
+    /* set name for default scene */
+    scenes_list[default_scene_index].scene_obj.set_name(SCENES_FOLDER "/" DEFAULT_SCENE_FILE);
+    if (scenes_list[default_scene_index].scene_obj.restore() != 0) {
+        HA_NOTIFY("Failed to restore default scene (%s)\n",
+                SCENES_FOLDER "/" DEFAULT_SCENE_FILE);
+        scenes_list[default_scene_index].valid = false;
+    }
+    else {
+        HA_NOTIFY("Default scene (%s) restored\n",
+                SCENES_FOLDER "/" DEFAULT_SCENE_FILE);
+        scenes_list[default_scene_index].valid = true;
+    }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -152,53 +322,16 @@ void scene_mng::save_default_scene(void)
 }
 
 /*----------------------------------------------------------------------------*/
-void scene_mng::save_user_active_scene(void)
-{
-    char user_active_scene_name[scene_max_name_chars];
-
-    /* save name of user active scene to active scene file */
-    scenes_list[user_scene_index].scene_obj.get_name(user_active_scene_name);
-    set_user_active_scene(user_active_scene_name);
-
-    /* save user active scene */
-    scenes_list[user_scene_index].scene_obj.save();
-}
-
-/*----------------------------------------------------------------------------*/
-scene *scene_mng::get_user_active_scene_ptr(void)
-{
-    return (get_scene_ptr_with_index(user_scene_index));
-}
-
-/*----------------------------------------------------------------------------*/
-void scene_mng::set_user_active_scene_valid_status(bool status)
-{
-    scenes_list[user_scene_index].valid = status;
-}
-
-/*----------------------------------------------------------------------------*/
 scene *scene_mng::get_default_scene_ptr(void)
 {
     return (get_scene_ptr_with_index(default_scene_index));
 }
 
+
 /*----------------------------------------------------------------------------*/
 void scene_mng::set_default_scene_valid_status(bool status)
 {
     scenes_list[default_scene_index].valid = status;
-}
-
-/*----------------------------------------------------------------------------*/
-void scene_mng::print_user_active_scene(void)
-{
-    if (scenes_list[user_scene_index].valid) {
-        HA_NOTIFY("User active scene:\n"
-                    "---\n");
-        scenes_list[user_scene_index].scene_obj.print(rtc_p);
-    }
-    else {
-        HA_NOTIFY("User scene: Invalid\n");
-    }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -214,13 +347,36 @@ void scene_mng::print_default_scene(void)
     }
 }
 
-/*----------------------------------------------------------------------------*/
+/*------------------------ Private methods -----------------------------------*/
 scene *scene_mng::get_scene_ptr_with_index(uint8_t index)
 {
     if (index >= max_num_scenes) {
         return NULL;
     }
     return &scenes_list[index].scene_obj;
+}
+
+/*----------------------------------------------------------------------------*/
+void scene_mng::not_dir(char* path_name)
+{
+    int16_t last_splash_pos = -1;
+    uint16_t count = 0;
+
+    while (1) {
+        if (path_name[count] == '/') {
+            last_splash_pos = count;
+        }
+
+        if (path_name[count] == '\0') {
+            break;
+        }
+
+        count++;
+    }
+
+    if (last_splash_pos >= 0) {
+        memmove(&path_name[0], &path_name[last_splash_pos + 1], count - last_splash_pos);
+    }
 }
 
 /*----------------------------- Shell command --------------------------------*/
@@ -260,7 +416,7 @@ void scene_mng_cmd(scene_mng &scene_mng_obj, rtc &rtc_obj, int argc, char **argv
                 }
                 else if (argv[count][0] == 'u') {
                     scene_type = USER_SCENE;
-                    scene_p = scene_mng_obj.get_user_active_scene_ptr();
+                    scene_p = scene_mng_obj.get_user_scene_ptr();
                 }
                 else {
                     printf("Err: should be d or u for option -s\n");
@@ -270,14 +426,14 @@ void scene_mng_cmd(scene_mng &scene_mng_obj, rtc &rtc_obj, int argc, char **argv
 
             case 'l':
                 if (scene_type == USER_SCENE) { /* can be considered as all scenes with -l */
-                    scene_mng_obj.print_user_active_scene();
+                    scene_mng_obj.print_user_scene();
                 }
                 else if (scene_type == DEFAULT_SCENE) {
                     scene_mng_obj.print_default_scene();
                 }
                 else {
                     scene_mng_obj.print_default_scene();
-                    scene_mng_obj.print_user_active_scene();
+                    scene_mng_obj.print_user_scene();
                 }
                 return;
 
@@ -499,7 +655,7 @@ void scene_mng_cmd(scene_mng &scene_mng_obj, rtc &rtc_obj, int argc, char **argv
                 }
                 else if (scene_type == USER_SCENE) {
                     printf("Halt processing user scene\n");
-                    scene_mng_obj.set_user_active_scene_valid_status(false);
+                    scene_mng_obj.set_user_scene_valid_status(false);
                 }
                 break;
 
@@ -516,7 +672,7 @@ void scene_mng_cmd(scene_mng &scene_mng_obj, rtc &rtc_obj, int argc, char **argv
                 }
                 else if (scene_type == USER_SCENE) {
                     printf("Restart processing user scene\n");
-                    scene_mng_obj.set_user_active_scene_valid_status(true);
+                    scene_mng_obj.set_user_scene_valid_status(true);
                 }
                 break;
 
