@@ -12,10 +12,23 @@
 #include "level_bulb_driver.h"
 
 namespace rgb_ns {
+const uint8_t max_basic_color = 7;
+
 typedef enum
-    : uint8_t {
-        model_16bits = 16, //Red:5bits, Green:6bits, Blue:5bits.
-    model_24bits = 24
+    :uint8_t {
+        white = 0,
+    red = 1,
+    green = 2,
+    blue = 3,
+    yellow = 4,
+    magenta = 5,
+    cyan = 6
+} basic_color_t;
+
+typedef enum {
+    model_24bits,   //Red:8bits, Green:8bits, Blue:8bits.
+    model_16bits_565,   //Red:5bits, Green:6bits, Blue:5bits.
+    model_16bits_555,   //Red:5bits, Green:5bits, Blue:5bits.
 } rgb_color_model_t;
 }
 
@@ -32,6 +45,7 @@ public:
             uint8_t blue_percent_wp);
     void set_color_model(rgb_ns::rgb_color_model_t rgb_color_model);
     void rgb_set_color(uint32_t rgb_color);
+    void rgb_set_color(rgb_ns::basic_color_t basic_color);
     void rgb_set_color(uint8_t red_percent, uint8_t green_percent,
             uint8_t blue_percent);
     uint32_t get_current_color(void);

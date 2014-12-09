@@ -25,7 +25,6 @@ extern "C" {
 #include "ha_debug.h"
 
 static const uint8_t queue_handler_size = 16;
-//static char config_str[ha_node_ns::dev_pattern_maxsize];
 
 /* common functions */
 static bool read_config_file(uint32_t dev_id, char *config_str,
@@ -110,6 +109,7 @@ void button_handler(uint32_t dev_id)
     button_switch_instance btn(btn_sw_ns::btn);
     btn.device_configure(&gpio_params);
 
+    /* send first value to CC */
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, ha_ns::btn_no_pressed);
 
     msg_t msg;
@@ -152,6 +152,7 @@ void switch_handler(uint32_t dev_id)
     button_switch_instance sw(btn_sw_ns::sw);
     sw.device_configure(&gpio_params);
 
+    /* send first value to CC */
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
             sw.get_status() == btn_sw_ns::sw_on ?
                     ha_ns::switch_on : ha_ns::switch_off);
@@ -193,6 +194,7 @@ void on_off_output_handler(uint32_t dev_id)
     on_off_output_instance on_off_dev;
     on_off_dev.device_configure(&gpio_params);
 
+    /* send first value to CC */
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
             (on_off_dev.dev_get_state() == on_off_dev_ns::dev_on) ?
                     ha_ns::output_on : ha_ns::output_off);
@@ -216,6 +218,7 @@ void on_off_output_handler(uint32_t dev_id)
                     on_off_dev.dev_blink(old_set_dev_val - 100);
                 }
             }
+            /* feedback to CC */
             if (on_off_dev.dev_get_state() == on_off_dev_ns::dev_blink) {
                 send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                         (uint16_t) old_set_dev_val);
@@ -255,6 +258,7 @@ void dimmer_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case dimmer_ns::DIMMER_MSG:
+            /* dimmer'll send first value to CC when it's started */
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) msg.content.value);
             break;
@@ -282,6 +286,7 @@ void level_bulb_handler(uint32_t dev_id)
     level_bulb_instance level_bulb;
     level_bulb.device_configure(&pwm_params);
 
+    /* send first value to CC */
     uint8_t old_set_dev_val = level_bulb.get_percent_intensity();
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, (uint16_t) old_set_dev_val);
 
@@ -300,6 +305,7 @@ void level_bulb_handler(uint32_t dev_id)
                     level_bulb.blink(old_set_dev_val - 100);
                 }
             }
+            /* feedback to CC */
             if (level_bulb.bulb_is_blink()) {
                 send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                         (uint16_t) old_set_dev_val);
@@ -334,6 +340,7 @@ void servo_sg90_handler(uint32_t dev_id)
     servo_sg90_instance sg90;
     sg90.device_configure(&pwm_params);
 
+    /* send first value to CC */
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, (uint16_t) sg90.get_angle());
 
     msg_t msg;
@@ -345,6 +352,7 @@ void servo_sg90_handler(uint32_t dev_id)
                     (uint8_t) ha_ns::SERVO_SG90)) {
                 sg90.set_angle((uint8_t) (msg.content.value));
             }
+            /* feedback to CC */
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) sg90.get_angle());
             break;
@@ -414,6 +422,7 @@ void sensor_event_handler(uint32_t dev_id)
     sensor_event_instance sensor_event;
     sensor_event.device_configure(&gpio_params);
 
+    /* send first value to CC */
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
             sensor_event.is_detected() ? ha_ns::detected : ha_ns::no_detected);
 
@@ -422,7 +431,6 @@ void sensor_event_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case sensor_event_ns::SEN_EVT_MSG:
-            printf("ss: %d\n", (uint16_t) msg.content.value);
             if (msg.content.value == sensor_event_ns::high_level) {
                 send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, ha_ns::detected);
             } else if (msg.content.value == sensor_event_ns::low_level) {
@@ -450,9 +458,13 @@ void rgb_led_handler(uint32_t dev_id)
         return;
     }
 
+    rgb_led.set_color_model(rgb_ns::model_16bits_555);
+
+    /* send first value to CC */
     send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
             (uint16_t) rgb_led.get_current_color());
 
+    uint8_t basic_color = (uint8_t) rgb_ns::white;
     msg_t msg;
     while (1) {
         msg_receive(&msg);
@@ -460,8 +472,14 @@ void rgb_led_handler(uint32_t dev_id)
         case ha_ns::SET_DEV_VAL:
             if (check_dev_type_value(msg.content.value,
                     (uint8_t) ha_ns::RGB_LED)) {
-                rgb_led.rgb_set_color((uint16_t) msg.content.value);
+                if (((uint16_t) msg.content.value) >> 15 == 0) {
+                    rgb_led.rgb_set_color((uint16_t) msg.content.value);
+                } else {
+                    basic_color = (basic_color + 1) % rgb_ns::max_basic_color;
+                    rgb_led.rgb_set_color((rgb_ns::basic_color_t) basic_color);
+                }
             }
+            /* feedback to CC */
             send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) rgb_led.get_current_color());
             break;

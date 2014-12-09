@@ -20,10 +20,8 @@
 #include "sensor_event_driver.h"
 
 namespace ha_node_ns {
-//const uint8_t dev_list_pattern_maxsize = 16;
-//const uint8_t gpio_pattern_size = 14;
-//const uint8_t adc_pwm_pattern_size = 20;
 const uint8_t dev_pattern_maxsize = 110;
+
 const char ha_dev_list_file[] = "dev_list";
 
 const char dev_list_pattern[] = "dID: 0x%lx\n";
