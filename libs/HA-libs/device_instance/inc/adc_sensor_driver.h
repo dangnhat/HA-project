@@ -114,4 +114,6 @@ float rational_equation_calculate(float x_value, float a, float b, float c); //y
 
 float polynomial_equation_calculate(float x_value, float a, float b, float c); //y = ax^b+c;
 
+float lookup_in_table(float value, float* defined_table, uint8_t table_size);
+
 #endif //__HA_ADC_SENSOR_DRIVER_H_
