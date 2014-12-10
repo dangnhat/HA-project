@@ -78,7 +78,7 @@ bool mMoblieConnected);
 /**
  * @brief: thread wait ack from Mobile
  */
-void wait_mobile_ack(uint8_t sec, uint16_t micro_sec);
+void wait_mobile_ack(uint8_t sec, uint32_t micro_sec);
 /*******************************************************************************
  * Public functions
  ******************************************************************************/
@@ -138,10 +138,17 @@ void *ble_transaction(void *arg)
             HA_DEBUG("--- client write ---\n");
             /* get bluetooth message from Mobile */
             usartQueue = (cir_queue*) (msg.content.ptr);
-            usart_msg_len = usartQueue->preview_data(false) + ha_ns::GFF_LEN_SIZE
-                    + ha_ns::GFF_CMD_SIZE;
+            usart_msg_len = usartQueue->preview_data(false)
+                    + ha_ns::GFF_LEN_SIZE + ha_ns::GFF_CMD_SIZE;
             if (usart_msg_len == usartQueue->get_size()) {
                 usartQueue->get_data(usartBuf, usart_msg_len);
+
+                //DEBUG
+                for (uint8_t i = 0; i < usart_msg_len; i++) {
+                    HA_DEBUG("%d ", usartBuf[i]);
+                }
+                HA_DEBUG("\n");
+
                 /* put data to controller's queue */
                 controller_ns::ble_to_controller_queue.add_data(usartBuf,
                         usart_msg_len);
@@ -180,16 +187,20 @@ bool mMoblieConnected)
     uint8_t dataBuf[ha_ns::GFF_MAX_FRAME_SIZE];
 
     uint8_t indexBuf[2];
-    uint162buf(msgIndex, indexBuf);
+    uint8_t qBufSize;
 
-    if (bufLen == mCirQueue->get_size()) {
+    uint162buf(msgIndex, indexBuf);
+    qBufSize = mCirQueue->get_size();
+    HA_DEBUG("len = %d\n", bufLen);
+    HA_DEBUG("qsize = %d\n", qBufSize);
+    if (bufLen <= qBufSize) {
         mCirQueue->get_data(dataBuf, bufLen);
         // add header(msg type + index) to message
-        add_hdr_to_ble_msg(ha_ble_ns::BLE_MSG_DATA, indexBuf, dataBuf);
+        add_hdr_to_ble_msg(ha_ble_ns::BLE_MSG_DATA, indexBuf, dataBuf, bufLen);
         if (mMoblieConnected) {
-            ble_write_att(dataBuf, bufLen);
+            ble_write_att(dataBuf, bufLen + 3);
             // sleep to wait ack from mobile
-            wait_mobile_ack(0, 10000); // 10ms
+            wait_mobile_ack(1, 0); // 1s
         }
 
     } else {
@@ -201,16 +212,15 @@ bool mMoblieConnected)
 /**
  * @brief: thread wait ack from Mobile
  */
-void wait_mobile_ack(uint8_t sec, uint16_t micro_sec)
+void wait_mobile_ack(uint8_t sec, uint32_t micro_sec)
 {
     timex_t interval;
     vtimer_t vt_s;
     interval.seconds = sec;
     interval.microseconds = micro_sec;
     ble_ack.need_to_wait_ack = true;
-
-    vtimer_set_wakeup(&vt_s, interval, thread_getpid());
     thread_sleep();
+    vtimer_set_wakeup(&vt_s, interval, thread_getpid());
 }
 
 /**
@@ -221,14 +231,15 @@ void ble_write_att(uint8_t *dataBuf, uint8_t len)
     ble_cmd_attributes_write(ATT_WRITE_ADDR, 0, len, dataBuf);
 }
 
-void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf, uint8_t* payload)
+void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf, uint8_t* payload,
+        uint8_t bufLen)
 {
     uint8_t header[3];
     header[0] = msgType;
     header[1] = ack_idx_buf[0];
     header[2] = ack_idx_buf[1];
 
-    memmove(payload, payload + 3, 3);
+    memmove(payload + 3, payload, bufLen);
     mempcpy(payload, header, sizeof(header));
 }
 

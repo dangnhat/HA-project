@@ -161,7 +161,7 @@ void sixlowpan_config(int argc, char** argv)
                 }
 
                 sto_device_id = strtol(argv[count + 1], NULL, 16);
-                sto_value = strtol(argv[count + 2], NULL, 16);
+                sto_value = strtol(argv[count + 2], NULL, 10);
 
                 set_dev_val_buffer[0] = ha_ns::SET_DEV_VAL_DATA_LEN;
                 uint162buf(ha_ns::SET_DEV_VAL, &set_dev_val_buffer[1]);

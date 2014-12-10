@@ -59,6 +59,7 @@ const shell_command_t shell_commands[] = {
     /* Device list command */
     {"lsdev", "List all devices and endpoint connected to CC", controller_list_devices},
     {"scene", "Scene configuration", controller_scene_cmd},
+    {"zone", "Zone configuration", controller_zone_cmd},
 #endif
     {NULL, NULL, NULL}
 };

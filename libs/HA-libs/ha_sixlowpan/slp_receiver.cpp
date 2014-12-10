@@ -27,7 +27,7 @@ kernel_pid_t sixlowpan_receiver_pid;
 #define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
-static const char slp_receiver_prio = PRIORITY_MAIN-1;
+static const char slp_receiver_prio = PRIORITY_MAIN-2;
 static const uint16_t slp_receiver_stacksize = 800;
 static char slp_receiver_stack[slp_receiver_stacksize];
 static void *slp_receiver_func(void *arg);
