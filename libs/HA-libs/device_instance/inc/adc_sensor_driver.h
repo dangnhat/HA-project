@@ -72,12 +72,12 @@ public:
 #endif //SND_MSG
 private:
     float get_voltage_value(void);
+
     float* equation_params_buffer = NULL;
-    float* param_ptr = NULL;
-    uint8_t param_index = 0;
     char* equation_type_buffer = NULL;
     uint8_t num_equation = 0;
     uint8_t num_params = 0;
+
     adc_config_params_t adc_params;
 
 #if AUTO_UPDATE

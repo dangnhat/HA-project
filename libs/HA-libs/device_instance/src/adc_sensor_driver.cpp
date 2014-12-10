@@ -76,7 +76,6 @@ void adc_sensor_instance::set_equation_params(float* equation_params_buff,
         uint8_t buff_size)
 {
     this->equation_params_buffer = equation_params_buff;
-    this->param_ptr = this->equation_params_buffer;
     this->num_params = buff_size;
 }
 
@@ -108,38 +107,39 @@ float adc_sensor_instance::cal_iterative_equations(float first_value)
     if (!equation_type_buffer || !equation_params_buffer) {
         return 0;
     }
-    this->param_index = 0;
-    this->param_ptr = this->equation_params_buffer;
+    uint8_t consumed_params = 0; // the number of params was consumed.
+    float* param_ptr = this->equation_params_buffer;
 
     float retval = first_value;
     for (uint8_t i = 0; i < num_equation; i++) {
         switch (equation_type_buffer[i]) {
-        case 'l':
-            param_index += 2;
-            if (param_index > num_params) {
+        case 'l': //linear
+            consumed_params += 2;
+            if (consumed_params > num_params) {
                 return 0;
             }
             retval = linear_equation_calculate(retval, *param_ptr++,
                     *param_ptr++);
             break;
-        case 'r':
-            param_index += 3;
-            if (param_index > num_params) {
+        case 'r': //rational
+            consumed_params += 3;
+            if (consumed_params > num_params) {
                 return 0;
             }
             retval = rational_equation_calculate(retval, *(param_ptr++),
                     *(param_ptr++), *(param_ptr++));
             break;
-        case 'p':
-            param_index += 3;
-            if (param_index > num_params) {
+        case 'p': //polynomial
+            consumed_params += 3;
+            if (consumed_params > num_params) {
                 return 0;
             }
             retval = polynomial_equation_calculate(retval, *(param_ptr++),
                     *(param_ptr++), *(param_ptr++));
             break;
-        case 't':
-            return lookup_in_table(first_value, equation_params_buffer, num_params);
+        case 't': //table
+            return lookup_in_table(retval, param_ptr,
+                    num_params - consumed_params);
         default:
             break;
         }
