@@ -53,17 +53,17 @@ static const char controller_prio = PRIORITY_MAIN;
 static void *controller_func(void *arg);
 
 /* Device management */
-static const uint16_t controller_max_num_of_devs = 128;
+static const uint16_t controller_max_num_of_devs = 64;
 static ha_device controller_devs_buffer[controller_max_num_of_devs];
 static const char controller_dev_list_filename[] = "dev_lst";
-static ha_device_mng controller_dev_mng(controller_devs_buffer, controller_max_num_of_devs,
-        controller_dev_list_filename);
+static ha_device_mng controller_dev_mng(controller_devs_buffer,
+        controller_max_num_of_devs, controller_dev_list_filename);
 
 /* Time to live for every ALIVE messages */
-static const int8_t alive_ttl = 60; /* in second */
+static const int8_t alive_ttl = 120; /* in second */
 
 /* Time period to save device data */
-static const uint8_t dev_list_save_period = 10; /* in seconds */
+static const uint8_t dev_list_save_period = 30; /* in seconds */
 
 /* Scene management */
 static scene_mng controller_scene_mng(&controller_dev_mng, &MB1_rtc,
@@ -79,8 +79,10 @@ namespace controller_ns {
 kernel_pid_t controller_pid;
 
 /* Data Cir_queues */
-cir_queue slp_to_controller_queue(slp_to_controller_queue_buffer, slp_to_controller_queue_size);
-cir_queue ble_to_controller_queue(ble_to_controller_queue_buffer, ble_to_controller_queue_size);
+cir_queue slp_to_controller_queue(slp_to_controller_queue_buffer,
+        slp_to_controller_queue_size);
+cir_queue ble_to_controller_queue(ble_to_controller_queue_buffer,
+        ble_to_controller_queue_size);
 
 }
 
@@ -94,34 +96,44 @@ void controller_start(void)
 {
     /* Create controller thread */
     controller_pid = thread_create(controller_stack, controller_stack_size,
-            controller_prio, CREATE_STACKTEST, controller_func, NULL, "CC_controller");
+            controller_prio, CREATE_STACKTEST, controller_func, NULL,
+            "CC_controller");
     if (controller_pid > 0) {
         HA_NOTIFY("CC Controller thread created.\n");
-    }
-    else {
+    } else {
         HA_NOTIFY("Can't create CC Controller thread.\n");
     }
 }
 
 /*----------------------------- Static functions -----------------------------*/
 /* Prototypes */
-static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
-        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
+static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+        scene_mng *scene_mng_p, kernel_pid_t to_ble_pid,
+        cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue,
+        cir_queue *to_slp_queue);
 
-static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
-        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue);
+static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+        scene_mng *scene_mng_p, kernel_pid_t to_ble_pid,
+        cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue,
+        cir_queue *to_slp_queue);
 
-static void save_dev_list_with_1sec(uint8_t save_period, ha_device_mng *dev_mng);
+static void save_dev_list_with_1sec(uint8_t save_period,
+        ha_device_mng *dev_mng);
 
-static void process_scene_with_1sec(rtc_ns::time_t &cur_time, scene_mng *scene_mng_p);
+static void process_scene_with_1sec(rtc_ns::time_t &cur_time,
+        scene_mng *scene_mng_p);
 
 static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *to_ble_queue);
 
+static void set_inact_scene_name_with_index_to_ble(uint8_t index,
+        scene_mng *scene_mng_p, kernel_pid_t ble_pid, cir_queue *to_ble_queue);
+
 /* Functions */
-static void *controller_func(void *) {
+static void *controller_func(void *)
+{
     msg_t mesg;
     uint8_t gff_frame[ha_ns::GFF_MAX_FRAME_SIZE];
 
@@ -139,17 +151,18 @@ static void *controller_func(void *) {
         switch (mesg.type) {
         case ha_cc_ns::SLP_GFF_PENDING:
             HA_DEBUG("controller: SLP_GFF_PENDING\n");
-            slp_gff_handler(gff_frame, &controller_dev_mng, &controller_scene_mng,
-                    ble_thread_ns::ble_thread_pid,
+            slp_gff_handler(gff_frame, &controller_dev_mng,
+                    &controller_scene_mng, ble_thread_ns::ble_thread_pid,
                     NULL, &ble_thread_ns::controller_to_ble_msg_queue,
-                    ha_ns::sixlowpan_sender_pid,
-                    (cir_queue *)mesg.content.ptr, &ha_ns::sixlowpan_sender_gff_queue);
+                    ha_ns::sixlowpan_sender_pid, (cir_queue *) mesg.content.ptr,
+                    &ha_ns::sixlowpan_sender_gff_queue);
             break;
         case ha_cc_ns::BLE_GFF_PENDING:
             HA_DEBUG("controller: BLE_GFF_PENDING\n");
-            ble_gff_handler(gff_frame, &controller_dev_mng, &controller_scene_mng,
-                    ble_thread_ns::ble_thread_pid,
-                    (cir_queue *)mesg.content.ptr, &ble_thread_ns::controller_to_ble_msg_queue,
+            ble_gff_handler(gff_frame, &controller_dev_mng,
+                    &controller_scene_mng, ble_thread_ns::ble_thread_pid,
+                    (cir_queue *) mesg.content.ptr,
+                    &ble_thread_ns::controller_to_ble_msg_queue,
                     ha_ns::sixlowpan_sender_pid,
                     NULL, &ha_ns::sixlowpan_sender_gff_queue);
             break;
@@ -170,9 +183,11 @@ static void *controller_func(void *) {
 }
 
 /*----------------------------------------------------------------------------*/
-static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
-        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
+static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+        scene_mng *scene_mng_p, kernel_pid_t to_ble_pid,
+        cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue,
+        cir_queue *to_slp_queue)
 {
     uint8_t data_len;
     uint16_t cmd_id;
@@ -183,14 +198,17 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
 
     /* Check data */
     data_len = from_slp_queue->preview_data(false);
-    if ((data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE) > from_slp_queue->get_size()) {
-        HA_DEBUG("slp_gff_handler: Err, data len %hu + cmd_size + len_size != queue_size %ld\n",
+    if ((data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE)
+            > from_slp_queue->get_size()) {
+        HA_DEBUG(
+                "slp_gff_handler: Err, data len %hu + cmd_size + len_size != queue_size %ld\n",
                 data_len, from_slp_queue->get_size());
         return;
     }
 
     /* Get data from queue */
-    from_slp_queue->get_data(gff_frame, data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+    from_slp_queue->get_data(gff_frame,
+            data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
 
     /* parse GFF frame */
     cmd_id = buf2uint16(&gff_frame[ha_ns::GFF_CMD_POS]);
@@ -198,16 +216,17 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
     switch (cmd_id) {
     case ha_ns::SET_DEV_VAL:
         device_id = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS]);
-        value = (int16_t)buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 4]);
+        value = (int16_t) buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 4]);
         HA_DEBUG("slp_gff_handler: SET_DEV_VAL (%lx, %d)\n", device_id, value);
 
         /* Processing scene by report */
         device_rpt.set_device_id(device_id);
         device_rpt.set_value(value);
         dev_mng->get_dev_val(device_id, old_value);
-        if ((device_rpt.get_io_type() == ha_device_ns::input_device) &&
-                value != old_value){
-            HA_DEBUG("slp_gff_handler: report from input device, processing scene...\n");
+        if ((device_rpt.get_io_type() == ha_device_ns::input_device)
+                && value != old_value) {
+            HA_DEBUG(
+                    "slp_gff_handler: report from input device, processing scene...\n");
             scene_mng_p->process(true, &device_rpt);
         }
 
@@ -216,10 +235,11 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
         dev_mng->set_dev_ttl(device_id, alive_ttl);
 
         /* forward to BLE */
-        to_ble_queue->add_data(gff_frame,gff_frame[ha_ns::GFF_LEN_POS]
-                                + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+        to_ble_queue->add_data(gff_frame,
+                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                        + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
-        mesg.content.ptr = (char *)to_ble_queue;
+        mesg.content.ptr = (char *) to_ble_queue;
         msg_send(&mesg, to_ble_pid, false);
         HA_DEBUG("slp_gff_handler: SET_DEV_VAL forwarded to ble\n");
 
@@ -239,9 +259,11 @@ static void slp_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
 }
 
 /*----------------------------------------------------------------------------*/
-static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mng *scene_mng_p,
-        kernel_pid_t to_ble_pid, cir_queue *from_ble_queue, cir_queue *to_ble_queue,
-        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue, cir_queue *to_slp_queue)
+static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
+        scene_mng *scene_mng_p, kernel_pid_t to_ble_pid,
+        cir_queue *from_ble_queue, cir_queue *to_ble_queue,
+        kernel_pid_t to_slp_pid, cir_queue *from_slp_queue,
+        cir_queue *to_slp_queue)
 {
     uint8_t data_len;
     uint16_t cmd_id;
@@ -251,33 +273,41 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
     char zone_name[zone_ns::zone_name_max_size];
     uint8_t zone_id;
 
+    uint8_t index, num_scene;
+    char scene_name[scene_ns::scene_max_name_chars_wout_folders];
+
     /* Check data */
     data_len = from_ble_queue->preview_data(false);
-    if ((data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE) > from_ble_queue->get_size()) {
-        HA_DEBUG("ble_gff_handler: Err, data len %hu + cmd_size + len_size != queue_size %ld\n",
+    if ((data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE)
+            > from_ble_queue->get_size()) {
+        HA_DEBUG(
+                "ble_gff_handler: Err, data len %hu + cmd_size + len_size != queue_size %ld\n",
                 data_len, from_ble_queue->get_size());
         return;
     }
 
     /* Get data from queue */
-    from_ble_queue->get_data(gff_frame, data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+    from_ble_queue->get_data(gff_frame,
+            data_len + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
 
     /* parse GFF frame */
     cmd_id = buf2uint16(&gff_frame[ha_ns::GFF_CMD_POS]);
 
-    switch(cmd_id) {
+    switch (cmd_id) {
     case ha_ns::GET_NUM_OF_DEVS:
         HA_DEBUG("ble_gff_handler: GET_NUM_OF_DEVS\n");
 
         /* Send SET_NUM_OF_DEVS back */
         gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_NUM_OF_DEVS_DATA_LEN;
         uint162buf(ha_ns::SET_NUM_OF_DEVS, &gff_frame[ha_ns::GFF_CMD_POS]);
-        uint322buf((uint32_t)dev_mng->get_current_numofdev(), &gff_frame[ha_ns::GFF_DATA_POS]);
+        uint322buf((uint32_t) dev_mng->get_current_numofdev(),
+                &gff_frame[ha_ns::GFF_DATA_POS]);
 
         to_ble_queue->add_data(gff_frame,
-                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                        + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
-        mesg.content.ptr = (char*)to_ble_queue;
+        mesg.content.ptr = (char*) to_ble_queue;
         msg_send(&mesg, to_ble_pid, false);
 
         HA_DEBUG("ble_gff_handler: sent SET_NUM_OF_DEVS (%hu) to ble\n",
@@ -288,45 +318,49 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
         HA_DEBUG("ble_gff_handler: GET_DEV_WITH_INDEXS\n");
 
         for (count = 0; count < gff_frame[ha_ns::GFF_LEN_POS]; count += 4) {
-            set_dev_with_index_to_ble(buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + count*4]),
-                    dev_mng,
-                    to_ble_pid, to_ble_queue);
+            set_dev_with_index_to_ble(
+                    buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + count * 4]),
+                    dev_mng, to_ble_pid, to_ble_queue);
         }
         break;
 
     case ha_ns::SET_DEV_VAL:
         HA_DEBUG("ble_gff_handler: SET_DEV_VAL (%lx, %d)\n",
                 buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS]),
-                (int16_t)buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 4]));
+                (int16_t )buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 4]));
 
         /* forward to slp */
-        to_slp_queue->add_data(gff_frame, gff_frame[ha_ns::GFF_LEN_POS]
-                             + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+        to_slp_queue->add_data(gff_frame,
+                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                        + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
-        mesg.content.ptr = (char *)to_slp_queue;
+        mesg.content.ptr = (char *) to_slp_queue;
         msg_send(&mesg, to_slp_pid, false);
 
         HA_DEBUG("ble_gff_handler: forwarded GFF SET_DEV_VAL to slp\n");
         break;
 
     case ha_ns::GET_ZONE_NAME:
-        HA_DEBUG("ble_gff_handler: GET_ZONE_NAME (id %hu)\n", gff_frame[ha_ns::GFF_DATA_POS]);
+        HA_DEBUG("ble_gff_handler: GET_ZONE_NAME (id %hu)\n",
+                gff_frame[ha_ns::GFF_DATA_POS]);
 
         /* get zone name */
         zone_id = gff_frame[ha_ns::GFF_DATA_POS];
-        controller_zone_mng.get_zone_name(zone_id,
-                zone_ns::zone_name_max_size, zone_name);
+        controller_zone_mng.get_zone_name(zone_id, zone_ns::zone_name_max_size,
+                zone_name);
 
         /* pack SET_ZONE_NAME gff frame to send to ble */
         gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_ZONE_NAME_DATA_LEN;
         uint162buf(ha_ns::SET_ZONE_NAME, &gff_frame[ha_ns::GFF_CMD_POS]);
         gff_frame[ha_ns::GFF_DATA_POS] = zone_id;
-        memcpy(&gff_frame[ha_ns::GFF_DATA_POS + 1], zone_name, zone_ns::zone_name_max_size);
+        memcpy(&gff_frame[ha_ns::GFF_DATA_POS + 1], zone_name,
+                zone_ns::zone_name_max_size);
 
         to_ble_queue->add_data(gff_frame,
-                        gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                        + ha_ns::GFF_LEN_SIZE);
         mesg.type = ha_ns::GFF_PENDING;
-        mesg.content.ptr = (char*)to_ble_queue;
+        mesg.content.ptr = (char*) to_ble_queue;
         msg_send(&mesg, to_ble_pid, false);
 
         HA_DEBUG("ble_gff_handler: sent SET_ZONE_NAME (%hu, %s) to ble\n",
@@ -334,13 +368,90 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng, scene_mn
         break;
 
     case ha_ns::SET_ZONE_NAME:
-        HA_DEBUG("ble_gff_handler: SET_ZONE_NAME (id %hu)\n", gff_frame[ha_ns::GFF_DATA_POS]);
+        HA_DEBUG("ble_gff_handler: SET_ZONE_NAME (id %hu)\n",
+                gff_frame[ha_ns::GFF_DATA_POS]);
 
         /* set zone name */
         zone_id = gff_frame[ha_ns::GFF_DATA_POS];
         controller_zone_mng.set_zone_name(zone_id,
                 (char *) &gff_frame[ha_ns::GFF_DATA_POS + 1]);
+        break;
 
+    case ha_ns::GET_NUM_OF_SCENES:
+        HA_DEBUG("ble_gff_handler: GET_NUM_OF_SCENES\n");
+
+        /* Set back SET_NUM_OF_SCENES */
+        gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_NUM_OF_SCENES_DATA_LEN;
+        uint162buf(ha_ns::SET_NUM_OF_SCENES, &gff_frame[ha_ns::GFF_CMD_POS]);
+        gff_frame[ha_ns::GFF_DATA_POS] =
+                controller_scene_mng.get_num_of_active_scenes();
+        gff_frame[ha_ns::GFF_DATA_POS + 1] =
+                controller_scene_mng.get_num_of_inactive_scenes();
+
+        to_ble_queue->add_data(gff_frame,
+                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                        + ha_ns::GFF_LEN_SIZE);
+        mesg.type = ha_ns::GFF_PENDING;
+        mesg.content.ptr = (char*) to_ble_queue;
+        msg_send(&mesg, to_ble_pid, false);
+        break;
+
+    case ha_ns::GET_ACT_SCENE_NAME_WITH_INDEXS:
+        HA_DEBUG("ble_gff_handler: GET_ACT_SCENE_NAME_WITH_INDEXS (%hu)\n",
+                gff_frame[ha_ns::GFF_DATA_POS]);
+
+        /* Get index */
+        index = gff_frame[ha_ns::GFF_DATA_POS];
+        if (index != 0xFF || index != 0x00) {
+            HA_DEBUG("ble_gff_handler: wrong index for active scene (%hu)\n",
+                    index);
+            break;
+        }
+
+        /* Return active scene name */
+        scene_name[0] = '\0';
+        controller_scene_mng.get_active_scene(scene_name);
+
+        /* Send back SET_ACT_SCENE_NAME_WITH_INDEXS */
+        gff_frame[ha_ns::GFF_LEN_POS] =
+                ha_ns::SET_ACT_SCENE_NAME_WITH_INDEXS_DATA_LEN;
+        uint162buf(ha_ns::SET_ACT_SCENE_NAME_WITH_INDEXS,
+                &gff_frame[ha_ns::GFF_CMD_POS]);
+        gff_frame[ha_ns::GFF_DATA_POS] = 1;
+        memcpy(&gff_frame[ha_ns::GFF_DATA_POS + 1], scene_name, 8);
+
+        to_ble_queue->add_data(gff_frame,
+                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                        + ha_ns::GFF_LEN_SIZE);
+        mesg.type = ha_ns::GFF_PENDING;
+        mesg.content.ptr = (char*) to_ble_queue;
+        msg_send(&mesg, to_ble_pid, false);
+
+        HA_DEBUG("ble_gff_handler: sent active scene name back to ble (%s)\n",
+                scene_name);
+        break;
+
+    case ha_ns::GET_INACT_SCENE_NAME_WITH_INDEXS:
+        HA_DEBUG("ble_gff_handler: GET_INACT_SCENE_NAME_WITH_INDEXS (%hu)\n",
+                gff_frame[ha_ns::GFF_DATA_POS]);
+
+        /* check first index */
+        if (gff_frame[ha_ns::GFF_DATA_POS] == 0xFF) {
+            /* send all inactive scene name to ble thread */
+            num_scene = controller_scene_mng.get_num_of_inactive_scenes();
+            for (count = 0; count < num_scene; count++) {
+                set_inact_scene_name_with_index_to_ble(count, &controller_scene_mng,
+                        ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
+            }
+        }
+        else {
+            /* loop through every indexes */
+            for (count = 0; count < gff_frame[ha_ns::GFF_LEN_POS]; count++) {
+                set_inact_scene_name_with_index_to_ble(gff_frame[ha_ns::GFF_DATA_POS + count],
+                        &controller_scene_mng,
+                        ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
+            }
+        }
         break;
 
     default:
@@ -359,7 +470,7 @@ void second_int_callback(void)
 }
 
 /*----------------------------------------------------------------------------*/
-static void save_dev_list_with_1sec (uint8_t save_period, ha_device_mng *dev_mng)
+static void save_dev_list_with_1sec(uint8_t save_period, ha_device_mng *dev_mng)
 {
     static uint8_t time_count = 0;
 
@@ -384,7 +495,7 @@ static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
         kernel_pid_t ble_pid, cir_queue *to_ble_queue)
 {
     uint8_t set_dev_windex_gff_frame[ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN
-                                     + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE];
+            + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE];
     uint32_t device_id;
     int16_t value;
     uint16_t count;
@@ -400,23 +511,29 @@ static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
             dev_mng->get_dev_val_with_index(count, device_id, value);
 
             /* pack GFF */
-            set_dev_windex_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN;
-            uint162buf(ha_ns::SET_DEV_WITH_INDEXS, &set_dev_windex_gff_frame[ha_ns::GFF_CMD_POS]);
+            set_dev_windex_gff_frame[ha_ns::GFF_LEN_POS] =
+                    ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN;
+            uint162buf(ha_ns::SET_DEV_WITH_INDEXS,
+                    &set_dev_windex_gff_frame[ha_ns::GFF_CMD_POS]);
             uint322buf(count, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
-            uint322buf(device_id, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
-            uint162buf((uint16_t) value, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 8]);
+            uint322buf(device_id,
+                    &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
+            uint162buf((uint16_t) value,
+                    &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 8]);
 
             /* push data to ble_queue */
-            to_ble_queue->add_data(set_dev_windex_gff_frame, ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN
-                                             + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+            to_ble_queue->add_data(set_dev_windex_gff_frame,
+                    ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN + ha_ns::GFF_CMD_SIZE
+                            + ha_ns::GFF_LEN_SIZE);
 
             /* pack and send message to ble */
             mesg.type = ha_ns::GFF_PENDING;
-            mesg.content.ptr = (char *)to_ble_queue;
+            mesg.content.ptr = (char *) to_ble_queue;
 
             msg_send(&mesg, ble_pid, false);
 
-            HA_DEBUG("set_dev_windex_2_ble: GFF Sent, index %hu, device_id %lu, value %hd\n",
+            HA_DEBUG(
+                    "set_dev_windex_2_ble: GFF Sent, index %hu, device_id %lu, value %hd\n",
                     count, device_id, value);
         }
 
@@ -428,28 +545,70 @@ static void set_dev_with_index_to_ble(uint32_t index, ha_device_mng *dev_mng,
     dev_mng->get_dev_val_with_index(index, device_id, value);
 
     /* pack GFF */
-    set_dev_windex_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN;
-    uint162buf(ha_ns::SET_DEV_WITH_INDEXS, &set_dev_windex_gff_frame[ha_ns::GFF_CMD_POS]);
+    set_dev_windex_gff_frame[ha_ns::GFF_LEN_POS] =
+            ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN;
+    uint162buf(ha_ns::SET_DEV_WITH_INDEXS,
+            &set_dev_windex_gff_frame[ha_ns::GFF_CMD_POS]);
     uint322buf(index, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS]);
     uint322buf(device_id, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 4]);
-    uint162buf((uint16_t) value, &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 8]);
+    uint162buf((uint16_t) value,
+            &set_dev_windex_gff_frame[ha_ns::GFF_DATA_POS + 8]);
 
     /* push data to ble_queue */
-    to_ble_queue->add_data(set_dev_windex_gff_frame, ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN
-                                     + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+    to_ble_queue->add_data(set_dev_windex_gff_frame,
+            ha_ns::SET_DEVICE_WITH_INDEX_DATA_LEN + ha_ns::GFF_CMD_SIZE
+                    + ha_ns::GFF_LEN_SIZE);
 
     /* pack and send message to ble */
     mesg.type = ha_ns::GFF_PENDING;
-    mesg.content.ptr = (char *)to_ble_queue;
+    mesg.content.ptr = (char *) to_ble_queue;
 
     msg_send(&mesg, ble_pid, false);
 
-    HA_DEBUG("set_dev_windex_2_ble: GFF Sent, index %lu, device_id %lu, value %hd\n",
-                        index, device_id, value);
+    HA_DEBUG(
+            "set_dev_windex_2_ble: GFF Sent, index %lu, device_id %lu, value %hd\n",
+            index, device_id, value);
 }
 
 /*----------------------------------------------------------------------------*/
-static void process_scene_with_1sec(rtc_ns::time_t &cur_time, scene_mng *scene_mng_p)
+static void set_inact_scene_name_with_index_to_ble(uint8_t index,
+        scene_mng *scene_mng_p, kernel_pid_t ble_pid, cir_queue *to_ble_queue)
+{
+    char scene_name[scene_ns::scene_max_name_chars_wout_folders];
+    msg_t mesg;
+    uint8_t set_inact_scene_name_windex_gff_frame[ha_ns::SET_INACT_SCENE_NAME_WITH_INDEXS_DATA_LEN
+            + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE];
+
+    if (index != 0xFF) {
+        /* normal index */
+        scene_name[0] = '\0';
+        scene_mng_p->get_inactive_scene_with_index(index, scene_name);
+
+        /* pack gff frame and send to ble */
+        set_inact_scene_name_windex_gff_frame[ha_ns::GFF_LEN_POS] =
+                ha_ns::SET_INACT_SCENE_NAME_WITH_INDEXS_DATA_LEN;
+        uint162buf(ha_ns::SET_INACT_SCENE_NAME_WITH_INDEXS,
+                &set_inact_scene_name_windex_gff_frame[ha_ns::GFF_DATA_POS]);
+        set_inact_scene_name_windex_gff_frame[ha_ns::GFF_DATA_POS] = index;
+        memcpy(&set_inact_scene_name_windex_gff_frame[ha_ns::GFF_DATA_POS + 1],
+                scene_name, 8);
+
+        to_ble_queue->add_data(set_inact_scene_name_windex_gff_frame,
+                set_inact_scene_name_windex_gff_frame[ha_ns::GFF_LEN_POS]
+                        + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+        mesg.type = ha_ns::GFF_PENDING;
+        mesg.content.ptr = (char*) to_ble_queue;
+        msg_send(&mesg, ble_pid, false);
+
+        HA_DEBUG("ble_gff_handler: sent inactive scene name back to ble (%hu, %s)\n",
+                index, scene_name);
+        return;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+static void process_scene_with_1sec(rtc_ns::time_t &cur_time,
+        scene_mng *scene_mng_p)
 {
     if (cur_time.sec == 0) {
         HA_DEBUG("process_scene_with_1sec: processing scene triggered by time, %hu:%hu:%hu\n",
