@@ -105,7 +105,7 @@ void scene_mng::set_user_scene(const char *name)
     char name_with_folder[scene_max_name_chars];
 
     /* Build path name */
-    strcpy(name_with_folder, SCENES_FOLDER);
+    strcpy(name_with_folder, SCENES_FOLDER "/");
     strcat(name_with_folder, name);
 
     scenes_list[user_scene_index].scene_obj.set_name(name_with_folder);
@@ -197,6 +197,10 @@ void scene_mng::get_active_scene(char *name)
 
     /* read data from file */
     f_gets(line, 16, &file);
+
+    /* copy to name */
+    memcpy(name, line, scene_max_name_chars_wout_folders - 1);
+    name[scene_max_name_chars_wout_folders] = '\0';
 }
 
 /*------------------------ Inactive scene --------------------------------------*/
