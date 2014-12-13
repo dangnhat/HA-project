@@ -13,8 +13,8 @@ extern "C" {
 
 /* configurable variables */
 const int16_t stack_size = 1550;
-const char thread_name[][5] = { "ep_1", "ep_2", "ep_3", "ep_4", "ep_5", "ep_6",
-        "ep_7", "ep_8", };
+const char thread_name[][5] = { "ep_0", "ep_1", "ep_2", "ep_3", "ep_4", "ep_5",
+        "ep_6", "ep_7", };
 
 char stack[ha_node_ns::max_end_point][stack_size];
 

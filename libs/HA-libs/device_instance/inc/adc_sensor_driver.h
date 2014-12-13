@@ -72,12 +72,12 @@ public:
 #endif //SND_MSG
 private:
     float get_voltage_value(void);
+
     float* equation_params_buffer = NULL;
-    float* param_ptr = NULL;
-    uint8_t param_index = 0;
     char* equation_type_buffer = NULL;
     uint8_t num_equation = 0;
     uint8_t num_params = 0;
+
     adc_config_params_t adc_params;
 
 #if AUTO_UPDATE
@@ -113,5 +113,7 @@ float linear_equation_calculate(float x_value, float a, float b); //y = ax+b;
 float rational_equation_calculate(float x_value, float a, float b, float c); //y = 1/(ax+b)+c;
 
 float polynomial_equation_calculate(float x_value, float a, float b, float c); //y = ax^b+c;
+
+float lookup_in_table(float value, float* defined_table, uint8_t table_size);
 
 #endif //__HA_ADC_SENSOR_DRIVER_H_

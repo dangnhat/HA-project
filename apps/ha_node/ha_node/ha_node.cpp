@@ -21,7 +21,7 @@ extern "C" {
 const ISRMgr_ns::ISR_t tim_isr_type = ISRMgr_ns::ISRMgr_TIM6;
 const ISRMgr_ns::ISR_t rtc_isr_type = ISRMgr_ns::ISRMgr_RTC;
 const uint8_t rtc_period = 1; //sec
-const uint32_t send_alive_time_period = 10 / rtc_period; //send alive every 10s.
+const uint32_t send_alive_time_period = 60 / rtc_period; //send alive every 60s.
 
 uint32_t time_cycle_count = 0;
 kernel_pid_t ha_node_ns::end_point_pid[max_end_point];

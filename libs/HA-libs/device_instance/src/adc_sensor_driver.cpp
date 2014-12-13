@@ -20,7 +20,7 @@ const static uint16_t sampling_time_cycle = 100 / timer_period; //sampling every
 
 /* internal variables */
 #if SND_MSG
-const uint32_t send_msg_time_period = 10 * 1000 / sampling_time_cycle; //send msg every 10s.
+const uint32_t send_msg_time_period = 15 * 1000 / sampling_time_cycle; //send msg every 15s.
 uint16_t send_msg_time_count = 0;
 #endif //SND_MSG
 adc_sensor_instance* adc_sensor_table[ha_node_ns::max_end_point]; // the number of sensors depend on the number of EPs.
@@ -76,7 +76,6 @@ void adc_sensor_instance::set_equation_params(float* equation_params_buff,
         uint8_t buff_size)
 {
     this->equation_params_buffer = equation_params_buff;
-    this->param_ptr = this->equation_params_buffer;
     this->num_params = buff_size;
 }
 
@@ -108,36 +107,39 @@ float adc_sensor_instance::cal_iterative_equations(float first_value)
     if (!equation_type_buffer || !equation_params_buffer) {
         return 0;
     }
-    this->param_index = 0;
-    this->param_ptr = this->equation_params_buffer;
+    uint8_t consumed_params = 0; // the number of params was consumed.
+    float* param_ptr = this->equation_params_buffer;
 
     float retval = first_value;
     for (uint8_t i = 0; i < num_equation; i++) {
         switch (equation_type_buffer[i]) {
-        case 'l':
-            param_index += 2;
-            if (param_index > num_params) {
+        case 'l': //linear
+            consumed_params += 2;
+            if (consumed_params > num_params) {
                 return 0;
             }
             retval = linear_equation_calculate(retval, *param_ptr++,
                     *param_ptr++);
             break;
-        case 'r':
-            param_index += 3;
-            if (param_index > num_params) {
+        case 'r': //rational
+            consumed_params += 3;
+            if (consumed_params > num_params) {
                 return 0;
             }
             retval = rational_equation_calculate(retval, *(param_ptr++),
                     *(param_ptr++), *(param_ptr++));
             break;
-        case 'p':
-            param_index += 3;
-            if (param_index > num_params) {
+        case 'p': //polynomial
+            consumed_params += 3;
+            if (consumed_params > num_params) {
                 return 0;
             }
             retval = polynomial_equation_calculate(retval, *(param_ptr++),
                     *(param_ptr++), *(param_ptr++));
             break;
+        case 't': //table
+            return lookup_in_table(retval, param_ptr,
+                    num_params - consumed_params);
         default:
             break;
         }
@@ -164,6 +166,37 @@ float polynomial_equation_calculate(float x_value, float a_value, float b_value,
 {
     /* y = a*x^b + c */
     return a_value * pow(x_value, b_value) + c_value;
+}
+
+float lookup_in_table(float value, float* defined_table, uint8_t table_size)
+{
+    if (!defined_table || (table_size % 2 != 0)) {
+        return 0;
+    }
+    uint8_t index;
+    for (index = 0; index < table_size; index++) {
+        if ((index % 2 == 0) && (value >= defined_table[index])) {
+            if (value == defined_table[index]
+                    || (index + 1 == table_size - 1)) {
+                return defined_table[index + 1];
+            }
+            break;
+        }
+    }
+    if (index == table_size - 1) {
+        return defined_table[1];
+    }
+
+    float a_value = 0;
+    float b_value = 0;
+    a_value = (defined_table[index + 3] - defined_table[index + 1])
+            / (defined_table[index + 2] - defined_table[index]);
+    b_value = (defined_table[index + 1] * defined_table[index + 2]
+            - defined_table[index + 3] * defined_table[index])
+            / (defined_table[index + 2] - defined_table[index]);
+
+    /* y = a*x + b */
+    return value * a_value + b_value;
 }
 
 #if AUTO_UPDATE
