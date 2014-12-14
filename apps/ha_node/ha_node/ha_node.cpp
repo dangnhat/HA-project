@@ -26,15 +26,22 @@ const uint32_t send_alive_time_period = 60 / rtc_period; //send alive every 60s.
 uint32_t time_cycle_count = 0;
 kernel_pid_t ha_node_ns::end_point_pid[max_end_point];
 
+/**
+ * @brief Initialize pid_table.
+ */
 static void endpoint_pid_table_init(void);
-static void send_alive_timer_isr(void);
+
+/**
+ * @brief The callback function for sending alive.
+ */
+static void send_alive_callback(void);
 
 void ha_node_init(void)
 {
     endpoint_pid_table_init();
 
     /* Assign send-alive callback function into interrupt timer */
-    MB1_ISRs.subISR_assign(rtc_isr_type, &send_alive_timer_isr);
+    MB1_ISRs.subISR_assign(rtc_isr_type, &send_alive_callback);
 
     /* Assign button & switch callback function into interrupt timer */
     MB1_ISRs.subISR_assign(tim_isr_type, &btn_sw_callback_timer_isr);
@@ -59,7 +66,7 @@ static void endpoint_pid_table_init(void)
     }
 }
 
-static void send_alive_timer_isr(void)
+static void send_alive_callback(void)
 {
     time_cycle_count = time_cycle_count + 1;
     if (time_cycle_count == send_alive_time_period) {
