@@ -14,6 +14,10 @@ extern "C" {
 }
 
 
+#define HA_NOTIFICATION (1)
+#define HA_DEBUG_EN (1)
+#include "ha_debug.h"
+
 using namespace ble_thread_ns;
 
 
@@ -46,7 +50,6 @@ void usart3_receive()
 {
     USART_ClearFlag(USART3, USART_FLAG_RXNE);
 //	printf("%02x \n", MB1_USART3.Get_ISR());            //DEBUG
-
     usart3_rec_buf[idxBuf++] = MB1_USART3.Get_ISR();
 
     if ((idxBuf > 1) && (idxBuf == (usart3_rec_buf[1] + 4))) {	//END of packet
