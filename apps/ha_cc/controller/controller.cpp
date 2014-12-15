@@ -507,7 +507,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         }
 
         /* check first index */
-        if (gff_frame[ha_ns::GFF_DATA_POS] == 0xFF) {
+        if (buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS]) == 0xFFFF) {
             /* send all rules to ble thread */
             num_rule = controller_scene_mng.get_user_scene_ptr()->get_cur_num_rules();
             for (count = 0; count < num_rule; count++) {
@@ -517,8 +517,8 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         }
         else {
             /* loop through every indexes */
-            for (count = 0; count < (gff_frame[ha_ns::GFF_LEN_POS] - 8); count++) {
-                set_rule_with_index_to_ble(gff_frame[ha_ns::GFF_DATA_POS + 8 + count],
+            for (count = 0; count < ((gff_frame[ha_ns::GFF_LEN_POS] - 8) / 2); count++) {
+                set_rule_with_index_to_ble(buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8 + count*2]),
                         scene_name,
                         &controller_scene_mng,
                         ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
@@ -537,6 +537,11 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         controller_scene_mng.set_active_scene(scene_name);
         controller_scene_mng.set_user_scene(scene_name);
         controller_scene_mng.restore_user_scene();
+
+        /* feedback to ble */
+        controller_scene_mng.get_user_scene(scene_name);
+
+
         break;
 
     case ha_ns::SET_REMOVE_SCENE:
