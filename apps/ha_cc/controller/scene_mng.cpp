@@ -114,8 +114,13 @@ void scene_mng::set_user_scene(const char *name)
 /*----------------------------------------------------------------------------*/
 void scene_mng::get_user_scene(char *name)
 {
-    strcpy(name, scenes_list[user_scene_index].scene_obj.get_name());
-    not_dir(name);
+    char name_with_folder[scene_max_name_chars];
+
+    strcpy(name_with_folder, scenes_list[user_scene_index].scene_obj.get_name());
+    not_dir(name_with_folder);
+
+    memcpy(name, name_with_folder, scene_max_name_chars_wout_folders);
+    name[scene_max_name_chars_wout_folders] = '\0';
 }
 
 /*----------------------------------------------------------------------------*/
@@ -197,6 +202,9 @@ void scene_mng::get_active_scene(char *name)
 
     /* read data from file */
     f_gets(line, 16, &file);
+
+    /* close file */
+    f_close(&file);
 
     /* copy to name */
     memcpy(name, line, scene_max_name_chars_wout_folders - 1);
@@ -300,6 +308,51 @@ void scene_mng::get_inactive_scene_with_index(uint8_t index, char *name)
 
     /* close dir */
     f_closedir(&dir);
+}
+
+/*----------------------------------------------------------------------------*/
+int8_t scene_mng::remove_inactive_scene(const char *name)
+{
+    FRESULT fres;
+    char name_with_folder[scene_max_name_chars];
+
+    /* Build path name */
+    strcpy(name_with_folder, SCENES_FOLDER "/");
+    strcat(name_with_folder, name);
+
+    fres = f_unlink(name_with_folder);
+    if (fres != FR_OK) {
+        HA_NOTIFY("scene_mng::remove_inactive_scene failed\n");
+        print_ferr(fres);
+        return -1;
+    }
+
+    return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+int8_t scene_mng::rename_inactive_scene(const char *old_name, const char *new_name)
+{
+    FRESULT fres;
+    char name_with_folder[scene_max_name_chars];
+    char name_with_folder_new[scene_max_name_chars];
+
+    /* Build paths */
+    strcpy(name_with_folder, SCENES_FOLDER "/");
+    strcat(name_with_folder, old_name);
+
+    strcpy(name_with_folder_new, SCENES_FOLDER "/");
+    strcat(name_with_folder_new, new_name);
+
+    /* rename */
+    fres = f_rename(old_name, new_name);
+    if (fres != FR_OK) {
+        HA_NOTIFY("scene_mng::rename_inactive_scene failed\n");
+        print_ferr(fres);
+        return -1;
+    }
+
+    return 0;
 }
 
 /*------------------------ Default scene -------------------------------------*/
