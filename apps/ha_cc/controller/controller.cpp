@@ -507,7 +507,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         }
 
         /* check first index */
-        if (buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS]) == 0xFFFF) {
+        if (buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8]) == 0xFFFF) {
             /* send all rules to ble thread */
             num_rule = controller_scene_mng.get_user_scene_ptr()->get_cur_num_rules();
             for (count = 0; count < num_rule; count++) {
