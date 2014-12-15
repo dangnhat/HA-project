@@ -22,7 +22,7 @@
 namespace ha_node_ns {
 const uint8_t dev_pattern_maxsize = 110;
 
-const char ha_dev_list_file[] = "dev_list";
+const char ha_dev_list_file_name[] = "dev_list";
 
 const char dev_list_pattern[] = "dID: 0x%lx\n";
 
@@ -114,7 +114,7 @@ void adc_sensor_handler(uint32_t dev_id);
  *
  * @param[in] dev_id Device ID.
  */
-void sensor_event_handler(uint32_t dev_id);
+void event_sensor_handler(uint32_t dev_id);
 
 /**
  * @brief Parse device ID to get EP ID. The EP ID is name of configuration file.
