@@ -153,6 +153,25 @@ public:
      */
     void get_inactive_scene_with_index(uint8_t index, char *name);
 
+    /**
+     * @brief   Remove an inactive scene.
+     *
+     * @param[in]   name,
+     *
+     * @return  -1 if error.
+     */
+    int8_t remove_inactive_scene(const char *name);
+
+    /**
+     * @brief   Rename an inactive scene.
+     *
+     * @param[in]   old name,
+     * @param[in]   new_name,
+     *
+     * @return  -1 if error.
+     */
+    int8_t rename_inactive_scene(const char *old_name, const char *new_name);
+
     /*------------------------ Default scene ---------------------------------*/
     /**
      * @brief   Save default scene.
