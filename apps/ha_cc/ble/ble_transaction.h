@@ -31,6 +31,8 @@ extern int16_t ble_thread_pid;
 extern cir_queue controller_to_ble_msg_queue;
 }
 
+extern volatile uint16_t ble_ack_timeout_count;
+
 struct ble_ack_s {
     bool need_to_wait_ack = false;
     uint16_t packet_index = 0;
@@ -56,6 +58,9 @@ void ble_thread_start(void);
 
 /* start interrupt thread */
 //void usart_int_thread_start(void);
+
+/* callback timer6 interrupt */
+void ble_timeout_TIM6_ISR(void);
 
 /* attach header to ble message */
 void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf,

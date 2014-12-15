@@ -49,7 +49,7 @@ const char rgb_usage[] =
                 "rgb -e [EP id], set end point id.\n"
                 "rgb -e [EP id] -R [port] [pin] [timer] [channel], configure Red led.\n"
                 "rgb -e [EP id] -G [port] [pin] [timer] [channel], configure Green led.\n"
-                "rgb -e [EP id] -B [port] [pin] [timer] [channel], configure for Blue led.\n"
+                "rgb -e [EP id] -B [port] [pin] [timer] [channel], configure Blue led.\n"
                 "rgb -e [EP id] -C [RedAtWp] [GreenAtWp] [BlueAtWp], set calibrating factor.\n"
                 "rgb -h, get this help.\n"
                 "Note: multiple options can be combined together.\n";
@@ -59,11 +59,10 @@ const char linear_sensor_usage[] = "Usage:\n"
         "senadc -e [EP id] -s [sensor type], set sensor type.\n" //0=temp, 1=lumi
         "senadc -e [EP id] -p [port], set port.\n"
         "senadc -e [EP id] -n [pin], set pin.\n"
-        "senadc -e [EP id] -a [adc], set adc.\n"
-        "senadc -e [EP id] -c [channel], set channel.\n"
-        "senadc -e [EP id] -t [equa-type], choose equation type (linear or rational).\n"
-        "senadc -e [EP id] -k [a_factor], set A factor for equation (-t must be entered).\n"
-        "senadc -e [EP id] -b [b_constant], set B constant for equation (-t must be entered).\n"
+        "senadc -e [EP id] -a [adc], set ADC.\n"//1=ADC1, 2=ADC2 or 3=ADC3
+        "senadc -e [EP id] -c [channel], set ADC channel.\n"
+        "senadc -e [EP id] -t [equa-type], choose equation type (linear, rational, polynomial or table).\n"
+        "senadc -e [EP id] -P [params], set parameters for equation (-t option must be entered).\n"
         "senadc -e [EP id] -f [filter thres], set filter threshold.\n"
         "senadc -e [EP id] -u [under thres], set underflow threshold.\n"
         "senadc -e [EP id] -o [over thres], set overflow threshold.\n"
@@ -72,8 +71,6 @@ const char linear_sensor_usage[] = "Usage:\n"
 
 /**
  * @brief configure pure GPIO devices (port/pin).
- *
- * @details
  *
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
@@ -84,8 +81,6 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
 /**
  * @brief configure pure ADC devices (port/pin and adc/adc_channel).
  *
- * @details
- *
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
  */
@@ -94,17 +89,36 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id);
 /**
  * @brief configure pure PWM devices (port/pin and timer/pwm_channel).
  *
- * @details
- *
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
  */
 static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id);
 
+/**
+ * @brief Check entered port whether it is correct and convert it into an uppercase character.
+ *
+ * @param[in] src Port in character entered by user.
+ * @param[out] port Port converted.
+ *
+ * @return true if the entered port is correct, otherwise false.
+ */
 static bool check_port(char src, char* port);
 
+/**
+ * @brief Check device ID whether it's correct (only check node ID and EP ID).
+ *
+ * @param[in] dev_id Device ID needed to check.
+ *
+ * @return true if dev_id is correct, otherwise false.
+ */
 static bool check_devid(uint32_t dev_id);
 
+/**
+ * @brief Modify dev_list file when an EP has been reconfigured.
+ *
+ * @param[in] ep_id EP_ID needed to modify.
+ * @param[in] dev_type Device type of the new device in EP ID.
+ */
 static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type);
 
 /* ------Implementation------ */
@@ -116,20 +130,22 @@ void stop_endpoint_callback(int argc, char** argv)
         return;
     }
 
+    /* get EP ID from command line */
     int ep_id = atoi(argv[1]);
     if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
         printf("ERR: invalid endpoint id\n");
         return;
     }
 
+    /* set EP in device list file without device (dev_type = 0x00) */
     modify_dev_list_file(ep_id, ha_ns::NO_DEVICE);
 
+    /* stop EP having the entered ID */
     run_endpoint(ep_id);
 }
 
 void rst_endpoint_callback(int argc, char** argv)
 {
-
     if (argc == 1) {
         printf("ERR: too few arguments.\n");
         return;
@@ -677,8 +693,8 @@ void adc_sensor_config(int argc, char** argv)
                 first_params = count;
                 num_params = 0;
                 while (count < argc) {
-                    if(argv[count][0] == '-') {
-                        if(!isdigit(argv[count][1])) {
+                    if (argv[count][0] == '-') {
+                        if (!isdigit(argv[count][1])) {
                             break;
                         }
                     }
@@ -1318,13 +1334,11 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
     }
     f_close(&fil);
 
-    uint32_t dev_id = ((uint32_t) ha_ns::sixlowpan_node_id << 16)
+    dev_list[ep_id] = ((uint32_t) ha_ns::sixlowpan_node_id << 16)
             | ((uint32_t) ep_id << 8) | (uint32_t) dev_type;
 
-    dev_list[ep_id] = dev_id;
-
     f_res = f_open(&fil, ha_node_ns::ha_dev_list_file,
-    FA_WRITE | FA_CREATE_ALWAYS);
+            FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
         print_ferr(f_res);
         return;
@@ -1385,8 +1399,6 @@ void run_endpoint(int8_t ep_id)
     if (!check_devid(dev_list[ep_id])) {
         printf("-EP%d: No device!!\n", ep_id);
         return;
-    } else {
-        printf("-EP%d: Device id is valid.\n", ep_id);
     }
 
     msg_t msg;

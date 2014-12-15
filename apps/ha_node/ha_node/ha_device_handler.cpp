@@ -27,20 +27,95 @@ extern "C" {
 static const uint8_t queue_handler_size = 16;
 
 /* common functions */
+/**
+ * @brief Read configuration from EP-file into a string.
+ *
+ * @param[in] dev_id Device ID used to open config file.
+ * @param[out] config_str The pointer to string that contains device configuration.
+ * @param[in] str_len Size of config_str.
+ *
+ * @return true if success, otherwise false.
+ */
 static bool read_config_file(uint32_t dev_id, char *config_str,
         uint8_t str_len);
+
+/**
+ * @brief return a port_t from port_c parsed from file.
+ *
+ * @param[in] port_c Parsed from file.
+ *
+ * @return A port has type port_t.
+ */
 static port_t get_port(char port_c);
+
+/**
+ * @brief return a pwm_timer_t from a number saved in file.
+ *
+ * @param[in] timer Parsed from file.
+ *
+ * @return A timer has type pwm_timer_t.
+ */
 static pwm_timer_t get_pwm_timer(int timer);
+
+/**
+ * @brief Get common device type from device ID.
+ *
+ * @param[in] dev_id Device ID.
+ *
+ * @return The defined common device type.
+ */
 static uint8_t get_dev_type_common(uint32_t dev_id);
+
+/**
+ * @brief Compare device type in message value with the given device type.
+ *
+ * @param[in] msg_value Containing device type.
+ * @param[in] dev_type The given dev_type used to check dev_type in msg_value.
+ *
+ * @return true if dev_type in msg_value is match the given dev_type, otherwise false.
+ */
 static bool check_dev_type_value(uint32_t msg_value, uint8_t dev_type);
-static void send_data_over_air(uint16_t cmd, uint32_t dev_id, uint16_t value);
+
+/**
+ * @brief Forward data needed to send to 6loWPAN thread.
+ *
+ * @param[in] cmd       Command.
+ * @param[in] dev_id    Device ID.
+ * @param[in] value     Device value.
+ */
+static void forward_data_msg_to_6lowpan(uint16_t cmd, uint32_t dev_id,
+        uint16_t value);
 
 /* functions for ADC_sensors */
+/**
+ * @brief Read configuration for ADC sensor device.
+ *
+ * @param[in] dev_id Device ID.
+ * @param[out] adc_ss The pointer to instance of an ADC-sensor device.
+ * @param[out] num_equation Number of equation types.
+ * @param[out] num_params Number of equation parameters.
+ *
+ * @return true if success, other false.
+ */
 static bool sensor_read_config(uint32_t dev_id, adc_sensor_instance* adc_ss,
         uint16_t *num_equation, uint16_t *num_params);
+
+/**
+ * @brief Read equation type and parameter from file.
+ *
+ * @param[in] dev_id Device ID.
+ * @param[out] equa_type_buff The given buffer to save equation types.
+ * @param[in] e_type_buff_len The size of equa_type_buff.
+ * @param[out] equa_params_buff The given buffer to save equation parameters.
+ * @param[in] e_params_buff_len The size of equa_params_buff.
+ *
+ * @return true if success, other false.
+ */
 static bool sensor_read_equa_type_and_params(uint32_t dev_id,
         char* equa_type_buff, uint8_t e_type_buff_len, float* equa_params_buff,
         uint8_t e_params_buff_len);
+
+/*---------------------Implementation-----------------------*/
 
 void* end_point_handler(void* arg)
 {
@@ -68,7 +143,8 @@ void* end_point_handler(void* arg)
             }
             switch (parse_devtype_deviceid(msg.content.value)) {
             case ha_ns::NO_DEVICE:
-                HA_NOTIFY("No device.\n");
+                HA_NOTIFY("-EP%d: No device!!.\n",
+                        (uint8_t )(msg.content.value >> 8));
                 break;
             case ha_ns::SWITCH:
                 switch_handler(msg.content.value);
@@ -110,7 +186,8 @@ void button_handler(uint32_t dev_id)
     btn.device_configure(&gpio_params);
 
     /* send first value to CC */
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, ha_ns::btn_no_pressed);
+    forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
+            ha_ns::btn_no_pressed);
 
     msg_t msg;
     while (1) {
@@ -118,18 +195,18 @@ void button_handler(uint32_t dev_id)
         switch (msg.type) {
         case btn_sw_ns::BTN_SW_MSG:
             if (msg.content.value == btn_sw_ns::btn_no_pressed) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         ha_ns::btn_no_pressed);
             } else if (msg.content.value == btn_sw_ns::btn_pressed) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         ha_ns::btn_pressed);
             } else if (msg.content.value == btn_sw_ns::btn_on_hold) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         ha_ns::btn_on_hold);
             }
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
@@ -153,7 +230,7 @@ void switch_handler(uint32_t dev_id)
     sw.device_configure(&gpio_params);
 
     /* send first value to CC */
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+    forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
             sw.get_status() == btn_sw_ns::sw_on ?
                     ha_ns::switch_on : ha_ns::switch_off);
 
@@ -163,15 +240,15 @@ void switch_handler(uint32_t dev_id)
         switch (msg.type) {
         case btn_sw_ns::BTN_SW_MSG:
             if (msg.content.value == btn_sw_ns::sw_on) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         ha_ns::switch_on);
             } else {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         ha_ns::switch_off);
             }
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
@@ -195,7 +272,7 @@ void on_off_output_handler(uint32_t dev_id)
     on_off_dev.device_configure(&gpio_params);
 
     /* send first value to CC */
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+    forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
             (on_off_dev.dev_get_state() == on_off_dev_ns::dev_on) ?
                     ha_ns::output_on : ha_ns::output_off);
 
@@ -220,16 +297,16 @@ void on_off_output_handler(uint32_t dev_id)
             }
             /* feedback to CC */
             if (on_off_dev.dev_get_state() == on_off_dev_ns::dev_blink) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         (uint16_t) old_set_dev_val);
             } else {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         (on_off_dev.dev_get_state() == on_off_dev_ns::dev_on) ?
                                 ha_ns::output_on : ha_ns::output_off);
             }
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             on_off_dev.dev_turn_off();
@@ -259,11 +336,11 @@ void dimmer_handler(uint32_t dev_id)
         switch (msg.type) {
         case dimmer_ns::DIMMER_MSG:
             /* dimmer'll send first value to CC when it's started */
-            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+            forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) msg.content.value);
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
@@ -288,7 +365,8 @@ void level_bulb_handler(uint32_t dev_id)
 
     /* send first value to CC */
     uint8_t old_set_dev_val = level_bulb.get_percent_intensity();
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, (uint16_t) old_set_dev_val);
+    forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
+            (uint16_t) old_set_dev_val);
 
     msg_t msg;
     while (1) {
@@ -307,15 +385,15 @@ void level_bulb_handler(uint32_t dev_id)
             }
             /* feedback to CC */
             if (level_bulb.bulb_is_blink()) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         (uint16_t) old_set_dev_val);
             } else {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         (uint16_t) level_bulb.get_percent_intensity());
             }
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             level_bulb.set_level_intensity(0); //turn off before removing device
@@ -341,7 +419,8 @@ void servo_sg90_handler(uint32_t dev_id)
     sg90.device_configure(&pwm_params);
 
     /* send first value to CC */
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, (uint16_t) sg90.get_angle());
+    forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
+            (uint16_t) sg90.get_angle());
 
     msg_t msg;
     while (1) {
@@ -353,11 +432,11 @@ void servo_sg90_handler(uint32_t dev_id)
                 sg90.set_angle((uint8_t) (msg.content.value));
             }
             /* feedback to CC */
-            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+            forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) sg90.get_angle());
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             sg90.stop();
@@ -394,12 +473,11 @@ void adc_sensor_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case adc_sensor_ns::ADC_SENSOR_MSG:
-            printf("ss: %d\n", (uint16_t) msg.content.value);
-            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+            forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) msg.content.value);
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
@@ -423,7 +501,7 @@ void sensor_event_handler(uint32_t dev_id)
     sensor_event.device_configure(&gpio_params);
 
     /* send first value to CC */
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+    forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
             sensor_event.is_detected() ? ha_ns::detected : ha_ns::no_detected);
 
     msg_t msg;
@@ -432,14 +510,15 @@ void sensor_event_handler(uint32_t dev_id)
         switch (msg.type) {
         case sensor_event_ns::SEN_EVT_MSG:
             if (msg.content.value == sensor_event_ns::high_level) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id, ha_ns::detected);
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
+                        ha_ns::detected);
             } else if (msg.content.value == sensor_event_ns::low_level) {
-                send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+                forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                         ha_ns::no_detected);
             }
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
@@ -461,7 +540,7 @@ void rgb_led_handler(uint32_t dev_id)
     rgb_led.set_color_model(rgb_ns::model_16bits_555);
 
     /* send first value to CC */
-    send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+    forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
             (uint16_t) rgb_led.get_current_color());
 
     uint8_t basic_color = (uint8_t) rgb_ns::white;
@@ -480,11 +559,11 @@ void rgb_led_handler(uint32_t dev_id)
                 }
             }
             /* feedback to CC */
-            send_data_over_air(ha_ns::SET_DEV_VAL, dev_id,
+            forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) rgb_led.get_current_color());
             break;
         case ha_node_ns::SEND_ALIVE:
-            send_data_over_air(ha_ns::ALIVE, dev_id, 0);
+            forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
         case ha_node_ns::NEW_DEVICE:
             rgb_led.rgb_set_color(0x0000);
@@ -705,7 +784,8 @@ static bool read_config_file(uint32_t dev_id, char *config_string,
     return true;
 }
 
-static void send_data_over_air(uint16_t cmd, uint32_t dev_id, uint16_t value)
+static void forward_data_msg_to_6lowpan(uint16_t cmd, uint32_t dev_id,
+        uint16_t value)
 {
     uint8_t frame_buff_size = ha_ns::GFF_LEN_SIZE + ha_ns::GFF_CMD_SIZE;
     switch (cmd) {

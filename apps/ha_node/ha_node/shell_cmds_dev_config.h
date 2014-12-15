@@ -10,28 +10,80 @@
 
 #include "ha_device_handler.h"
 
+/**
+ * @brief Stop the running End Point.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void stop_endpoint_callback(int argc, char** argv);
 
+/**
+ * @brief Run an End Point with a configured device.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void rst_endpoint_callback(int argc, char** argv);
 
+/**
+ * @brief Configure a button device for the specified EndPoint.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void button_config(int argc, char** argv);
 
+/**
+ * @brief Configure a switch device for the specified EndPoint.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void switch_config(int argc, char** argv);
 
+/**
+ * @brief Configure an on/off output device for the specified EndPoint.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void on_off_output_config(int argc, char** argv);
 
+/**
+ * @brief Configure an event sensor device for the specified EndPoint.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void sensor_event_config(int argc, char** argv);
 
+/**
+ * @brief Configure a dimmer device for the specified EndPoint.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void dimmer_config(int argc, char** argv);
 
+/**
+ * @brief Configure a level bulb device for the specified EndPoint.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void level_bulb_config(int argc, char** argv);
 
+/**
+ * @brief Configure a servo device for the specified EndPoint.
+ *
+ * @param[in] argc Number of arguments.
+ * @param[in] argv Arguments.
+ */
 void servo_config(int argc, char** argv);
 
 /**
- * @brief configure RGB led with calibrated intensity.
- *
- * @details
+ * @brief configure RGB led with calibrated intensity for the specified EndPoint.
  *
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
@@ -39,9 +91,7 @@ void servo_config(int argc, char** argv);
 void rgb_led_config(int argc, char** argv);
 
 /**
- * @brief configure ADC sensors that have linear graph.
- *
- * @details
+ * @brief configure ADC sensors for the specified EndPoint.
  *
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.

@@ -68,6 +68,7 @@ void ha_system_init(void)
     MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_RTC, second_int_callback);
 
     /* Start ble thread */
+    MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_TIM6, ble_timeout_TIM6_ISR);
     ble_thread_start();
     ble_init();
 #endif

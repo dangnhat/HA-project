@@ -11,6 +11,9 @@
 #include "ha_device_handler.h"
 #include "ha_node_glb.h"
 
+/**
+ * @brief Initialize HA_NODE.
+ */
 void ha_node_init(void);
 
 #endif //__HA_NODE_H

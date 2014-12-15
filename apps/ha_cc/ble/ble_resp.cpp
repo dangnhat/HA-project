@@ -18,7 +18,7 @@ extern "C" {
 }
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (0)
+#define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
 extern ble_ack_s ble_ack;
@@ -105,11 +105,10 @@ void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
             /* get index, if true wake-up ble_thread */
             if ((buf2uint16(ack_index_buf) == ble_ack.packet_index)
                     && ble_ack.need_to_wait_ack) {
-                HA_DEBUG(" receive ACK\n");
+                HA_DEBUG(" receive ACK %d\n", ble_ack.packet_index);
                 numOfMsg = 0;                      // reset counter
                 totalMsgLen = 0;                   //
-                ble_ack.need_to_wait_ack = false;
-                ble_ack.packet_index++;
+                ble_ack_timeout_count = 0;
                 thread_wakeup(ble_thread_ns::ble_thread_pid);
                 return;
             }
@@ -120,7 +119,6 @@ void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
             send_ack_to_mobile(ack_index_buf);
         }
     }
-
     usart_queue.add_data((uint8_t*) msg->value.data, msg->value.len);
 
     /* Consider if received data payload as its length */

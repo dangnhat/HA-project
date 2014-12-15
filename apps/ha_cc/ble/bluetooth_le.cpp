@@ -29,7 +29,7 @@ extern "C" {
 #include "gff_mesg_id.h"
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (0)
+#define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
 /******************************************************************************
@@ -44,7 +44,7 @@ static const uint16_t ble_message_queue_size = 64;
 static msg_t ble_message_queue[ble_message_queue_size];
 
 /* bluetooth thread stack */
-static const uint16_t ble_thread_stack_size = 1024;
+static const uint16_t ble_thread_stack_size = 1200;
 static char ble_thread_stack[ble_thread_stack_size];
 static const char ble_thread_prio = PRIORITY_MAIN - 1;
 static void *ble_transaction(void *arg);
@@ -60,6 +60,10 @@ kernel_pid_t ble_thread_pid;
 cir_queue controller_to_ble_msg_queue(controller_to_ble_msg_queue_buf,
         controller_to_ble_msg_queue_size);
 }
+
+
+// timer 6 timeout
+volatile uint16_t ble_ack_timeout_count = 0;
 
 /*******************************************************************************
  * Private functions declare
@@ -78,10 +82,20 @@ bool mMoblieConnected);
 /**
  * @brief: thread wait ack from Mobile
  */
-void wait_mobile_ack(uint8_t sec, uint32_t micro_sec);
+void wait_mobile_ack(uint16_t micro_sec);
 /*******************************************************************************
  * Public functions
  ******************************************************************************/
+
+void ble_timeout_TIM6_ISR(void) {
+    if (ble_ack_timeout_count > 0) {
+        ble_ack_timeout_count--;
+    }
+    else{
+        thread_wakeup(ble_thread_ns::ble_thread_pid);
+    }
+}
+
 
 /*
  * @brief: Initial ble thread
@@ -198,9 +212,13 @@ bool mMoblieConnected)
         // add header(msg type + index) to message
         add_hdr_to_ble_msg(ha_ble_ns::BLE_MSG_DATA, indexBuf, dataBuf, bufLen);
         if (mMoblieConnected) {
+            HA_DEBUG("packet index START\n");
             ble_write_att(dataBuf, bufLen + 3);
             // sleep to wait ack from mobile
-            wait_mobile_ack(1, 0); // 1s
+            wait_mobile_ack(50000); // 50ms
+            ble_ack.packet_index++;
+            ble_ack.need_to_wait_ack = false;
+            HA_DEBUG("packet index END\n");
         }
 
     } else {
@@ -212,15 +230,11 @@ bool mMoblieConnected)
 /**
  * @brief: thread wait ack from Mobile
  */
-void wait_mobile_ack(uint8_t sec, uint32_t micro_sec)
+void wait_mobile_ack(uint16_t micro_sec)
 {
-    timex_t interval;
-    vtimer_t vt_s;
-    interval.seconds = sec;
-    interval.microseconds = micro_sec;
+    ble_ack_timeout_count = micro_sec;
     ble_ack.need_to_wait_ack = true;
     thread_sleep();
-    vtimer_set_wakeup(&vt_s, interval, thread_getpid());
 }
 
 /**
