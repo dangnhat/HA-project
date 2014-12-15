@@ -74,9 +74,10 @@ uint8_t combine_dev_type(uint8_t dev_type_common, uint8_t sub_type)
 const char sw_name[] = "switch";
 const char btn_name[] = "button";
 const char dim_name[] = "dimmer";
-const char temp_name[] = "temp sensor";
-const char lumi_name[] = "lumi sensor";
-const char pir_name[] = "pir sensor";
+const char temp_ss_name[] = "temp sensor";
+const char lumi_ss_name[] = "lumi sensor";
+const char gas_ss_name[] = "gas sensor";
+const char pir_ss_name[] = "pir sensor";
 const char on_off_bulb_name[] = "on/off bulb";
 const char buzzer_name[] = "buzzer";
 const char level_bulb_name[] = "level bulb";
@@ -93,11 +94,13 @@ const char* device_type_to_name(uint8_t device_type)
     case ha_ns::DIMMER:
         return dim_name;
     case ((ha_ns::ADC_SENSOR & 0xF8) | (ha_ns::TEMP & 0x07)):
-        return temp_name;
+        return temp_ss_name;
     case ((ha_ns::ADC_SENSOR & 0xF8) | (ha_ns::LUMI & 0x07)):
-        return lumi_name;
+        return lumi_ss_name;
+    case ((ha_ns::ADC_SENSOR & 0xF8) | (ha_ns::GAS & 0x07)):
+        return gas_ss_name;
     case ((ha_ns::EVT_SENSOR & 0xF8) | (ha_ns::PIR & 0x07)):
-        return pir_name;
+        return pir_ss_name;
     case ((ha_ns::ON_OFF_OPUT & 0xF8) | (ha_ns::ON_OFF_BULB & 0x07)):
         return on_off_bulb_name;
     case ((ha_ns::ON_OFF_OPUT & 0xF8) | (ha_ns::BUZZER & 0x07)):
