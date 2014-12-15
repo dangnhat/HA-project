@@ -21,7 +21,7 @@ const char gpio_usage[] = "Usage:\n"
         "%s -e [EP id] -e [EP id], set end point id.\n"
         "-e [EP id] -p [port], set port.\n"
         "-e [EP id] -n [pin], set pin.\n"
-        "-e [EP_id] -s [subtype], set device subtype.\n"
+        "-e [EP_id] -s [specified subtype], set the specified device subtype.\n"
         "-e [EP_id] -m [mode], set pin mode for output device.\n"
         "-h, get this help.\n"
         "Note: multiple options can be combined together.\n";
@@ -54,18 +54,18 @@ const char rgb_usage[] =
                 "rgb -h, get this help.\n"
                 "Note: multiple options can be combined together.\n";
 
-const char linear_sensor_usage[] = "Usage:\n"
+const char adc_sensor_usage[] = "Usage:\n"
         "senadc -e [EP id], set end point id.\n"
-        "senadc -e [EP id] -s [sensor type], set sensor type.\n" //0=temp, 1=lumi
+        "senadc -e [EP id] -s [specified sensor subtype], set specified sensor subtype.\n" //0=temp, 1=lumi, 2=gas
         "senadc -e [EP id] -p [port], set port.\n"
         "senadc -e [EP id] -n [pin], set pin.\n"
         "senadc -e [EP id] -a [adc], set ADC.\n"//1=ADC1, 2=ADC2 or 3=ADC3
         "senadc -e [EP id] -c [channel], set ADC channel.\n"
-        "senadc -e [EP id] -t [equa-type], choose equation type (linear, rational, polynomial or table).\n"
-        "senadc -e [EP id] -P [params], set parameters for equation (-t option must be entered).\n"
-        "senadc -e [EP id] -f [filter thres], set filter threshold.\n"
-        "senadc -e [EP id] -u [under thres], set underflow threshold.\n"
-        "senadc -e [EP id] -o [over thres], set overflow threshold.\n"
+        "senadc -e [EP id] -t [equation-type], choose equation type (linear, rational, polynomial or table).\n"
+        "senadc -e [EP id] -P [parameters], set parameters for equation (-t option must be entered).\n"
+        "senadc -e [EP id] -f [filter threshold], set filter threshold.\n"
+        "senadc -e [EP id] -u [underflow threshold], set underflow threshold.\n"
+        "senadc -e [EP id] -o [overflow threshold], set overflow threshold.\n"
         "senadc -h, get this help.\n"
         "Note: multiple options can be combined together.\n";
 
@@ -76,7 +76,7 @@ const char linear_sensor_usage[] = "Usage:\n"
  * @param[in] argv Arguments.
  */
 static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
-        int8_t *sub_type);
+        int8_t *specified_subtype);
 
 /**
  * @brief configure pure ADC devices (port/pin and adc/adc_channel).
@@ -159,9 +159,9 @@ void rst_endpoint_callback(int argc, char** argv)
 void button_config(int argc, char** argv)
 {
     int8_t ep_id = -1;
-    int8_t sub_type = -1;
+    int8_t specified_subtype = -1;
 
-    gpio_common_config(argc, argv, &ep_id, &sub_type);
+    gpio_common_config(argc, argv, &ep_id, &specified_subtype);
     if (ep_id < 0) {
         return;
     }
@@ -174,9 +174,9 @@ void button_config(int argc, char** argv)
 void switch_config(int argc, char** argv)
 {
     int8_t ep_id = -1;
-    int8_t sub_type = -1;
+    int8_t specified_subtype = -1;
 
-    gpio_common_config(argc, argv, &ep_id, &sub_type);
+    gpio_common_config(argc, argv, &ep_id, &specified_subtype);
     if (ep_id < 0) {
         return;
     }
@@ -189,16 +189,16 @@ void switch_config(int argc, char** argv)
 void on_off_output_config(int argc, char** argv)
 {
     int8_t ep_id = -1;
-    int8_t sub_type = -1;
+    int8_t specified_subtype = -1;
 
-    gpio_common_config(argc, argv, &ep_id, &sub_type);
-    if (ep_id < 0 || sub_type < 0) {
-        printf("ERR: invalid sub type\n");
+    gpio_common_config(argc, argv, &ep_id, &specified_subtype);
+    if (ep_id < 0 || specified_subtype < 0) {
+        printf("ERR: invalid specified sub-type\n");
         return;
     }
 
     modify_dev_list_file(ep_id,
-            combine_dev_type(ha_ns::ON_OFF_OPUT, (uint8_t) sub_type));
+            combine_dev_type(ha_ns::ON_OFF_OPUT, (uint8_t) specified_subtype));
 
     return;
 }
@@ -206,16 +206,16 @@ void on_off_output_config(int argc, char** argv)
 void sensor_event_config(int argc, char** argv)
 {
     int8_t ep_id = -1;
-    int8_t sub_type = -1;
+    int8_t specified_subtype = -1;
 
-    gpio_common_config(argc, argv, &ep_id, &sub_type);
-    if (ep_id < 0 || sub_type < 0) {
-        printf("ERR: invalid sub type\n");
+    gpio_common_config(argc, argv, &ep_id, &specified_subtype);
+    if (ep_id < 0 || specified_subtype < 0) {
+        printf("ERR: invalid specified sub-type\n");
         return;
     }
 
     modify_dev_list_file(ep_id,
-            combine_dev_type(ha_ns::EVT_SENSOR, (uint8_t) sub_type));
+            combine_dev_type(ha_ns::EVT_SENSOR, (uint8_t) specified_subtype));
 
     return;
 }
@@ -268,7 +268,6 @@ void rgb_led_config(int argc, char** argv)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read, byte_written;
     char f_name[4];
     uint8_t pattern_size = sizeof(ha_node_ns::rgb_config_pattern);
 
@@ -327,6 +326,7 @@ void rgb_led_config(int argc, char** argv)
                     return;
                 }
                 f_sync(&fil);
+                UINT byte_read;
                 f_res = f_read(&fil, config_str, pattern_size, &byte_read);
                 if (f_res != FR_OK) {
                     print_ferr(f_res);
@@ -516,6 +516,7 @@ void rgb_led_config(int argc, char** argv)
             Rpin, Rtimer_x, Rchannel, Gport, Gpin, Gtimer_x, Gchannel, Bport,
             Bpin, Btimer_x, Bchannel, red_at_wp, green_at_wp, blue_at_wp);
 
+    UINT byte_written;
     f_res = f_write(&fil, config_str, pattern_size, &byte_written);
     if (f_res != FR_OK) {
         print_ferr(f_res);
@@ -525,7 +526,7 @@ void rgb_led_config(int argc, char** argv)
     f_close(&fil);
 
     /* read back */
-    f_open(&fil, f_name, FA_READ);
+    f_res = f_open(&fil, f_name, FA_READ);
     if (f_res != FR_OK) {
         print_ferr(f_res);
         return;
@@ -554,7 +555,7 @@ void adc_sensor_config(int argc, char** argv)
     uint16_t num_equation = 0;
 
     int8_t ep_id = -1;
-    int8_t sub_type = -1;
+    int8_t specified_subtype = -1;
 
     char port = '0';
     uint16_t pin = 0;
@@ -577,7 +578,7 @@ void adc_sensor_config(int argc, char** argv)
         if (argv[count][0] == '-') {
             switch (argv[count][1]) {
             case 'h': //get help
-                printf(rgb_usage);
+                printf(adc_sensor_usage);
                 return;
             case 's':
                 count++;
@@ -585,7 +586,7 @@ void adc_sensor_config(int argc, char** argv)
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                sub_type = atoi(argv[count]);
+                specified_subtype = atoi(argv[count]);
                 break;
             case 'e': //set endpoint id
                 count++;
@@ -742,7 +743,7 @@ void adc_sensor_config(int argc, char** argv)
         return;
     }
 
-    if (sub_type < 0) {
+    if (specified_subtype < 0) {
         printf("ERR: missing -s option.\n");
         return;
     }
@@ -792,7 +793,7 @@ void adc_sensor_config(int argc, char** argv)
     f_close(&fil);
 
     /* read back */
-    f_open(&fil, f_name, FA_READ);
+    f_res = f_open(&fil, f_name, FA_READ);
     if (f_res != FR_OK) {
         print_ferr(f_res);
         return;
@@ -805,22 +806,21 @@ void adc_sensor_config(int argc, char** argv)
 
     /* modify device list file */
     modify_dev_list_file(ep_id,
-            combine_dev_type(ha_ns::ADC_SENSOR, (uint8_t) sub_type));
+            combine_dev_type(ha_ns::ADC_SENSOR, (uint8_t) specified_subtype));
 
     return;
 }
 
 static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
-        int8_t *sub_type)
+        int8_t *specified_subtype)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read, byte_written;
     char f_name[4];
     uint8_t pattern_size = sizeof(ha_node_ns::gpio_dev_config_pattern);
-    uint8_t count = 0;
 
     *endpoint_id = -1;
+
     char port = '0';
     uint16_t pin = 0;
     char mode = '0';
@@ -833,7 +833,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
     }
 
     /* Read all configuration from file */
-    for (count = 1; count < argc; count++) {
+    for (uint8_t count = 1; count < argc; count++) {
         if (argv[count][0] == '-') {
             switch (argv[count][1]) {
             case 'h': //get help
@@ -845,7 +845,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
                     printf("ERR: too few argument. Try -h to get help.\n");
                     return;
                 }
-                *sub_type = atoi(argv[count]);
+                *specified_subtype = atoi(argv[count]);
                 break;
             case 'e': //set endpoint id
                 count++;
@@ -869,6 +869,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
                     return;
                 }
                 f_sync(&fil);
+                UINT byte_read;
                 f_res = f_read(&fil, config_str, pattern_size, &byte_read);
                 if (f_res != FR_OK) {
                     print_ferr(f_res);
@@ -936,6 +937,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
     snprintf(config_str, pattern_size, ha_node_ns::gpio_dev_config_pattern,
             port, pin, mode);
 
+    UINT byte_written;
     f_res = f_write(&fil, config_str, pattern_size, &byte_written);
     if (f_res != FR_OK) {
         print_ferr(f_res);
@@ -945,7 +947,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
     f_close(&fil);
 
     /* read back */
-    f_open(&fil, f_name, FA_READ);
+    f_res = f_open(&fil, f_name, FA_READ);
     if (f_res != FR_OK) {
         print_ferr(f_res);
         return;
@@ -963,7 +965,6 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read, byte_written;
     uint8_t pattern_size = sizeof(ha_node_ns::adc_dev_config_pattern);
     char f_name[4];
 
@@ -985,7 +986,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
         if (argv[count][0] == '-') {
             switch (argv[count][1]) {
             case 'h': //get help
-                printf(gpio_usage, argv[0]);
+                printf(adc_usage, argv[0]);
                 return;
             case 'e': //set endpoint id
                 count++;
@@ -1009,6 +1010,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
                     return;
                 }
                 f_sync(&fil);
+                UINT byte_read;
                 f_res = f_read(&fil, config_str, pattern_size, &byte_read);
                 if (f_res != FR_OK) {
                     print_ferr(f_res);
@@ -1092,6 +1094,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
     snprintf(config_str, pattern_size, ha_node_ns::adc_dev_config_pattern, port,
             pin, adc_x, channel);
 
+    UINT byte_written;
     f_res = f_write(&fil, config_str, pattern_size, &byte_written);
     if (f_res != FR_OK) {
         print_ferr(f_res);
@@ -1101,7 +1104,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
     f_close(&fil);
 
     /* read back */
-    f_open(&fil, f_name, FA_READ);
+    f_res = f_open(&fil, f_name, FA_READ);
     if (f_res != FR_OK) {
         print_ferr(f_res);
         return;
@@ -1119,7 +1122,6 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
 {
     FRESULT f_res;
     FIL fil;
-    UINT byte_read, byte_written;
     uint8_t pattern_size = sizeof(ha_node_ns::pwm_dev_config_pattern);
     char f_name[4];
 
@@ -1141,7 +1143,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
         if (argv[count][0] == '-') {
             switch (argv[count][1]) {
             case 'h': //get help
-                printf(gpio_usage, argv[0]);
+                printf(pwm_usage, argv[0]);
                 break;
             case 'e': //set endpoint id
                 count++;
@@ -1164,6 +1166,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
                     return;
                 }
                 f_sync(&fil);
+                UINT byte_read;
                 f_res = f_read(&fil, config_str, pattern_size, &byte_read);
                 if (f_res != FR_OK) {
                     print_ferr(f_res);
@@ -1244,6 +1247,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
     snprintf(config_str, pattern_size, ha_node_ns::pwm_dev_config_pattern, port,
             pin, timer_x, channel);
 
+    UINT byte_written;
     f_res = f_write(&fil, config_str, pattern_size, &byte_written);
     if (f_res != FR_OK) {
         print_ferr(f_res);
@@ -1253,7 +1257,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
     f_close(&fil);
 
     /* read back */
-    f_open(&fil, f_name, FA_READ);
+    f_res = f_open(&fil, f_name, FA_READ);
     if (f_res != FR_OK) {
         print_ferr(f_res);
         return;
@@ -1317,7 +1321,7 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
 
     memset(dev_list, 0, sizeof(dev_list));
 
-    f_res = f_open(&fil, ha_node_ns::ha_dev_list_file,
+    f_res = f_open(&fil, ha_node_ns::ha_dev_list_file_name,
     FA_READ | FA_OPEN_ALWAYS);
     if (f_res != FR_OK) {
         print_ferr(f_res);
@@ -1337,8 +1341,8 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
     dev_list[ep_id] = ((uint32_t) ha_ns::sixlowpan_node_id << 16)
             | ((uint32_t) ep_id << 8) | (uint32_t) dev_type;
 
-    f_res = f_open(&fil, ha_node_ns::ha_dev_list_file,
-            FA_WRITE | FA_CREATE_ALWAYS);
+    f_res = f_open(&fil, ha_node_ns::ha_dev_list_file_name,
+    FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
         print_ferr(f_res);
         return;
@@ -1381,7 +1385,8 @@ void run_endpoint(int8_t ep_id)
         return;
     }
 
-    if (f_open(&fil, ha_node_ns::ha_dev_list_file, FA_READ | FA_OPEN_ALWAYS)) {
+    if (f_open(&fil, ha_node_ns::ha_dev_list_file_name,
+            FA_READ | FA_OPEN_ALWAYS)) {
         printf("Error on opening device list file.\n");
         return;
     }
