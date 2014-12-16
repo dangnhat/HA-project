@@ -153,6 +153,13 @@ public:
     uint16_t get_cur_num_rules(void);
 
     /**
+     * @brief   Set current number of rules.
+     *
+     * @param[in]   Current number of rules.
+     */
+    void set_cur_num_rules(uint16_t num_rules);
+
+    /**
      * @brief   Clear cur_num_rules and set all rules to invalid.
      */
     void new_scene(void);
@@ -186,12 +193,16 @@ public:
 
     /**
      * @brief   Find the first invalid rule from index 0  to cur_num_rules.
+     *          find_invalid_rule with cont = false should be called before any cont = true
+     *          to initialize the last invalid index value.
      *
      * @param[out]  index, index of a invalid rule.
+     * @param[in]   cont, false then the search will be done from the beginning,
+     *              otherwise, it will begin from the last invalid position.
      *
      * @return  true if invalid rule in [0-cur_num_rules] has been found, otherwise, false.
      */
-    bool find_invalid_rule(uint16_t &index);
+    bool find_invalid_rule(uint16_t &index, bool cont);
 
     /**
      * @brief   Process rules and output action to out_queue (in SET_DEV_VAL GFF format).
@@ -256,6 +267,8 @@ private:
 
     uint16_t cur_num_rules;
     rule_t rules_list[scene_max_rules];
+
+    uint16_t last_invalid_index;
 };
 
 #endif // SCENE_H_

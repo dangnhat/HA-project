@@ -68,7 +68,6 @@ enum gff_data_len_e: uint8_t {
     GET_NUM_OF_RULES_DATA_LEN = 8,
     SET_NUM_OF_RULES_DATA_LEN = 10,
 
-    GET_RULE_WITH_INDEXS_DATA_LEN = 8,
     SET_RULE_WITH_INDEXS_DATA_LEN = 27,
 
     SET_NEW_SCENE_DATA_LEN = 8,

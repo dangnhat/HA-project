@@ -40,6 +40,8 @@ scene::scene(void)
     cur_num_rules = 0;
     name[0] = '\0';
     clear_all_rules();
+
+    last_invalid_index = 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -65,6 +67,12 @@ void scene::set_name(const char *new_name)
 uint16_t scene::get_cur_num_rules(void)
 {
     return cur_num_rules;
+}
+
+/*----------------------------------------------------------------------------*/
+void scene::set_cur_num_rules(uint16_t num_rules)
+{
+    cur_num_rules = num_rules;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -112,12 +120,24 @@ void scene::remove_rule_with_index(uint16_t index)
 }
 
 /*----------------------------------------------------------------------------*/
-bool scene::find_invalid_rule(uint16_t &index)
+bool scene::find_invalid_rule(uint16_t &index, bool cont)
 {
-    for(uint8_t count = 0; count < cur_num_rules; count++) {
-        if (!rules_list[count].is_valid) {
-            index = count;
-            return true;
+    if (!cont) {
+        for(uint8_t count = 0; count < cur_num_rules; count++) {
+            if (!rules_list[count].is_valid) {
+                index = count;
+                last_invalid_index = index;
+                return true;
+            }
+        }
+    }
+    else {
+        for(uint8_t count = last_invalid_index + 1; count < cur_num_rules; count++) {
+            if (!rules_list[count].is_valid) {
+                index = count;
+                last_invalid_index = index;
+                return true;
+            }
         }
     }
 
