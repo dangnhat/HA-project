@@ -138,8 +138,7 @@ float adc_sensor_instance::cal_iterative_equations(float first_value)
                     *(param_ptr++), *(param_ptr++));
             break;
         case 't': //table
-            return lookup_table(retval, param_ptr,
-                    num_params - consumed_params);
+            return lookup_table(retval, param_ptr, num_params - consumed_params);
         default:
             break;
         }
@@ -174,31 +173,56 @@ float lookup_table(float value, float* defined_table, uint8_t table_size)
         return 0;
     }
     uint8_t index;
-    /* find segment */
-    for (index = 0; index < table_size; index++) {
-        if ((index % 2 == 0) && (value >= defined_table[index])) {
-            /* if finding out exact input value or input value is over max value in table,
-             * returning the ref value at index */
-            if (value == defined_table[index]
-                    || (index + 1 == table_size - 1)) {
-                return defined_table[index + 1];
-            }
-            break;
-        }
-    }
-    /* input value is smaller than min value in table */
-    if (index == table_size - 1) {
-        return defined_table[1];
-    }
-
-    /* cal the ref value by linearing input value in the found out segment */
     float a_value = 0;
     float b_value = 0;
-    a_value = (defined_table[index + 3] - defined_table[index + 1])
-            / (defined_table[index + 2] - defined_table[index]);
-    b_value = (defined_table[index + 1] * defined_table[index + 2]
-            - defined_table[index + 3] * defined_table[index])
-            / (defined_table[index + 2] - defined_table[index]);
+    /* find segment */
+    if (defined_table[0] > defined_table[table_size - 2]) { //increasing sequence
+        for (index = 0; index < table_size; index++) {
+            if ((index % 2 == 0) && (value >= defined_table[index])) {
+                /* if finding out exact input value or input value is over max value in table,
+                 * returning the ref value at index */
+                if (value == defined_table[index]
+                        || (index + 1 == table_size - 1)) {
+                    return defined_table[index + 1];
+                }
+                break;
+            }
+        }
+        /* input value is smaller than min value in table */
+        if (index == table_size - 1) {
+            return defined_table[1];
+        }
+
+        /* cal the ref value by linearing input value in the found out segment */
+        a_value = (defined_table[index + 3] - defined_table[index + 1])
+                / (defined_table[index + 2] - defined_table[index]); //a = (y2-y1)/(x2-x1)
+        b_value = (defined_table[index + 1] * defined_table[index + 2]
+                - defined_table[index + 3] * defined_table[index])
+                / (defined_table[index + 2] - defined_table[index]); //b = (y1*x2 - y2*x1)/(x2-x1)
+    } else { //decreasing sequence
+        for (index = table_size - 1; index >= 0; index--) {
+            if ((index % 2 == 0) && (value >= defined_table[index])) {
+                /* if finding out exact input value or input value is over max value in table,
+                 * returning the ref value at index */
+                if (value == defined_table[index]
+                        || (index == 0)) {
+                    return defined_table[index + 1];
+                }
+                break;
+            }
+        }
+
+        if(index == 0) {
+            return defined_table[table_size - 1];
+        }
+
+        /* cal the ref value by linearing input value in the found out segment */
+        a_value = (defined_table[index - 1] - defined_table[index + 1])
+                / (defined_table[index - 2] - defined_table[index]); //a = (y2-y1)/(x2-x1)
+        b_value = (defined_table[index + 1] * defined_table[index - 2]
+                - defined_table[index - 1] * defined_table[index])
+                / (defined_table[index - 2] - defined_table[index]); //b = (y1*x2 - y2*x1)/(x2-x1)
+    }
 
     /* y = a*x + b */
     return value * a_value + b_value;

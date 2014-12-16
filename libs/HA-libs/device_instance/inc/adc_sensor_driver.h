@@ -26,8 +26,6 @@ extern "C" {
 #include "ADC_device.h"
 
 namespace adc_sensor_ns {
-const uint8_t max_equation = 2;
-
 typedef enum {
     linear = 0,
     rational = 1,
