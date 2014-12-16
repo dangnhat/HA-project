@@ -77,6 +77,7 @@ const char dim_name[] = "dimmer";
 const char temp_ss_name[] = "temp sensor";
 const char lumi_ss_name[] = "lumi sensor";
 const char gas_ss_name[] = "gas sensor";
+const char moisture_ss_name[] = "moisture sensor";
 const char pir_ss_name[] = "pir sensor";
 const char on_off_bulb_name[] = "on/off bulb";
 const char buzzer_name[] = "buzzer";
@@ -99,6 +100,8 @@ const char* device_type_to_name(uint8_t device_type)
         return lumi_ss_name;
     case ((ha_ns::ADC_SENSOR & 0xF8) | (ha_ns::GAS & 0x07)):
         return gas_ss_name;
+    case ((ha_ns::ADC_SENSOR & 0xF8) | (ha_ns::MOISTURE & 0x07)):
+        return moisture_ss_name;
     case ((ha_ns::EVT_SENSOR & 0xF8) | (ha_ns::PIR & 0x07)):
         return pir_ss_name;
     case ((ha_ns::ON_OFF_OPUT & 0xF8) | (ha_ns::ON_OFF_BULB & 0x07)):
