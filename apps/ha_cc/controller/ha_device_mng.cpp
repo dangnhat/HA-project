@@ -95,7 +95,7 @@ int8_t ha_device_mng::get_dev_val_with_index(uint16_t index, uint32_t &device_id
 }
 
 /*----------------------------------------------------------------------------*/
-int8_t ha_device_mng::set_dev_ttl(uint32_t device_id, int8_t ttl)
+int16_t ha_device_mng::set_dev_ttl(uint32_t device_id, int16_t ttl)
 {
     ha_device *device_p;
 
@@ -109,7 +109,7 @@ int8_t ha_device_mng::set_dev_ttl(uint32_t device_id, int8_t ttl)
 }
 
 /*----------------------------------------------------------------------------*/
-int8_t ha_device_mng::get_dev_ttl(uint32_t device_id, int8_t &ttl)
+int16_t ha_device_mng::get_dev_ttl(uint32_t device_id, int16_t &ttl)
 {
     ha_device *device_p;
 
@@ -123,7 +123,7 @@ int8_t ha_device_mng::get_dev_ttl(uint32_t device_id, int8_t &ttl)
 }
 
 /*----------------------------------------------------------------------------*/
-int8_t ha_device_mng::chag_dev_ttl(uint32_t device_id, int8_t val)
+int16_t ha_device_mng::chag_dev_ttl(uint32_t device_id, int16_t val)
 {
     ha_device *device_p;
 

@@ -33,6 +33,7 @@ const shell_command_t shell_commands[] = {
     {"mkdir", "Make directories", mkdir},
     {"cd", "Change working directory", cd},
     {"pwd", "Print name of current/working directory", pwd},
+    {"mv", "Rename file/folder", mv},
 
     /* time cmds */
     {"date", "Print or set the system date and time", date},

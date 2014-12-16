@@ -42,6 +42,11 @@ const char rm_usage[] = "Usage:\n"
         "Note: total path name shouldn't be > ";
 const uint16_t RM_MAX_PATH_LEN = 64;
 
+const char rn_usage[] = "Usage:\n"
+        "rn [old path] [new path], rename old path name to new path name.\n"
+        "rn -h, get this help.\n";
+const uint16_t RN_MAX_PATH_LEN = 64;
+
 const char mkdir_usage[] = "Usage:\n"
         "mkdir [sub-folder], make directories.\n"
         "mkdir -h, get this help.\n";
@@ -341,6 +346,23 @@ void rm(int argc, char** argv)
             break;
         }
     }/* end for */
+}
+
+/*----------------------------------------------------------------------------*/
+void mv(int argc, char** argv)
+{
+    FRESULT fres;
+
+    if (argc != 3) {
+        printf("Err: missing arguments. Try -h to get help.\n");
+        return;
+    }
+
+    /* rename */
+    fres = f_rename(&argv[1][0], &argv[2][0]);
+    if (fres != FR_OK) {
+        print_ferr(fres);
+    }
 }
 
 /*----------------------------------------------------------------------------*/

@@ -84,7 +84,7 @@ void echo(int argc, char** argv);
 void rm(int argc, char** argv);
 
 /**
- * @brief   Move/rename a file or a folder.
+ * @brief   Move a file or a folder.
  *
  * @details Usage: mv [old_path] [new_path]
  *

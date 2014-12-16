@@ -82,7 +82,7 @@ public:
      *
      * @return      0, if device has been found. -1 if device didn't exist.
      */
-    int8_t set_dev_ttl(uint32_t device_id, int8_t ttl);
+    int16_t set_dev_ttl(uint32_t device_id, int16_t ttl);
 
     /**
      * @brief   Find and get TTL of a device.
@@ -92,7 +92,7 @@ public:
      *
      * @return      0, if device has been found. -1 if device didn't exist.
      */
-    int8_t get_dev_ttl(uint32_t device_id, int8_t &ttl);
+    int16_t get_dev_ttl(uint32_t device_id, int16_t &ttl);
 
     /**
      * @brief   Find and increase / decrease TTL of a device.
@@ -103,7 +103,7 @@ public:
      * @return      0 on success and device's ttl is not zero. -1 if device didn't exist.
      *              TTL_IS_ZERO if ttl value is zero.
      */
-    int8_t chag_dev_ttl(uint32_t device_id, int8_t val);
+    int16_t chag_dev_ttl(uint32_t device_id, int16_t val);
 
     /**
      * @brief   Decrease all device's ttls by one, and remove device(s) if TTL_IS_ZERO.

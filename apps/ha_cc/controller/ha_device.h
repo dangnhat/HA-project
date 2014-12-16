@@ -119,19 +119,19 @@ public:
      *
      * @return  time to live
      */
-    int8_t get_ttl(void) { return ttl; };
+    int16_t get_ttl(void) { return ttl; };
 
     /**
      * @brief   Set time to live.
      *
      * @param[in]   time, time to live
      */
-    void set_ttl(int8_t time) { ttl = (time < 0) ? 0 : time; };
+    void set_ttl(int16_t time) { ttl = (time < 0) ? 0 : time; };
 
 private:
     uint32_t device_id;
     int16_t value;
-    int8_t ttl; /* time to live (in seconds) */
+    int16_t ttl; /* time to live (in seconds) */
 };
 
 #endif // HA_DEVICE_H_

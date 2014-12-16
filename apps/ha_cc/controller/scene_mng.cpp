@@ -39,6 +39,7 @@ static const char scene_cmd_usage[] = "Usage:\n"
         "scene -s d|u -r, restart scene.\n"
         "scene -s d|u -v, save scene to file.\n"
         "scene -s d|u -e, restore scene from file.\n"
+        "scene -n old_name new_name, rename scene.\n"
         "scene -h, get help.\n";
 
 enum scene_cmd_type_e: uint8_t {
@@ -345,7 +346,7 @@ int8_t scene_mng::rename_inactive_scene(const char *old_name, const char *new_na
     strcat(name_with_folder_new, new_name);
 
     /* rename */
-    fres = f_rename(old_name, new_name);
+    fres = f_rename(name_with_folder, name_with_folder_new);
     if (fres != FR_OK) {
         HA_NOTIFY("scene_mng::rename_inactive_scene failed\n");
         print_ferr(fres);
@@ -750,6 +751,15 @@ void scene_mng_cmd(scene_mng &scene_mng_obj, rtc &rtc_obj, int argc, char **argv
 
                 scene_p->restore();
                 break;
+
+            case 'n':
+                if (count + 2 >= argc) {
+                    printf("Err: to few argument for option %s\n", argv[count]);
+                    return;
+                }
+
+                scene_mng_obj.rename_inactive_scene(argv[count+1], argv[count+2]);
+                return;
 
             case 'h':
                 printf("%s", scene_cmd_usage);

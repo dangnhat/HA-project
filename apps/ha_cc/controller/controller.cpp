@@ -61,7 +61,7 @@ static ha_device_mng controller_dev_mng(controller_devs_buffer,
         controller_max_num_of_devs, controller_dev_list_filename);
 
 /* Time to live for every ALIVE messages */
-static const int8_t alive_ttl = 120; /* in second */
+static const int16_t alive_ttl = 300; /* in second */
 
 /* Time period to save device data */
 static const uint8_t dev_list_save_period = 30; /* in seconds */
