@@ -62,9 +62,9 @@ static pwm_timer_t get_pwm_timer(int timer);
  *
  * @param[in] dev_id Device ID.
  *
- * @return The defined common device type.
+ * @return The defined device common subtype.
  */
-static uint8_t get_dev_type_common(uint32_t dev_id);
+static uint8_t get_dev_common_subtype(uint32_t dev_id);
 
 /**
  * @brief Compare device type in message value with the given device type.
@@ -128,12 +128,12 @@ void* end_point_handler(void* arg)
     while (1) {
         msg_receive(&msg);
         if (msg.type == ha_node_ns::NEW_DEVICE) {
-            switch (get_dev_type_common(msg.content.value)) {
+            switch (get_dev_common_subtype(msg.content.value)) {
             case ha_ns::ADC_SENSOR:
                 adc_sensor_handler(msg.content.value);
                 break;
             case ha_ns::EVT_SENSOR:
-                sensor_event_handler(msg.content.value);
+                event_sensor_handler(msg.content.value);
                 break;
             case ha_ns::ON_OFF_OPUT:
                 on_off_output_handler(msg.content.value);
@@ -282,7 +282,7 @@ void on_off_output_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case ha_ns::SET_DEV_VAL:
-            if (get_dev_type_common(msg.content.value >> 16)
+            if (get_dev_common_subtype(msg.content.value >> 16)
                     == (uint8_t) ha_ns::ON_OFF_OPUT) {
                 if ((uint16_t) msg.content.value == ha_ns::output_on) {
                     on_off_dev.dev_turn_on();
@@ -473,6 +473,7 @@ void adc_sensor_handler(uint32_t dev_id)
         msg_receive(&msg);
         switch (msg.type) {
         case adc_sensor_ns::ADC_SENSOR_MSG:
+            printf("ss: %d\n", (uint16_t) msg.content.value);
             forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) msg.content.value);
             break;
@@ -488,7 +489,7 @@ void adc_sensor_handler(uint32_t dev_id)
     }
 }
 
-void sensor_event_handler(uint32_t dev_id)
+void event_sensor_handler(uint32_t dev_id)
 {
     /* get event sensor configuration */
     gpio_config_params_t gpio_params;
@@ -834,7 +835,7 @@ static bool check_dev_type_value(uint32_t msg_value, uint8_t dev_type)
     return false;
 }
 
-static uint8_t get_dev_type_common(uint32_t dev_id)
+static uint8_t get_dev_common_subtype(uint32_t dev_id)
 {
     return ((uint8_t) dev_id) & 0xF8;
 }
