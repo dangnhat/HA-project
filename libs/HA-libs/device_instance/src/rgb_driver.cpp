@@ -45,7 +45,7 @@ rgb_instance::rgb_instance(void)
     this->blue_percent_wp = 100;
     /* 24bits color as default */
     this->color_model = model_24bits;
-    this->current_color = 0xFFFFFF;
+    this->current_color = 0;
 }
 
 void rgb_instance::device_configure(pwm_config_params_t *red_channel_params,
