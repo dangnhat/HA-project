@@ -203,7 +203,7 @@ void on_off_output_config(int argc, char** argv)
     return;
 }
 
-void sensor_event_config(int argc, char** argv)
+void event_sensor_config(int argc, char** argv)
 {
     int8_t ep_id = -1;
     int8_t specified_subtype = -1;

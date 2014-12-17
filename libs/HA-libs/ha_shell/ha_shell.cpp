@@ -48,7 +48,7 @@ const shell_command_t shell_commands[] = {
     {"btn", "Configure button device", button_config},
     {"sw", "Configure switch device", switch_config},
     {"onoff", "Configure on-off output device", on_off_output_config},
-    {"senevt", "Configure sensor event device", sensor_event_config},
+    {"senevt", "Configure sensor event device", event_sensor_config},
     {"dimmer", "Configure dimmer device", dimmer_config},
     {"lvbulb", "Configure level bulb device", level_bulb_config},
     {"servo", "Configure servo device", servo_config},
