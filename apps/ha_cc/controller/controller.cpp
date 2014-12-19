@@ -75,10 +75,10 @@ static bool new_scene_state = false;
 static char new_scene_name[scene_ns::scene_max_name_chars_wout_folders];
 
 static uint8_t new_scene_timeout_counter = 0;
-static const uint8_t new_scene_timeout_max_counter = 10; /* in seconds */
+static const uint8_t new_scene_timeout_max_counter = 25; /* in seconds */
 
 static uint8_t new_scene_set_rule_timeout_count = 0;
-static const uint8_t new_scene_set_rule_timeout_max_count = 1000; /* in ms */
+static const uint8_t new_scene_set_rule_timeout_max_count = 10000; /* in ms */
 static uint8_t new_scene_set_rule_resend_count = 0;
 static uint8_t new_scene_set_rule_resend_max_count = 1;
 
