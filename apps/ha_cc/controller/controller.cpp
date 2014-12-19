@@ -75,10 +75,10 @@ static bool new_scene_state = false;
 static char new_scene_name[scene_ns::scene_max_name_chars_wout_folders];
 
 static uint8_t new_scene_timeout_counter = 0;
-static const uint8_t new_scene_timeout_max_counter = 3; /* in seconds */
+static const uint8_t new_scene_timeout_max_counter = 10; /* in seconds */
 
 static uint8_t new_scene_set_rule_timeout_count = 0;
-static const uint8_t new_scene_set_rule_timeout_max_count = 100; /* in ms */
+static const uint8_t new_scene_set_rule_timeout_max_count = 1000; /* in ms */
 static uint8_t new_scene_set_rule_resend_count = 0;
 static uint8_t new_scene_set_rule_resend_max_count = 1;
 
@@ -317,7 +317,8 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
     char scene_name[scene_ns::scene_max_name_chars_wout_folders];
     char scene_name2[scene_ns::scene_max_name_chars_wout_folders];
 
-    uint16_t num_rule;
+    uint16_t num_rule, rule_index;
+    scene_ns::rule_t a_rule;
 
     /* Check data */
     data_len = from_ble_queue->preview_data(false);
@@ -427,9 +428,9 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_NUM_OF_SCENES_DATA_LEN;
         uint162buf(ha_ns::SET_NUM_OF_SCENES, &gff_frame[ha_ns::GFF_CMD_POS]);
         gff_frame[ha_ns::GFF_DATA_POS] =
-                controller_scene_mng.get_num_of_active_scenes();
+                scene_mng_p->get_num_of_active_scenes();
         gff_frame[ha_ns::GFF_DATA_POS + 1] =
-                controller_scene_mng.get_num_of_inactive_scenes();
+                scene_mng_p->get_num_of_inactive_scenes();
 
         to_ble_queue->add_data(gff_frame,
                 gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
@@ -453,7 +454,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
 
         /* Return active scene name */
         scene_name[0] = '\0';
-        controller_scene_mng.get_active_scene(scene_name);
+        scene_mng_p->get_active_scene(scene_name);
 
         /* Send back SET_ACT_SCENE_NAME_WITH_INDEXS */
         gff_frame[ha_ns::GFF_LEN_POS] =
@@ -481,9 +482,9 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         /* check first index */
         if (gff_frame[ha_ns::GFF_DATA_POS] == 0xFF) {
             /* send all inactive scene name to ble thread */
-            num_scene = controller_scene_mng.get_num_of_inactive_scenes();
+            num_scene = scene_mng_p->get_num_of_inactive_scenes();
             for (count = 0; count < num_scene; count++) {
-                set_inact_scene_name_with_index_to_ble(count, &controller_scene_mng,
+                set_inact_scene_name_with_index_to_ble(count, scene_mng_p,
                         ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
             }
         }
@@ -491,7 +492,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
             /* loop through every indexes */
             for (count = 0; count < gff_frame[ha_ns::GFF_LEN_POS]; count++) {
                 set_inact_scene_name_with_index_to_ble(gff_frame[ha_ns::GFF_DATA_POS + count],
-                        &controller_scene_mng,
+                        scene_mng_p,
                         ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
             }
         }
@@ -503,15 +504,15 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         /* Check scene's name */
         memcpy(scene_name, &gff_frame[ha_ns::GFF_DATA_POS], 8);
         scene_name[9] = '\0';
-        controller_scene_mng.get_user_scene(scene_name2);
+        scene_mng_p->get_user_scene(scene_name2);
 
         if (strcmp(scene_name, scene_name2) != 0) {
             HA_DEBUG("ble_gff_handler: Received scene name (%s) is not current running scene name (%s)\n",
                     scene_name, scene_name2);
 
             /* load scene_name to current running scene */
-            controller_scene_mng.set_user_scene(scene_name);
-            controller_scene_mng.restore_user_scene();
+            scene_mng_p->set_user_scene(scene_name);
+            scene_mng_p->restore_user_scene();
             HA_DEBUG("ble_gff_handler: Current running scene changed to %s\n",
                     scene_name);
         }
@@ -520,7 +521,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_NUM_OF_RULES_DATA_LEN;
         uint162buf(ha_ns::SET_NUM_OF_RULES, &gff_frame[ha_ns::GFF_CMD_POS]);
         memcpy(&gff_frame[ha_ns::GFF_DATA_POS], scene_name, 8);
-        uint162buf(controller_scene_mng.get_user_scene_ptr()->get_cur_num_rules(),
+        uint162buf(scene_mng_p->get_user_scene_ptr()->get_cur_num_rules(),
                 &gff_frame[ha_ns::GFF_DATA_POS + 8]);
 
         to_ble_queue->add_data(gff_frame,
@@ -531,12 +532,12 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         msg_send(&mesg, to_ble_pid, false);
 
         HA_DEBUG("ble_gff_handler: sent num of rules back to ble (%s, %hu)\n",
-                scene_name, controller_scene_mng.get_user_scene_ptr()->get_cur_num_rules());
+                scene_name, scene_mng_p->get_user_scene_ptr()->get_cur_num_rules());
 
         /* Restore old user scene */
         if (strcmp(scene_name, scene_name2) != 0) {
-            controller_scene_mng.set_user_scene(scene_name2);
-            controller_scene_mng.restore_user_scene();
+            scene_mng_p->set_user_scene(scene_name2);
+            scene_mng_p->restore_user_scene();
 
             HA_DEBUG("ble_gff_handler: Old user scene %s restored\n", scene_name2);
         }
@@ -548,15 +549,15 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         /* Check scene's name */
         memcpy(scene_name, &gff_frame[ha_ns::GFF_DATA_POS], 8);
         scene_name[9] = '\0';
-        controller_scene_mng.get_user_scene(scene_name2);
+        scene_mng_p->get_user_scene(scene_name2);
 
         if (strcmp(scene_name, scene_name2) != 0) {
             HA_DEBUG("ble_gff_handler: Received scene name (%s) is not current running scene name (%s)\n",
                 scene_name, scene_name2);
 
             /* load scene_name to current running scene */
-            controller_scene_mng.set_user_scene(scene_name);
-            controller_scene_mng.restore_user_scene();
+            scene_mng_p->set_user_scene(scene_name);
+            scene_mng_p->restore_user_scene();
             HA_DEBUG("ble_gff_handler: Current running scene changed to %s\n",
                     scene_name);
         }
@@ -564,9 +565,9 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         /* check first index */
         if (buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8]) == 0xFFFF) {
             /* send all rules to ble thread */
-            num_rule = controller_scene_mng.get_user_scene_ptr()->get_cur_num_rules();
+            num_rule = scene_mng_p->get_user_scene_ptr()->get_cur_num_rules();
             for (count = 0; count < num_rule; count++) {
-                set_rule_with_index_to_ble(count, scene_name, &controller_scene_mng,
+                set_rule_with_index_to_ble(count, scene_name, scene_mng_p,
                         ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
             }
         }
@@ -575,15 +576,15 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
             for (count = 0; count < ((gff_frame[ha_ns::GFF_LEN_POS] - 8) / 2); count++) {
                 set_rule_with_index_to_ble(buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8 + count*2]),
                         scene_name,
-                        &controller_scene_mng,
+                        scene_mng_p,
                         ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
             }
         }
 
         /* Restore old user scene */
         if (strcmp(scene_name, scene_name2) != 0) {
-            controller_scene_mng.set_user_scene(scene_name2);
-            controller_scene_mng.restore_user_scene();
+            scene_mng_p->set_user_scene(scene_name2);
+            scene_mng_p->restore_user_scene();
 
             HA_DEBUG("ble_gff_handler: Old user scene %s restored\n", scene_name2);
         }
@@ -597,12 +598,12 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         scene_name[9] = '\0';
 
         /* set active scene and restore */
-        controller_scene_mng.set_active_scene(scene_name);
-        controller_scene_mng.set_user_scene(scene_name);
-        controller_scene_mng.restore_user_scene();
+        scene_mng_p->set_active_scene(scene_name);
+        scene_mng_p->set_user_scene(scene_name);
+        scene_mng_p->restore_user_scene();
 
         /* feedback to ble */
-        controller_scene_mng.get_user_scene(scene_name);
+        scene_mng_p->get_user_scene(scene_name);
         memcpy(&gff_frame[ha_ns::GFF_DATA_POS], scene_name, 8);
         to_ble_queue->add_data(gff_frame,
                 gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
@@ -624,13 +625,13 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         scene_name[9] = '\0';
 
         /* compare with current running scene */
-        controller_scene_mng.get_user_scene(scene_name2);
+        scene_mng_p->get_user_scene(scene_name2);
         if (strcmp(scene_name, scene_name2) == 0) {
             HA_DEBUG("ble_gff_handler: Will not rename current running scene\n");
             scene_name[0] = '\0';
         }
         else {
-            if (controller_scene_mng.remove_inactive_scene(scene_name) == -1) {
+            if (scene_mng_p->remove_inactive_scene(scene_name) == -1) {
                 HA_DEBUG("ble_gff_hanlder: Failed to remove scene (%s)\n", scene_name);
                 scene_name[0] = '\0';
             }
@@ -659,7 +660,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         memcpy(scene_name, &gff_frame[ha_ns::GFF_DATA_POS], 8);
         scene_name[9] = '\0';
         /* compare with current running scene */
-        controller_scene_mng.get_user_scene(scene_name2);
+        scene_mng_p->get_user_scene(scene_name2);
         if (strcmp(scene_name, scene_name2) == 0) {
             HA_DEBUG("ble_gff_handler: Will not rename current running scene\n");
             scene_name[0] = '\0';
@@ -669,7 +670,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
             /* get new name */
             memcpy(scene_name2, &gff_frame[ha_ns::GFF_DATA_POS + 8], 8);
             scene_name2[9] = '\0';
-            controller_scene_mng.rename_inactive_scene(scene_name, scene_name2);
+            scene_mng_p->rename_inactive_scene(scene_name, scene_name2);
         }
 
         /* send SET_RENAME_INACT_SCENE back to ble */
@@ -695,16 +696,16 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         scene_name[9] = '\0';
 
         /* compare with current running scene */
-        controller_scene_mng.get_user_scene(scene_name2);
+        scene_mng_p->get_user_scene(scene_name2);
 
         if (strcmp(scene_name, scene_name2) != 0) {
             HA_DEBUG("ble_gff_handler: Received scene name (%s) is not current running scene name (%s)\n",
                 scene_name, scene_name2);
 
             /* load scene_name to current running scene */
-            controller_scene_mng.set_user_scene(scene_name);
-            controller_scene_mng.get_user_scene_ptr()->new_scene();
-            controller_scene_mng.set_user_scene_valid_status(false);
+            scene_mng_p->set_user_scene(scene_name);
+            scene_mng_p->get_user_scene_ptr()->new_scene();
+            scene_mng_p->set_user_scene_valid_status(false);
             HA_DEBUG("ble_gff_handler: Current running scene changed to new scene %s\n",
                     scene_name);
         }
@@ -746,7 +747,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         scene_name[9] = '\0';
 
         /* compare with current running scene */
-        controller_scene_mng.get_user_scene(scene_name2);
+        scene_mng_p->get_user_scene(scene_name2);
 
         if (strcmp(scene_name, scene_name2) != 0) {
             HA_DEBUG("ble_gff_handler: Received scene name (%s) is not "
@@ -756,7 +757,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         }
 
         /* Set num rules */
-        controller_scene_mng.get_user_scene_ptr()->set_cur_num_rules(
+        scene_mng_p->get_user_scene_ptr()->set_cur_num_rules(
                 buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8]));
 
         HA_DEBUG("ble_gff_handler: Set num of rules (%hu) to user scene (%s)\n",
@@ -784,6 +785,64 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         HA_DEBUG("ble_gff_handler: turn on timeout counter for SET_RULE_WITH_INDEXS "
                 "(%hu ms, resend %hu)\n",
                 new_scene_set_rule_timeout_count, new_scene_set_rule_resend_count);
+        break;
+
+    case ha_ns::SET_RULE_WITH_INDEXS:
+        HA_DEBUG("ble_gff_handler: SET_RULE_WITH_INDEXS\n");
+
+        if(!new_scene_state) {
+            HA_DEBUG("ble_gff_handler: not in new scene state, dropped\n");
+            break;
+        }
+
+        /* get scene name */
+        memcpy(scene_name, &gff_frame[ha_ns::GFF_DATA_POS], 8);
+        scene_name[9] = '\0';
+
+        /* compare with current running scene */
+        scene_mng_p->get_user_scene(scene_name2);
+
+        if (strcmp(scene_name, scene_name2) != 0) {
+            HA_DEBUG("ble_gff_handler: Received scene name (%s) is not "
+                    "current running scene name (%s), break\n",
+                scene_name, scene_name2);
+            break;
+        }
+
+        /* Set rule with index */
+        rule_index = buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8]);
+        a_rule.is_valid = true;
+        a_rule.is_active = gff_frame[ha_ns::GFF_DATA_POS + 10];
+        a_rule.inputs[0].cond = gff_frame[ha_ns::GFF_DATA_POS + 11];
+        switch(a_rule.inputs[0].cond) {
+        case scene_ns::COND_IN_RANGE:
+        case scene_ns::COND_IN_RANGE_EVDAY:
+            a_rule.inputs[0].time_range.start = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + 12]);
+            a_rule.inputs[0].time_range.end = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + 16]);
+            break;
+
+        default:
+            a_rule.inputs[0].dev_val.device_id = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + 12]);
+            a_rule.inputs[0].dev_val.value = buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 16]);
+            break;
+        }
+
+        a_rule.outputs[0].action = gff_frame[ha_ns::GFF_DATA_POS + 20];
+        switch(a_rule.outputs[0].action) {
+        default:
+            a_rule.inputs[0].dev_val.device_id = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + 21]);
+            a_rule.inputs[0].dev_val.value = buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 25]);
+            break;
+        }
+
+        if (scene_mng_p->get_user_scene_ptr()->add_rule_with_index(a_rule, rule_index) == 0) {
+            HA_DEBUG("ble_gff_handler: added rule with index (%hu) to scene (%s)\n",
+                    rule_index, scene_name);
+        }
+        else {
+            HA_DEBUG("ble_gff_handler: failed to add rule with index (%hu) to scene (%s)\n",
+                    rule_index, scene_name);
+        }
         break;
 
     default:

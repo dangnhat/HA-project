@@ -21,7 +21,8 @@ uint16_t buf2uint16(uint8_t* buffer)
 /*----------------------------------------------------------------------------*/
 uint32_t buf2uint32(uint8_t* buffer)
 {
-    return (uint32_t)((buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3]);
+    return ( ( ((uint32_t)buffer[0] << 24) ) | ( ((uint32_t)buffer[1] << 16) )
+            | ( ((uint32_t)buffer[2] << 8) ) | ((uint32_t)buffer[3]) );
 }
 
 /*----------------------------------------------------------------------------*/
