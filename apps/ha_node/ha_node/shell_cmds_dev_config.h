@@ -56,7 +56,7 @@ void on_off_output_config(int argc, char** argv);
  * @param[in] argc Number of arguments.
  * @param[in] argv Arguments.
  */
-void sensor_event_config(int argc, char** argv);
+void event_sensor_config(int argc, char** argv);
 
 /**
  * @brief Configure a dimmer device for the specified EndPoint.

@@ -116,7 +116,7 @@ float adc_sensor_instance::cal_iterative_equations(float first_value)
         case 'l': //linear
             consumed_params += 2;
             if (consumed_params > num_params) {
-                return 0;
+                return retval;
             }
             retval = linear_equation_calculate(retval, *param_ptr++,
                     *param_ptr++);
@@ -124,18 +124,18 @@ float adc_sensor_instance::cal_iterative_equations(float first_value)
         case 'r': //rational
             consumed_params += 3;
             if (consumed_params > num_params) {
-                return 0;
+                return retval;
             }
-            retval = rational_equation_calculate(retval, *(param_ptr++),
-                    *(param_ptr++), *(param_ptr++));
+            retval = rational_equation_calculate(retval, *param_ptr++,
+                    *param_ptr++, *param_ptr++);
             break;
         case 'p': //polynomial
             consumed_params += 3;
             if (consumed_params > num_params) {
-                return 0;
+                return retval;
             }
-            retval = polynomial_equation_calculate(retval, *(param_ptr++),
-                    *(param_ptr++), *(param_ptr++));
+            retval = polynomial_equation_calculate(retval, *param_ptr++,
+                    *param_ptr++, *param_ptr++);
             break;
         case 't': //table
             return lookup_table(retval, param_ptr, num_params - consumed_params);
@@ -170,59 +170,60 @@ float polynomial_equation_calculate(float x_value, float a_value, float b_value,
 float lookup_table(float value, float* defined_table, uint8_t table_size)
 {
     if (!defined_table || (table_size % 2 != 0)) {
-        return 0;
+        return value;
     }
-    uint8_t index;
+
+    bool inc_seq = false;
+    if (defined_table[0] < defined_table[table_size - 2]) {
+        inc_seq = true;
+    }
+
     float a_value = 0;
     float b_value = 0;
     /* find segment */
-    if (defined_table[0] > defined_table[table_size - 2]) { //increasing sequence
-        for (index = 0; index < table_size; index++) {
-            if ((index % 2 == 0) && (value >= defined_table[index])) {
-                /* if finding out exact input value or input value is over max value in table,
-                 * returning the ref value at index */
-                if (value == defined_table[index]
-                        || (index + 1 == table_size - 1)) {
+    uint8_t index = 0;
+    while (index < table_size) {
+        if ((index % 2 == 0)) {
+            /* if finding out exact input value
+             * or input value is greater than max x_value in table,
+             * returning the y_value */
+            if (inc_seq) { //increasing sequence
+                if ((index == table_size - 2)
+                        && (value >= defined_table[index])) {
                     return defined_table[index + 1];
                 }
-                break;
-            }
-        }
-        /* input value is smaller than min value in table */
-        if (index == table_size - 1) {
-            return defined_table[1];
-        }
 
-        /* cal the ref value by linearing input value in the found out segment */
-        a_value = (defined_table[index + 3] - defined_table[index + 1])
-                / (defined_table[index + 2] - defined_table[index]); //a = (y2-y1)/(x2-x1)
-        b_value = (defined_table[index + 1] * defined_table[index + 2]
-                - defined_table[index + 3] * defined_table[index])
-                / (defined_table[index + 2] - defined_table[index]); //b = (y1*x2 - y2*x1)/(x2-x1)
-    } else { //decreasing sequence
-        for (index = table_size - 1; index >= 0; index--) {
-            if ((index % 2 == 0) && (value >= defined_table[index])) {
-                /* if finding out exact input value or input value is over max value in table,
-                 * returning the ref value at index */
-                if (value == defined_table[index]
-                        || (index == 0)) {
+                /* x1 <= value <= x2 */
+                if (value >= defined_table[index]
+                        && value <= defined_table[index + 2]) {
+                    break;
+                }
+            } else { //decreasing sequence
+                if ((index == table_size - 2)
+                        && (value <= defined_table[index])) {
                     return defined_table[index + 1];
                 }
-                break;
+
+                /* x2 <= value <= x1 */
+                if (value <= defined_table[index]
+                        && value >= defined_table[index + 2]) {
+                    break;
+                }
             }
         }
-
-        if(index == 0) {
-            return defined_table[table_size - 1];
-        }
-
-        /* cal the ref value by linearing input value in the found out segment */
-        a_value = (defined_table[index - 1] - defined_table[index + 1])
-                / (defined_table[index - 2] - defined_table[index]); //a = (y2-y1)/(x2-x1)
-        b_value = (defined_table[index + 1] * defined_table[index - 2]
-                - defined_table[index - 1] * defined_table[index])
-                / (defined_table[index - 2] - defined_table[index]); //b = (y1*x2 - y2*x1)/(x2-x1)
+        index++;
     }
+
+    if (index == table_size - 1) {
+        return defined_table[1];
+    }
+
+    /* cal the ref value by linearing input value in the found out segment */
+    a_value = (defined_table[index + 3] - defined_table[index + 1])
+            / (defined_table[index + 2] - defined_table[index]); //a = (y2-y1)/(x2-x1)
+    b_value = (defined_table[index + 1] * defined_table[index + 2]
+            - defined_table[index + 3] * defined_table[index])
+            / (defined_table[index + 2] - defined_table[index]); //b = (y1*x2 - y2*x1)/(x2-x1)
 
     /* y = a*x + b */
     return value * a_value + b_value;
