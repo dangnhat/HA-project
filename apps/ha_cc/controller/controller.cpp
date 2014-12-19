@@ -766,7 +766,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         gff_frame[ha_ns::GFF_LEN_POS] = 10;
         uint162buf(ha_ns::GET_RULE_WITH_INDEXS, &gff_frame[ha_ns::GFF_CMD_POS]);
         memcpy(&gff_frame[ha_ns::GFF_DATA_POS], scene_name, 8);
-        uint162buf(0xFFFF, &gff_frame[ha_ns::GFF_CMD_POS + 8]);
+        uint162buf(0xFFFF, &gff_frame[ha_ns::GFF_DATA_POS + 8]);
 
         to_ble_queue->add_data(gff_frame,
                 gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
