@@ -116,7 +116,7 @@ void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
             msgLen = msg->value.data[3] + ha_ns::GFF_CMD_SIZE
                     + ha_ns::GFF_LEN_SIZE + 3;      //plus 3 bytes of header
             /* if message from mobile is data, then send ACK back to mobile */
-            send_ack_to_mobile(ack_index_buf);
+//            send_ack_to_mobile(ack_index_buf);
         }
     }
     usart_queue.add_data((uint8_t*) msg->value.data, msg->value.len);
