@@ -77,8 +77,8 @@ static char new_scene_name[scene_ns::scene_max_name_chars_wout_folders];
 static uint8_t new_scene_timeout_counter = 0;
 static const uint8_t new_scene_timeout_max_counter = 25; /* in seconds */
 
-static uint8_t new_scene_set_rule_timeout_count = 0;
-static const uint8_t new_scene_set_rule_timeout_max_count = 10000; /* in ms */
+static uint16_t new_scene_set_rule_timeout_count = 0;
+static const uint16_t new_scene_set_rule_timeout_max_count = 10000; /* in ms */
 static uint8_t new_scene_set_rule_resend_count = 0;
 static uint8_t new_scene_set_rule_resend_max_count = 1;
 
@@ -165,7 +165,13 @@ static void *controller_func(void *)
     msg_init_queue(controller_message_queue, controller_message_queue_size);
 
     /* Assign new_scene_set_rule_1msTIM_ISR to TIM6 */
-    MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_TIM6, new_scene_set_rule_1msTIM_ISR);
+    if (MB1_ISRs.subISR_assign(ISRMgr_ns::ISRMgr_TIM6, new_scene_set_rule_1msTIM_ISR) !=
+            ISRMgr_ns::successful) {
+        HA_DEBUG("controller_func: failed to add new_scene_set_rule_1msTIM_ISR to TIM6 int\n");
+    }
+    else {
+        HA_DEBUG("controller_func: added new_scene_set_rule_1msTIM_ISR to TIM6 int\n");
+    }
 
     /* restore old data */
     controller_dev_mng.restore();
@@ -207,6 +213,7 @@ static void *controller_func(void *)
             break;
 
         case ha_cc_ns::NEW_SCENE_SET_RULE_TIMEOUT:
+            HA_DEBUG("controller: NEW_SCENE_SET_RULE_TIMEOUT\n");
             new_scene_set_rule_timeout_handler(new_scene_set_rule_resend_count, new_scene_state,
                     &controller_scene_mng,
                     ble_thread_ns::ble_thread_pid,
@@ -812,6 +819,8 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         /* Set rule with index */
         rule_index = buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8]);
         a_rule.is_valid = true;
+        a_rule.num_in = 1;
+        a_rule.num_out = 1;
         a_rule.is_active = gff_frame[ha_ns::GFF_DATA_POS + 10];
         a_rule.inputs[0].cond = gff_frame[ha_ns::GFF_DATA_POS + 11];
         switch(a_rule.inputs[0].cond) {
@@ -830,8 +839,8 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         a_rule.outputs[0].action = gff_frame[ha_ns::GFF_DATA_POS + 20];
         switch(a_rule.outputs[0].action) {
         default:
-            a_rule.inputs[0].dev_val.device_id = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + 21]);
-            a_rule.inputs[0].dev_val.value = buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 25]);
+            a_rule.outputs[0].dev_val.device_id = buf2uint32(&gff_frame[ha_ns::GFF_DATA_POS + 21]);
+            a_rule.outputs[0].dev_val.value = buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 25]);
             break;
         }
 
@@ -1103,9 +1112,9 @@ static void new_scene_set_rule_1msTIM_ISR(void)
 {
     msg_t mesg;
 
-    if (new_scene_set_rule_resend_count > 0) {
-        new_scene_set_rule_resend_count--;
-        if (new_scene_set_rule_resend_count == 0) {
+    if (new_scene_set_rule_timeout_count > 0) {
+        new_scene_set_rule_timeout_count--;
+        if (new_scene_set_rule_timeout_count == 0) {
             mesg.type = ha_cc_ns::NEW_SCENE_SET_RULE_TIMEOUT;
             msg_send(&mesg, controller_pid, false);
         }
@@ -1147,9 +1156,40 @@ static void new_scene_set_rule_timeout_handler(uint8_t &resend_count, bool &new_
                         "(%s, %hu) to ble\n", new_scene_name, invalid_index);
             }
             while (scene_mng_p->get_user_scene_ptr()->find_invalid_rule(invalid_index, true));
-        }
 
-        resend_count--;
+            resend_count--;
+            new_scene_set_rule_timeout_count = new_scene_set_rule_timeout_max_count;
+        }
+        else {
+            /* No invalid rule, save new scene and send new scene back to ble */
+            new_scene_state = false;
+            scene_mng_p->get_user_scene_ptr()->save();
+            HA_DEBUG("new_scene_set_rule_timeout_handler: no invalid rule, "
+                    "clear new scene state (%hu),"
+                    "(%s) saved\n", new_scene_state, new_scene_name);
+
+            a_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_NEW_SCENE_DATA_LEN;
+            uint162buf(ha_ns::SET_NEW_SCENE, &a_gff_frame[ha_ns::GFF_CMD_POS]);
+            memcpy(&a_gff_frame[ha_ns::GFF_DATA_POS], new_scene_name, 8);
+
+            to_ble_queue->add_data(a_gff_frame,
+                    a_gff_frame[ha_ns::GFF_LEN_POS]
+                            + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE);
+            mesg.type = ha_ns::GFF_PENDING;
+            mesg.content.ptr = (char*) to_ble_queue;
+            msg_send(&mesg, ble_pid, false);
+
+            HA_DEBUG("new_scene_set_rule_timeout_handler: Resend SET_NEW_SCENE (%s)"
+                    "to ble\n", new_scene_name);
+
+            /* restore active scene */
+            scene_mng_p->get_active_scene(scene_name);
+            scene_mng_p->set_user_scene(scene_name);
+            scene_mng_p->restore_user_scene();
+
+            HA_DEBUG("new_scene_set_rule_timeout_handler: active scene (%s) restored\n",
+                    scene_name);
+        }
     }
     else {
         /* check invalid rules */
