@@ -6,7 +6,7 @@
  * @brief This is source file for multi-level bulb device instance for HA system.
  */
 #include "level_bulb_driver.h"
-#include "ha_node_glb.h"
+#include "ha_host_glb.h"
 
 const static uint16_t max_level_intensity = 65535;
 const static uint32_t output_freq = 200; //Hz
@@ -14,7 +14,7 @@ const static uint32_t output_freq = 200; //Hz
 const static uint8_t timer_period = 1; //ms
 
 static bool table_init = false;
-static level_bulb_instance* table_bulb[ha_node_ns::max_end_point];
+static level_bulb_instance* table_bulb[ha_host_ns::max_end_point];
 
 static void bulb_table_init(void);
 
@@ -170,7 +170,7 @@ uint8_t level_bulb_instance::get_percent_intensity(void)
 
 void level_bulb_instance::assign_bulb(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (table_bulb[i] == NULL) {
             table_bulb[i] = this;
             return;
@@ -180,7 +180,7 @@ void level_bulb_instance::assign_bulb(void)
 
 void level_bulb_instance::remove_bulb(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (table_bulb[i] == this) {
             table_bulb[i] = NULL;
             return;
@@ -190,14 +190,14 @@ void level_bulb_instance::remove_bulb(void)
 
 static void bulb_table_init(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         table_bulb[i] = NULL;
     }
 }
 
 void bulb_blink_callback_timer_isr(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (table_bulb[i] != NULL) {
             table_bulb[i]->blink_processing();
         }

@@ -127,7 +127,7 @@ void* end_point_handler(void* arg)
     msg_t msg;
     while (1) {
         msg_receive(&msg);
-        if (msg.type == ha_node_ns::NEW_DEVICE) {
+        if (msg.type == ha_host_ns::NEW_DEVICE) {
             switch (get_dev_common_subtype(msg.content.value)) {
             case ha_ns::ADC_SENSOR:
                 adc_sensor_handler(msg.content.value);
@@ -205,10 +205,10 @@ void button_handler(uint32_t dev_id)
                         ha_ns::btn_on_hold);
             }
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
             return;
         default:
@@ -247,10 +247,10 @@ void switch_handler(uint32_t dev_id)
                         ha_ns::switch_off);
             }
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
             return;
         default:
@@ -305,10 +305,10 @@ void on_off_output_handler(uint32_t dev_id)
                                 ha_ns::output_on : ha_ns::output_off);
             }
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             on_off_dev.dev_turn_off();
             msg_send_to_self(&msg);
             return;
@@ -339,10 +339,10 @@ void dimmer_handler(uint32_t dev_id)
             forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) msg.content.value);
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
             return;
         default:
@@ -392,10 +392,10 @@ void level_bulb_handler(uint32_t dev_id)
                         (uint16_t) level_bulb.get_percent_intensity());
             }
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             level_bulb.set_level_intensity(0); //turn off before removing device
             level_bulb.stop();
             msg_send_to_self(&msg);
@@ -435,10 +435,10 @@ void servo_sg90_handler(uint32_t dev_id)
             forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) sg90.get_angle());
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             sg90.stop();
             msg_send_to_self(&msg);
             return;
@@ -477,10 +477,10 @@ void adc_sensor_handler(uint32_t dev_id)
             forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) msg.content.value);
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
             return;
         default:
@@ -518,10 +518,10 @@ void event_sensor_handler(uint32_t dev_id)
                         ha_ns::no_detected);
             }
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             msg_send_to_self(&msg);
             return;
         default:
@@ -563,10 +563,10 @@ void rgb_led_handler(uint32_t dev_id)
             forward_data_msg_to_6lowpan(ha_ns::SET_DEV_VAL, dev_id,
                     (uint16_t) rgb_led.get_current_color());
             break;
-        case ha_node_ns::SEND_ALIVE:
+        case ha_host_ns::SEND_ALIVE:
             forward_data_msg_to_6lowpan(ha_ns::ALIVE, dev_id, 0);
             break;
-        case ha_node_ns::NEW_DEVICE:
+        case ha_host_ns::NEW_DEVICE:
             rgb_led.rgb_set_color(0x0000);
             rgb_led.stop();
             msg_send_to_self(&msg);
@@ -585,9 +585,9 @@ int get_file_name_from_dev_id(uint32_t dev_id, char* file_name)
 
 bool gpio_common_get_config(uint32_t dev_id, gpio_config_params_t *gpio_params)
 {
-    char config_str[sizeof(ha_node_ns::gpio_dev_config_pattern)];
+    char config_str[sizeof(ha_host_ns::gpio_dev_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            sizeof(ha_node_ns::gpio_dev_config_pattern))) {
+            sizeof(ha_host_ns::gpio_dev_config_pattern))) {
         return false;
     }
 
@@ -595,7 +595,7 @@ bool gpio_common_get_config(uint32_t dev_id, gpio_config_params_t *gpio_params)
     uint16_t pin = 0;
     char mode_c = '0';
 
-    sscanf(config_str, ha_node_ns::gpio_dev_config_pattern, &port_c, &pin,
+    sscanf(config_str, ha_host_ns::gpio_dev_config_pattern, &port_c, &pin,
             &mode_c);
 
     gpio_params->device_port = get_port(port_c);
@@ -614,9 +614,9 @@ bool gpio_common_get_config(uint32_t dev_id, gpio_config_params_t *gpio_params)
 
 bool adc_common_get_config(uint32_t dev_id, adc_config_params_t *adc_params)
 {
-    char config_str[sizeof(ha_node_ns::adc_dev_config_pattern)];
+    char config_str[sizeof(ha_host_ns::adc_dev_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            sizeof(ha_node_ns::adc_dev_config_pattern))) {
+            sizeof(ha_host_ns::adc_dev_config_pattern))) {
         return false;
     }
 
@@ -625,7 +625,7 @@ bool adc_common_get_config(uint32_t dev_id, adc_config_params_t *adc_params)
     uint16_t adc = 0;
     uint16_t chann = 0;
 
-    sscanf(config_str, ha_node_ns::adc_dev_config_pattern, &port_c, &pin, &adc,
+    sscanf(config_str, ha_host_ns::adc_dev_config_pattern, &port_c, &pin, &adc,
             &chann);
 
     adc_params->device_port = get_port(port_c);
@@ -638,9 +638,9 @@ bool adc_common_get_config(uint32_t dev_id, adc_config_params_t *adc_params)
 
 bool pwm_common_get_config(uint32_t dev_id, pwm_config_params_t *pwm_params)
 {
-    char config_str[sizeof(ha_node_ns::pwm_dev_config_pattern)];
+    char config_str[sizeof(ha_host_ns::pwm_dev_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            sizeof(ha_node_ns::pwm_dev_config_pattern))) {
+            sizeof(ha_host_ns::pwm_dev_config_pattern))) {
         return false;
     }
 
@@ -649,7 +649,7 @@ bool pwm_common_get_config(uint32_t dev_id, pwm_config_params_t *pwm_params)
     uint16_t timer = 0;
     uint16_t chann = 0;
 
-    sscanf(config_str, ha_node_ns::pwm_dev_config_pattern, &port_c, &pin,
+    sscanf(config_str, ha_host_ns::pwm_dev_config_pattern, &port_c, &pin,
             &timer, &chann);
 
     pwm_params->device_port = get_port(port_c);
@@ -662,9 +662,9 @@ bool pwm_common_get_config(uint32_t dev_id, pwm_config_params_t *pwm_params)
 
 bool rgb_get_config(uint32_t dev_id, rgb_instance *rgb)
 {
-    char config_str[sizeof(ha_node_ns::rgb_config_pattern)];
+    char config_str[sizeof(ha_host_ns::rgb_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            sizeof(ha_node_ns::rgb_config_pattern))) {
+            sizeof(ha_host_ns::rgb_config_pattern))) {
         return false;
     }
 
@@ -687,7 +687,7 @@ bool rgb_get_config(uint32_t dev_id, rgb_instance *rgb)
     uint16_t green_at_wp = 0;
     uint16_t blue_at_wp = 0;
 
-    sscanf(config_str, ha_node_ns::rgb_config_pattern, &r_port_c, &r_pin,
+    sscanf(config_str, ha_host_ns::rgb_config_pattern, &r_port_c, &r_pin,
             &r_timer, &r_chnn, &g_port_c, &g_pin, &g_timer, &g_chnn, &b_port_c,
             &b_pin, &b_timer, &b_chnn, &red_at_wp, &green_at_wp, &blue_at_wp);
 
@@ -843,9 +843,9 @@ static uint8_t get_dev_common_subtype(uint32_t dev_id)
 static bool sensor_read_config(uint32_t dev_id, adc_sensor_instance* adc_ss,
         uint16_t *num_equation, uint16_t *num_params)
 {
-    char config_str[sizeof(ha_node_ns::adc_sensor_config_pattern)];
+    char config_str[sizeof(ha_host_ns::adc_sensor_config_pattern)];
     if (!read_config_file(dev_id, config_str,
-            sizeof(ha_node_ns::adc_sensor_config_pattern))) {
+            sizeof(ha_host_ns::adc_sensor_config_pattern))) {
         return false;
     }
 
@@ -858,7 +858,7 @@ static bool sensor_read_config(uint32_t dev_id, adc_sensor_instance* adc_ss,
     int under_thres = 0;
     int over_thres = 0;
 
-    sscanf(config_str, ha_node_ns::adc_sensor_config_pattern, &port_c, &pin,
+    sscanf(config_str, ha_host_ns::adc_sensor_config_pattern, &port_c, &pin,
             &adc, &chann, &filter_thres, &under_thres, &over_thres,
             num_equation, num_params);
 
@@ -895,8 +895,8 @@ static bool sensor_read_equa_type_and_params(uint32_t dev_id,
     uint8_t index = 0;
 
     /* read equation type */
-    char config_str[ha_node_ns::dev_pattern_maxsize];
-    while (f_gets(config_str, ha_node_ns::dev_pattern_maxsize, &fil)) {
+    char config_str[ha_host_ns::dev_pattern_maxsize];
+    while (f_gets(config_str, ha_host_ns::dev_pattern_maxsize, &fil)) {
         if (equa_line >= 3) {
             equa_type_buff[index] = config_str[0];
             index++;
@@ -909,7 +909,7 @@ static bool sensor_read_equa_type_and_params(uint32_t dev_id,
 
     /* continue reading parameter of equations */
     for (index = 0; index < e_params_buff_len; index++) {
-        if (f_gets(config_str, ha_node_ns::dev_pattern_maxsize, &fil)) {
+        if (f_gets(config_str, ha_host_ns::dev_pattern_maxsize, &fil)) {
             equa_params_buff[index] = strtof(config_str, NULL);
         } else {
             break;

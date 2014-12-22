@@ -26,7 +26,7 @@ namespace ha_ns {
 kernel_pid_t sixlowpan_sender_pid;
 
 const uint16_t sixlowpan_sender_gff_queue_size =
-#ifdef HA_NODE
+#ifdef HA_HOST
         500;
 #endif
 #ifdef HA_CC
@@ -205,7 +205,7 @@ static int16_t send_data_gff(cir_queue *gff_cir_queue)
 #ifdef HA_CC
         node_id = parse_node_deviceid(buf2uint32(&payload_buffer[3]));
 #endif
-#ifdef HA_NODE
+#ifdef HA_HOST
         node_id = ha_ns::sixlowpan_ha_cc_node_id;
 #endif
         break;

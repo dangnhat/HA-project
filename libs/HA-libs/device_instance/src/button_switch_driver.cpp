@@ -6,7 +6,7 @@
  * @brief This is source file for button device instance in HA system.
  */
 #include "button_switch_driver.h"
-#include "ha_node_glb.h"
+#include "ha_host_glb.h"
 
 using namespace btn_sw_ns;
 
@@ -16,7 +16,7 @@ const static uint8_t timer_period = 1; //ms
 const uint8_t btn_sw_sampling_time_cycle = 10 / timer_period; //sampling every 10ms (tim6_period = 1ms)
 const uint16_t btn_hold_time = 1 * 1000 / btn_sw_sampling_time_cycle; //btn is on hold after holding 1s.
 
-button_switch_instance* btn_sw_table[ha_node_ns::max_end_point]; //button&switch table
+button_switch_instance* btn_sw_table[ha_host_ns::max_end_point]; //button&switch table
 static uint8_t time_cycle_count = 0;
 static bool table_init = false;
 
@@ -170,7 +170,7 @@ void button_switch_instance::switch_processing(void)
 
 void button_switch_instance::assign_btn_sw(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (btn_sw_table[i] == NULL) {
             btn_sw_table[i] = this;
             return;
@@ -180,7 +180,7 @@ void button_switch_instance::assign_btn_sw(void)
 
 void button_switch_instance::remove_btn_sw(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (btn_sw_table[i] == this) {
             btn_sw_table[i] = NULL;
             return;
@@ -190,7 +190,7 @@ void button_switch_instance::remove_btn_sw(void)
 
 static void btn_sw_table_init(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         btn_sw_table[i] = NULL;
     }
 }
@@ -201,7 +201,7 @@ void btn_sw_callback_timer_isr(void)
 
     if (time_cycle_count == btn_sw_sampling_time_cycle) {
         time_cycle_count = 0;
-        for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+        for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
             if (btn_sw_table[i] != NULL) {
                 btn_sw_table[i]->btn_sw_processing();
 #if SND_MSG

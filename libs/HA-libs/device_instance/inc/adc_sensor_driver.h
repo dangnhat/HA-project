@@ -42,34 +42,97 @@ enum
 
 class adc_sensor_instance: private adc_dev_class {
 public:
+    /**
+     * @brief Constructor.
+     */
     adc_sensor_instance(void);
+
+    /**
+     * @brief De-constructor.
+     */
     ~adc_sensor_instance(void);
 
+    /**
+     * @brief Configure hardware for device.
+     *
+     * @param[in] adc_config_params It contains port/pin/adc/channel to configure device.
+     */
     void device_configure(adc_config_params_t *adc_config_params);
 
+    /**
+     * @brief Set equation type for sensor. l(linear), r(rational), p(polynomial), t(table).
+     *
+     * @param[in] equation_type_buff The buffer of equation type.
+     * @param[in] buff_size The number of equa-type in equation_type_buff.
+     */
     void set_equation_type(char* equation_type_buff, uint8_t buff_size);
+
+    /**
+     * @brief Set parameter of equa-type for sensor.
+     *
+     * @param[in] equation_params_buff The buffer of parameters.
+     * @param[in] buff_size The number of parameters in equation_params_buff.
+     */
     void set_equation_params(float* equation_params_buff, uint8_t buff_size);
-    float cal_iterative_equations(float first_value);
+
+    /**
+     * @brief Get value calculated from the equations.
+     *
+     * @return value of sensor.
+     */
     float get_sensor_value(void);
 
-#if AUTO_UPDATE
+    /**
+     * @brief Start sensor.
+     */
     void start_sensor(void);
+
+#if AUTO_UPDATE
+    /**
+     * @brief Set delta threshold to avoid noisy.
+     *
+     * @param[in] delta_threshold
+     */
     void set_delta_threshold(uint16_t delta_threshold);
+
+    /**
+     * @brief Set overflow threshold to alert when value of sensor is over the specified threshold.
+     *
+     *@param overflow_threshold
+     */
     void set_overflow_threshold(int overflow_threshold);
+
+    /**
+     * @brief Set underflow threshold to alert when value of sensor is under the specified threshold.
+     *
+     *@param underflow_threshold
+     */
     void set_underflow_threshold(int underflow_threshold);
+
+    /**
+     * @brief Process value of sensor when timer callback is called.
+     */
     float adc_sensor_processing(void);
 
+    /**
+     * @brief check whether value of sensor is over or under threshold.
+     *
+     * @retrun true if value of sensor is under or over threshold, otherwise false.
+     */
     bool is_underlow_or_overflow(void);
 #endif //AUTO_UPDATE
 
 #if SND_MSG
     /**
+     * @brief Get pid of thread that sensor was declared.
      *
+     * @return pid of thread.
      */
     kernel_pid_t get_pid(void);
 #endif //SND_MSG
 private:
     float get_voltage_value(void);
+    float cal_iterative_equations(float first_value);
 
     float* equation_params_buffer = NULL;
     char* equation_type_buffer = NULL;

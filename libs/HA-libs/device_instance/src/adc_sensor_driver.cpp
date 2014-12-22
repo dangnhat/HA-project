@@ -11,7 +11,7 @@
 #include "adc_sensor_driver.h"
 
 #if AUTO_UPDATE
-#include "ha_node_glb.h"
+#include "ha_host_glb.h"
 #endif
 
 #if AUTO_UPDATE
@@ -23,7 +23,7 @@ const static uint16_t sampling_time_cycle = 100 / timer_period; //sampling every
 const uint32_t send_msg_time_period = 15 * 1000 / sampling_time_cycle; //send msg every 15s.
 uint16_t send_msg_time_count = 0;
 #endif //SND_MSG
-adc_sensor_instance* adc_sensor_table[ha_node_ns::max_end_point]; // the number of sensors depend on the number of EPs.
+adc_sensor_instance* adc_sensor_table[ha_host_ns::max_end_point]; // the number of sensors depend on the number of EPs.
 static bool table_init = false;
 static uint16_t time_cycle_count = 0;
 
@@ -296,7 +296,7 @@ bool adc_sensor_instance::is_underlow_or_overflow(void)
 
 void adc_sensor_instance::assign_sensor(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (adc_sensor_table[i] == NULL) {
             adc_sensor_table[i] = this;
             return;
@@ -306,7 +306,7 @@ void adc_sensor_instance::assign_sensor(void)
 
 void adc_sensor_instance::remove_sensor(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (adc_sensor_table[i] == this) {
             adc_sensor_table[i] = NULL;
             return;
@@ -323,7 +323,7 @@ void adc_sensor_callback_timer_isr(void)
 #if SND_MSG
         send_msg_time_count = (send_msg_time_count + 1) % send_msg_time_period;
 #endif //SND_MSG
-        for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+        for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
             if (adc_sensor_table[i] != NULL) {
                 float ss_value = adc_sensor_table[i]->adc_sensor_processing();
 #if SND_MSG
@@ -347,7 +347,7 @@ void adc_sensor_callback_timer_isr(void)
 
 static void adc_sensor_table_init(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         adc_sensor_table[i] = NULL;
     }
 }

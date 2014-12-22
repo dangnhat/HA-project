@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = ha_node
+APPLICATION = ha_host
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= mboard-1
@@ -47,12 +47,12 @@ BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 red
 #----------------------- HA project configuration -----------------------------#
 
 # HA network device type
-CFLAGS += -DHA_NODE
+CFLAGS += -DHA_HOST
 
 # Location for source files and include headers (don't add / in the end)
 SRCLOC += ../../libs/MBoard1-libs
 SRCLOC += ../../libs/STM32F10x_StdPeriph_Driver/src
-SRCLOC += ../../libs/misc 
+SRCLOC += ../../libs/misc
 SRCLOC += ../../libs/RIOT-libs/src
 SRCLOC += ../../libs/HA-libs
 SRCLOC += ../../libs/HA-libs/ha_shell
@@ -61,7 +61,7 @@ SRCLOC += ../../libs/HA-libs/device_class/src
 SRCLOC += ../../libs/HA-libs/device_instance/src
 SRCLOC += ../../libs/HA-libs/misc
 SRCLOC += ../../libs/FATFileSystem/src
-SRCLOC += ha_node
+SRCLOC += ha_host
 SRCLOC += sixlowpan
 
 INCLOC += ../../libs/MBoard1-libs
@@ -76,7 +76,7 @@ INCLOC += ../../libs/HA-libs/device_instance/inc
 INCLOC += ../../libs/HA-libs/common_def
 INCLOC += ../../libs/HA-libs/misc
 INCLOC += ../../libs/FATFileSystem/src
-INCLOC += ha_node
+INCLOC += ha_host
 INCLOC += sixlowpan
 
 export CPPMIX =1

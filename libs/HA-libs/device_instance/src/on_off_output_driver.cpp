@@ -6,13 +6,13 @@
  * @brief This is source file for on-off bulb device instance for HA system.
  */
 #include "on_off_output_driver.h"
-#include "ha_node_glb.h"
+#include "ha_host_glb.h"
 
 using namespace on_off_dev_ns;
 
 static const uint8_t timer_period = 1; //ms
 
-static on_off_output_instance* dev_table[ha_node_ns::max_end_point];
+static on_off_output_instance* dev_table[ha_host_ns::max_end_point];
 
 bool table_init = false;
 static void dev_table_init(void);
@@ -113,7 +113,7 @@ on_off_dev_status_t on_off_output_instance::dev_get_state(void)
 
 void on_off_output_instance::assign_dev(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (dev_table[i] == NULL) {
             dev_table[i] = this;
             return;
@@ -123,7 +123,7 @@ void on_off_output_instance::assign_dev(void)
 
 void on_off_output_instance::remove_dev(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (dev_table[i] == this) {
             dev_table[i] = NULL;
             return;
@@ -133,14 +133,14 @@ void on_off_output_instance::remove_dev(void)
 
 static void dev_table_init(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         dev_table[i] = NULL;
     }
 }
 
 void on_off_blink_callback_timer_isr(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (dev_table[i] != NULL) {
             dev_table[i]->blink_processing();
         }

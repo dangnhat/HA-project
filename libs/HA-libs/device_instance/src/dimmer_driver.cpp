@@ -8,7 +8,7 @@
 #include <string.h>
 #include "dimmer_driver.h"
 #if AUTO_UPDATE
-#include "ha_node_glb.h"
+#include "ha_host_glb.h"
 #endif
 
 using namespace dimmer_ns;
@@ -21,7 +21,7 @@ const static uint16_t dimmer_sampling_time_cycle = 100 / timer_period; //samplin
 
 /* internal variables */
 static bool table_init = false;
-static dimmer_instance* dimmer_table[ha_node_ns::max_end_point];
+static dimmer_instance* dimmer_table[ha_host_ns::max_end_point];
 static uint16_t time_cycle_count = 0;
 
 /* internal function */
@@ -116,14 +116,14 @@ bool dimmer_instance::is_over_delta_thres(void)
 
 static void dimmer_table_init(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         dimmer_table[i] = NULL;
     }
 }
 
 void dimmer_instance::assign_dimmer(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (dimmer_table[i] == NULL) {
             dimmer_table[i] = this;
             return;
@@ -133,7 +133,7 @@ void dimmer_instance::assign_dimmer(void)
 
 void dimmer_instance::remove_dimmer(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (dimmer_table[i] == this) {
             dimmer_table[i] = NULL;
             return;
@@ -147,7 +147,7 @@ void dimmer_callback_timer_isr(void)
 
     if (time_cycle_count == dimmer_sampling_time_cycle) {
         time_cycle_count = 0;
-        for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+        for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
             if (dimmer_table[i] != NULL) {
                 uint8_t new_value = dimmer_table[i]->dimmer_processing();
 #if SND_MSG

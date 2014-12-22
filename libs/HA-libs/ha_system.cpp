@@ -55,9 +55,9 @@ void ha_system_init(void)
     slp_sender_start();
     slp_receiver_start();
 
-#ifdef HA_NODE
+#ifdef HA_HOST
     /* Node's specific initializations */
-    ha_node_init();
+    ha_host_init();
 
     HA_NOTIFY("HA node initialized\n");
 #endif

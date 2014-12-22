@@ -21,7 +21,7 @@ extern "C" {
 #include "shell_cmds_time.h"
 #include "shell_cmds_sixlowpan.h"
 
-#ifdef HA_NODE
+#ifdef HA_HOST
 #include "shell_cmds_dev_config.h"
 #endif
 

@@ -1,2 +1,2 @@
-Application on node in HA system
+Application on Host in HA system
 ====================================== 

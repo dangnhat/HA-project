@@ -1,9 +1,9 @@
 /**
- * @file ha_node.h
+ * @file ha_host.cpp
  * @author  Nguyen Van Hien  <nvhien1992@gmail.com>.
  * @version 1.0
  * @date 11-Nov-2014
- * @brief This is source file for HA node initialization in HA system.
+ * @brief This is source file for HA host initialization in HA system.
  *
  * (Pid table)
  * Initialize endpoint pid table.
@@ -15,7 +15,7 @@ extern "C" {
 #include "msg.h"
 #include "thread.h"
 }
-#include "ha_node.h"
+#include "ha_host.h"
 #include "MB1_System.h"
 
 const ISRMgr_ns::ISR_t tim_isr_type = ISRMgr_ns::ISRMgr_TIM6;
@@ -24,7 +24,7 @@ const uint8_t rtc_period = 1; //sec
 const uint32_t send_alive_time_period = 60 / rtc_period; //send alive every 60s.
 
 uint32_t time_cycle_count = 0;
-kernel_pid_t ha_node_ns::end_point_pid[max_end_point];
+kernel_pid_t ha_host_ns::end_point_pid[max_end_point];
 
 /**
  * @brief Initialize pid_table.
@@ -36,7 +36,7 @@ static void endpoint_pid_table_init(void);
  */
 static void send_alive_callback(void);
 
-void ha_node_init(void)
+void ha_host_init(void)
 {
     endpoint_pid_table_init();
 
@@ -61,8 +61,8 @@ void ha_node_init(void)
 
 static void endpoint_pid_table_init(void)
 {
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
-        ha_node_ns::end_point_pid[i] = KERNEL_PID_UNDEF;
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
+        ha_host_ns::end_point_pid[i] = KERNEL_PID_UNDEF;
     }
 }
 
@@ -71,11 +71,11 @@ static void send_alive_callback(void)
     time_cycle_count = time_cycle_count + 1;
     if (time_cycle_count == send_alive_time_period) {
         time_cycle_count = 0;
-        for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
-            if (ha_node_ns::end_point_pid[i] != KERNEL_PID_UNDEF) {
+        for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
+            if (ha_host_ns::end_point_pid[i] != KERNEL_PID_UNDEF) {
                 msg_t msg;
-                msg.type = ha_node_ns::SEND_ALIVE;
-                msg_send(&msg, ha_node_ns::end_point_pid[i], false);
+                msg.type = ha_host_ns::SEND_ALIVE;
+                msg_send(&msg, ha_host_ns::end_point_pid[i], false);
             }
         }
     }

@@ -132,7 +132,7 @@ void stop_endpoint_callback(int argc, char** argv)
 
     /* get EP ID from command line */
     int ep_id = atoi(argv[1]);
-    if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+    if (ep_id < 0 || ep_id > ha_host_ns::max_end_point) {
         printf("ERR: invalid endpoint id\n");
         return;
     }
@@ -269,7 +269,7 @@ void rgb_led_config(int argc, char** argv)
     FRESULT f_res;
     FIL fil;
     char f_name[4];
-    uint8_t pattern_size = sizeof(ha_node_ns::rgb_config_pattern);
+    uint8_t pattern_size = sizeof(ha_host_ns::rgb_config_pattern);
 
     int8_t ep_id = -1;
     uint8_t dev_type = (uint8_t) ha_ns::RGB_LED;
@@ -315,7 +315,7 @@ void rgb_led_config(int argc, char** argv)
                 }
                 /* save endpoint id */
                 ep_id = atoi(argv[count]);
-                if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+                if (ep_id < 0 || ep_id > ha_host_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
@@ -333,7 +333,7 @@ void rgb_led_config(int argc, char** argv)
                     return;
                 }
                 f_close(&fil);
-                sscanf(config_str, ha_node_ns::rgb_config_pattern, &Rport,
+                sscanf(config_str, ha_host_ns::rgb_config_pattern, &Rport,
                         &Rpin, &Rtimer_x, &Rchannel, &Gport, &Gpin, &Gtimer_x,
                         &Gchannel, &Bport, &Bpin, &Btimer_x, &Bchannel,
                         &red_at_wp, &green_at_wp, &blue_at_wp);
@@ -512,7 +512,7 @@ void rgb_led_config(int argc, char** argv)
     }
     f_sync(&fil);
 
-    snprintf(config_str, pattern_size, ha_node_ns::rgb_config_pattern, Rport,
+    snprintf(config_str, pattern_size, ha_host_ns::rgb_config_pattern, Rport,
             Rpin, Rtimer_x, Rchannel, Gport, Gpin, Gtimer_x, Gchannel, Bport,
             Bpin, Btimer_x, Bchannel, red_at_wp, green_at_wp, blue_at_wp);
 
@@ -548,7 +548,7 @@ void adc_sensor_config(int argc, char** argv)
     FRESULT f_res;
     FIL fil;
     char f_name[4];
-    uint8_t pattern_size = sizeof(ha_node_ns::adc_sensor_config_pattern);
+    uint8_t pattern_size = sizeof(ha_host_ns::adc_sensor_config_pattern);
     uint8_t first_equa_type = 0;
     uint8_t first_params = 0;
     uint16_t num_params = 0;
@@ -596,7 +596,7 @@ void adc_sensor_config(int argc, char** argv)
                 }
                 /* save endpoint id */
                 ep_id = atoi(argv[count]);
-                if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+                if (ep_id < 0 || ep_id > ha_host_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
@@ -616,7 +616,7 @@ void adc_sensor_config(int argc, char** argv)
                     return;
                 }
                 f_close(&fil);
-                sscanf(config_str, ha_node_ns::adc_sensor_config_pattern, &port,
+                sscanf(config_str, ha_host_ns::adc_sensor_config_pattern, &port,
                         &pin, &adc_x, &channel, &filter_thres, &under_thres,
                         &over_thres, &num_equation, &num_params);
                 break;
@@ -767,7 +767,7 @@ void adc_sensor_config(int argc, char** argv)
     }
     f_sync(&fil);
 
-    snprintf(config_str, pattern_size, ha_node_ns::adc_sensor_config_pattern,
+    snprintf(config_str, pattern_size, ha_host_ns::adc_sensor_config_pattern,
             port, pin, adc_x, channel, filter_thres, under_thres, over_thres,
             num_equation, num_params);
     f_puts(config_str, &fil);
@@ -775,7 +775,7 @@ void adc_sensor_config(int argc, char** argv)
 
     for (uint8_t count = first_equa_type;
             count < first_equa_type + num_equation; count++) {
-        snprintf(config_str, pattern_size, ha_node_ns::sensor_equa_type,
+        snprintf(config_str, pattern_size, ha_host_ns::sensor_equa_type,
                 argv[count][0]);
         f_puts(config_str, &fil);
         f_sync(&fil);
@@ -785,7 +785,7 @@ void adc_sensor_config(int argc, char** argv)
     for (uint8_t count = first_params; count < first_params + num_params;
             count++) {
         param = strtof(argv[count], NULL);
-        snprintf(config_str, pattern_size, ha_node_ns::sensor_equa_params,
+        snprintf(config_str, pattern_size, ha_host_ns::sensor_equa_params,
                 param);
         f_puts(config_str, &fil);
         f_sync(&fil);
@@ -817,7 +817,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
     FRESULT f_res;
     FIL fil;
     char f_name[4];
-    uint8_t pattern_size = sizeof(ha_node_ns::gpio_dev_config_pattern);
+    uint8_t pattern_size = sizeof(ha_host_ns::gpio_dev_config_pattern);
 
     *endpoint_id = -1;
 
@@ -856,7 +856,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
                 /* save endpoint id */
                 *endpoint_id = atoi(argv[count]);
                 if (*endpoint_id < 0
-                        || *endpoint_id > ha_node_ns::max_end_point) {
+                        || *endpoint_id > ha_host_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
@@ -877,7 +877,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
                     return;
                 }
                 f_close(&fil);
-                sscanf(config_str, ha_node_ns::gpio_dev_config_pattern, &port,
+                sscanf(config_str, ha_host_ns::gpio_dev_config_pattern, &port,
                         &pin, &mode);
                 break;
             case 'p':
@@ -934,7 +934,7 @@ static void gpio_common_config(int argc, char** argv, int8_t *endpoint_id,
     }
     f_sync(&fil);
 
-    snprintf(config_str, pattern_size, ha_node_ns::gpio_dev_config_pattern,
+    snprintf(config_str, pattern_size, ha_host_ns::gpio_dev_config_pattern,
             port, pin, mode);
 
     UINT byte_written;
@@ -965,7 +965,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
 {
     FRESULT f_res;
     FIL fil;
-    uint8_t pattern_size = sizeof(ha_node_ns::adc_dev_config_pattern);
+    uint8_t pattern_size = sizeof(ha_host_ns::adc_dev_config_pattern);
     char f_name[4];
 
     *endpoint_id = -1;
@@ -997,7 +997,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
                 /* save endpoint id */
                 *endpoint_id = atoi(argv[count]);
                 if (*endpoint_id < 0
-                        || *endpoint_id > ha_node_ns::max_end_point) {
+                        || *endpoint_id > ha_host_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
@@ -1018,7 +1018,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
                     return;
                 }
                 f_close(&fil);
-                sscanf(config_str, ha_node_ns::adc_dev_config_pattern, &port,
+                sscanf(config_str, ha_host_ns::adc_dev_config_pattern, &port,
                         &pin, &adc_x, &channel);
                 break;
             case 'p':
@@ -1091,7 +1091,7 @@ static void adc_common_config(int argc, char** argv, int8_t *endpoint_id)
     }
     f_sync(&fil);
 
-    snprintf(config_str, pattern_size, ha_node_ns::adc_dev_config_pattern, port,
+    snprintf(config_str, pattern_size, ha_host_ns::adc_dev_config_pattern, port,
             pin, adc_x, channel);
 
     UINT byte_written;
@@ -1122,7 +1122,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
 {
     FRESULT f_res;
     FIL fil;
-    uint8_t pattern_size = sizeof(ha_node_ns::pwm_dev_config_pattern);
+    uint8_t pattern_size = sizeof(ha_host_ns::pwm_dev_config_pattern);
     char f_name[4];
 
     *endpoint_id = -1;
@@ -1153,7 +1153,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
                 }
                 *endpoint_id = atoi(argv[count]);
                 if (*endpoint_id < 0
-                        || *endpoint_id > ha_node_ns::max_end_point) {
+                        || *endpoint_id > ha_host_ns::max_end_point) {
                     printf("ERR: invalid endpoint id value\n");
                     return;
                 }
@@ -1174,7 +1174,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
                     return;
                 }
                 f_close(&fil);
-                sscanf(config_str, ha_node_ns::adc_dev_config_pattern, &port,
+                sscanf(config_str, ha_host_ns::adc_dev_config_pattern, &port,
                         &pin, &timer_x, &channel);
                 break;
             case 'p': //set port
@@ -1244,7 +1244,7 @@ static void pwm_common_config(int argc, char** argv, int8_t *endpoint_id)
     }
     f_sync(&fil);
 
-    snprintf(config_str, pattern_size, ha_node_ns::pwm_dev_config_pattern, port,
+    snprintf(config_str, pattern_size, ha_host_ns::pwm_dev_config_pattern, port,
             pin, timer_x, channel);
 
     UINT byte_written;
@@ -1317,11 +1317,11 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
 {
     FIL fil;
     FRESULT f_res;
-    uint32_t dev_list[ha_node_ns::max_end_point];
+    uint32_t dev_list[ha_host_ns::max_end_point];
 
     memset(dev_list, 0, sizeof(dev_list));
 
-    f_res = f_open(&fil, ha_node_ns::ha_dev_list_file_name,
+    f_res = f_open(&fil, ha_host_ns::ha_dev_list_file_name,
     FA_READ | FA_OPEN_ALWAYS);
     if (f_res != FR_OK) {
         print_ferr(f_res);
@@ -1329,9 +1329,9 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
     }
 
     char line[64];
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (f_gets(line, sizeof(line), &fil)) {
-            sscanf(line, ha_node_ns::dev_list_pattern, &dev_list[i]);
+            sscanf(line, ha_host_ns::dev_list_pattern, &dev_list[i]);
         } else {
             break;
         }
@@ -1341,7 +1341,7 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
     dev_list[ep_id] = ((uint32_t) ha_ns::sixlowpan_node_id << 16)
             | ((uint32_t) ep_id << 8) | (uint32_t) dev_type;
 
-    f_res = f_open(&fil, ha_node_ns::ha_dev_list_file_name,
+    f_res = f_open(&fil, ha_host_ns::ha_dev_list_file_name,
     FA_WRITE | FA_CREATE_ALWAYS);
     if (f_res != FR_OK) {
         print_ferr(f_res);
@@ -1349,8 +1349,8 @@ static void modify_dev_list_file(uint8_t ep_id, uint8_t dev_type)
     }
     f_sync(&fil);
 
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
-        snprintf(line, sizeof(line), ha_node_ns::dev_list_pattern, dev_list[i]);
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
+        snprintf(line, sizeof(line), ha_host_ns::dev_list_pattern, dev_list[i]);
         f_puts(line, &fil);
     }
     f_close(&fil);
@@ -1366,7 +1366,7 @@ static bool check_devid(uint32_t dev_id)
     if (node_id != ha_ns::sixlowpan_node_id) {
         return false;
     }
-    if (ep_id > ha_node_ns::max_end_point) {
+    if (ep_id > ha_host_ns::max_end_point) {
         return false;
     }
 
@@ -1376,25 +1376,25 @@ static bool check_devid(uint32_t dev_id)
 void run_endpoint(int8_t ep_id)
 {
     FIL fil;
-    uint32_t dev_list[ha_node_ns::max_end_point];
+    uint32_t dev_list[ha_host_ns::max_end_point];
 
     memset(dev_list, 0, sizeof(dev_list));
 
-    if (ep_id < 0 || ep_id > ha_node_ns::max_end_point) {
+    if (ep_id < 0 || ep_id > ha_host_ns::max_end_point) {
         printf("ERR: invalid input endpoint id.\n");
         return;
     }
 
-    if (f_open(&fil, ha_node_ns::ha_dev_list_file_name,
+    if (f_open(&fil, ha_host_ns::ha_dev_list_file_name,
             FA_READ | FA_OPEN_ALWAYS)) {
         printf("Error on opening device list file.\n");
         return;
     }
 
     char line[24];
-    for (uint8_t i = 0; i < ha_node_ns::max_end_point; i++) {
+    for (uint8_t i = 0; i < ha_host_ns::max_end_point; i++) {
         if (f_gets(line, sizeof(line), &fil)) {
-            sscanf(line, ha_node_ns::dev_list_pattern, &dev_list[i]);
+            sscanf(line, ha_host_ns::dev_list_pattern, &dev_list[i]);
         } else {
             break;
         }
@@ -1407,7 +1407,7 @@ void run_endpoint(int8_t ep_id)
     }
 
     msg_t msg;
-    msg.type = ha_node_ns::NEW_DEVICE;
+    msg.type = ha_host_ns::NEW_DEVICE;
     msg.content.value = dev_list[ep_id];
-    msg_send(&msg, ha_node_ns::end_point_pid[ep_id], false);
+    msg_send(&msg, ha_host_ns::end_point_pid[ep_id], false);
 }

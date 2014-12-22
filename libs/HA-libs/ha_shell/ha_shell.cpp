@@ -41,7 +41,7 @@ const shell_command_t shell_commands[] = {
     /* sixlowpan cmds */
     {"6lowpan", "6LoWPAN network stack configurations", sixlowpan_config},
 
-#ifdef HA_NODE
+#ifdef HA_HOST
     /* device configuration cmds */
     {"rst", "Run the specified thread with a device", rst_endpoint_callback},
     {"stop", "Stop device in the specified thread", stop_endpoint_callback},

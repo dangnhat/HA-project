@@ -8,8 +8,8 @@
 #ifndef __HA_DEVICE_HANDLER_H_
 #define __HA_DEVICE_HANDLER_H_
 
-#include "ha_node_msg_id.h"
-#include "ha_node_glb.h"
+#include "ha_host_msg_id.h"
+#include "ha_host_glb.h"
 #include "button_switch_driver.h"
 #include "on_off_output_driver.h"
 #include "level_bulb_driver.h"
@@ -19,7 +19,7 @@
 #include "adc_sensor_driver.h"
 #include "sensor_event_driver.h"
 
-namespace ha_node_ns {
+namespace ha_host_ns {
 const uint8_t dev_pattern_maxsize = 110;
 
 const char ha_dev_list_file_name[] = "dev_list";

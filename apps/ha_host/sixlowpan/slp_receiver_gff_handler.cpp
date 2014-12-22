@@ -14,7 +14,7 @@ extern "C" {
 #include "ha_sixlowpan.h"
 #include "gff_mesg_id.h"
 #include "ha_gff_misc.h"
-#include "ha_node_glb.h"
+#include "ha_host_glb.h"
 
 #define HA_NOTIFICATION (1)
 #define HA_DEBUG_EN (0)
@@ -39,7 +39,7 @@ void slp_received_GFF_handler(uint8_t *GFF_buffer)
     }
 
     uint8_t ep_id = parse_ep_deviceid(dev_id);
-    if (ep_id > ha_node_ns::max_end_point) {
+    if (ep_id > ha_host_ns::max_end_point) {
         HA_NOTIFY("End point id is invalid.\n");
         return;
     }
@@ -49,7 +49,7 @@ void slp_received_GFF_handler(uint8_t *GFF_buffer)
     msg_to_endpoint.type = gff_msg_cmd;
     msg_to_endpoint.content.value = data_send;
 
-    msg_send(&msg_to_endpoint, ha_node_ns::end_point_pid[ep_id], false);
+    msg_send(&msg_to_endpoint, ha_host_ns::end_point_pid[ep_id], false);
 
     return;
 }

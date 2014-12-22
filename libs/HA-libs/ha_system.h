@@ -31,8 +31,8 @@
 #include "device_id.h"
 #include "gff_mesg_id.h"
 
-#ifdef HA_NODE              /* Node specific includes */
-#include "ha_node.h"
+#ifdef HA_HOST              /* Host specific includes */
+#include "ha_host.h"
 #endif
 
 #ifdef HA_CC                /* CC specific includes */
@@ -47,7 +47,7 @@ namespace ha_ns {
 /*------------------- Functions ----------------------------------------------*/
 /**
  * @brief   Init Home automation system.
- *          It depends on HA_CC or HA_NODE definitions in command line.
+ *          It depends on HA_CC or HA_HOST definitions in command line.
  */
 void ha_system_init(void);
 
