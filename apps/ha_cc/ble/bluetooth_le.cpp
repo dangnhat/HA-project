@@ -82,7 +82,7 @@ bool mMoblieConnected);
 /**
  * @brief: thread wait ack from Mobile
  */
-void wait_mobile_ack(uint8_t mSec);
+void wait_mobile_ack(uint16_t mSec);
 /*******************************************************************************
  * Public functions
  ******************************************************************************/
@@ -201,7 +201,7 @@ bool mMoblieConnected)
     uint8_t dataBuf[ha_ns::GFF_MAX_FRAME_SIZE];
 
     uint8_t indexBuf[2];
-    uint8_t qBufSize;
+    int32_t qBufSize;
 
     uint162buf(msgIndex, indexBuf);
     qBufSize = mCirQueue->get_size();
@@ -215,10 +215,10 @@ bool mMoblieConnected)
             HA_DEBUG("packet index START\n");
             ble_write_att(dataBuf, bufLen + 3);
             // sleep to wait ack from mobile
-            if(bufLen > 17){
-                wait_mobile_ack(150); // 150ms
+            if(bufLen > 27){
+                wait_mobile_ack(400); // 150ms
             }else{
-                wait_mobile_ack(100);
+                wait_mobile_ack(300);
             }
             ble_ack.packet_index++;
             ble_ack.need_to_wait_ack = false;
@@ -234,7 +234,7 @@ bool mMoblieConnected)
 /**
  * @brief: thread wait ack from Mobile
  */
-void wait_mobile_ack(uint8_t mSec)
+void wait_mobile_ack(uint16_t mSec)
 {
     ble_ack_timeout_count = mSec;
     ble_ack.need_to_wait_ack = true;
