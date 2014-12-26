@@ -12,21 +12,22 @@
 #include "level_bulb_driver.h"
 
 namespace rgb_ns {
-const uint8_t max_basic_color = 7;
+const uint8_t max_basic_color = 8;
 
 typedef enum
     :uint8_t {
-        white = 0,
-    red = 1,
-    green = 2,
-    blue = 3,
-    yellow = 4,
-    magenta = 5,
-    cyan = 6
+        black = 0,
+    white = 1,
+    red = 2,
+    green = 3,
+    blue = 4,
+    yellow = 5,
+    magenta = 6,
+    cyan = 7
 } basic_color_t;
 
 typedef enum {
-    model_24bits,   //Red:8bits, Green:8bits, Blue:8bits.
+    model_24bits,       //Red:8bits, Green:8bits, Blue:8bits.
     model_16bits_565,   //Red:5bits, Green:6bits, Blue:5bits.
     model_16bits_555,   //Red:5bits, Green:5bits, Blue:5bits.
 } rgb_color_model_t;

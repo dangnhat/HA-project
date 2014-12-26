@@ -11,7 +11,8 @@ using namespace rgb_ns;
 
 const static uint8_t rgb_active_level = 0;
 
-const static uint32_t basic_color_24bits[] = { 0xFFFFFF, //white
+const static uint32_t basic_color_24bits[] = { 0x000000, //Black
+        0xFFFFFF, //white
         0xFF0000, //Red
         0x00FF00, //Green
         0x0000FF, //Blue
@@ -20,7 +21,8 @@ const static uint32_t basic_color_24bits[] = { 0xFFFFFF, //white
         0x00FFFF  //Cyan
         };
 
-const static uint16_t basic_color_16bits_565[] = { 0xFFFF, //white
+const static uint16_t basic_color_16bits_565[] = { 0x0000, //Black
+        0xFFFF, //white
         0xF800, //Red
         0x07E0, //Green
         0x001F, //Blue
@@ -29,7 +31,8 @@ const static uint16_t basic_color_16bits_565[] = { 0xFFFF, //white
         0x07FF  //Cyan
         };
 
-const static uint16_t basic_color_16bits_555[] = { 0x7FFF, //white
+const static uint16_t basic_color_16bits_555[] = { 0x0000, //Black
+        0x7FFF, //white
         0x7C00, //Red
         0x03E0, //Green
         0x001F, //Blue
