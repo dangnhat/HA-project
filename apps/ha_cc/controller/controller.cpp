@@ -991,7 +991,7 @@ static void set_inact_scene_name_with_index_to_ble(uint8_t index,
     set_inact_scene_name_windex_gff_frame[ha_ns::GFF_LEN_POS] =
             ha_ns::SET_INACT_SCENE_NAME_WITH_INDEXS_DATA_LEN;
     uint162buf(ha_ns::SET_INACT_SCENE_NAME_WITH_INDEXS,
-            &set_inact_scene_name_windex_gff_frame[ha_ns::GFF_DATA_POS]);
+            &set_inact_scene_name_windex_gff_frame[ha_ns::GFF_CMD_POS]);
     set_inact_scene_name_windex_gff_frame[ha_ns::GFF_DATA_POS] = index;
     memcpy(&set_inact_scene_name_windex_gff_frame[ha_ns::GFF_DATA_POS + 1],
             scene_name, 8);

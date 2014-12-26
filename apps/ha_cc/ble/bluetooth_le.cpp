@@ -29,7 +29,7 @@ extern "C" {
 #include "gff_mesg_id.h"
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 /******************************************************************************

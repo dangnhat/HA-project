@@ -18,7 +18,7 @@ extern "C" {
 }
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 extern ble_ack_s ble_ack;
