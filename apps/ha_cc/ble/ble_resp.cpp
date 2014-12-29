@@ -29,7 +29,6 @@ extern ble_ack_s ble_ack;
 static uint8_t numOfMsg = 0;
 static uint8_t msgLen;
 static uint8_t totalMsgLen = 0;
-static uint8_t ack_index_buf[2];
 
 /* usart receive queue*/
 static const uint8_t usart_queue_size = 255;
@@ -93,25 +92,31 @@ void ble_evt_connection_disconnected(
 void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
 {
     msg_t msg_ble_thread;
+    uint8_t ack_index_buf[2];
     numOfMsg++;
     totalMsgLen += msg->value.len;
     HA_DEBUG("client write \n");
+
+//    if ((numOfMsg > 2) && (totalMsgLen != msgLen)) {
+//        numOfMsg = 0;                      // reset counter
+//        totalMsgLen = 0;
+//    }
     if (1 == numOfMsg) {
 
         ack_index_buf[0] = msg->value.data[1];      // get 2 byte index
         ack_index_buf[1] = msg->value.data[2];      //
-        if (msg->value.data[0] == ha_ble_ns::BLE_MSG_ACK) { //case message is ACK
-//            msgLen = msg->value.data[3] + 3;        //plus 3 bytes of header
+        if (msg->value.data[0] == ha_ble_ns::BLE_MSG_ACK) { //if message is ACK
             /* get index, if true wake-up ble_thread */
-            if ((buf2uint16(ack_index_buf) == ble_ack.packet_index)
-                    && ble_ack.need_to_wait_ack) {
-                HA_DEBUG(" receive ACK %d\n", ble_ack.packet_index);
-                numOfMsg = 0;                      // reset counter
-                totalMsgLen = 0;                   //
-                ble_ack_timeout_count = 0;
-                thread_wakeup(ble_thread_ns::ble_thread_pid);
-                return;
-            }
+            HA_DEBUG(" receive ACK %d\n", ble_ack.packet_index);
+            numOfMsg = 0;                      // reset counter
+            totalMsgLen = 0;                   //
+
+            ble_ack_timeout_count = 0;
+            thread_wakeup(ble_thread_ns::ble_thread_pid);
+//            if ((buf2uint16(ack_index_buf) == ble_ack.packet_index)
+//                    && ble_ack.need_to_wait_ack){
+//            }
+            return;
         } else {                                    // case message is data
             msgLen = msg->value.data[3] + ha_ns::GFF_CMD_SIZE
                     + ha_ns::GFF_LEN_SIZE + 3;      //plus 3 bytes of header

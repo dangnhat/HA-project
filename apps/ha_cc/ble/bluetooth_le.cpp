@@ -215,7 +215,7 @@ bool mMoblieConnected)
             HA_DEBUG("packet index START\n");
             ble_write_att(dataBuf, bufLen + 3);
             // sleep to wait ack from mobile
-            if(bufLen > 27){
+            if(bufLen >= 27){
                 wait_mobile_ack(400); // 150ms
             }else{
                 wait_mobile_ack(300);
