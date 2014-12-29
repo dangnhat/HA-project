@@ -25,9 +25,9 @@
 static const uint8_t default_scene_index = 0;
 static const uint8_t user_scene_index = 1;
 
-#define SCENES_FOLDER       "scenes"
-#define DEFAULT_SCENE_FILE  "default"
-#define ACTIVE_SCENE_FILE   "actscene"
+#define SCENES_FOLDER       "SCENES"
+#define DEFAULT_SCENE_FILE  "DEFAULT"
+#define ACTIVE_SCENE_FILE   "ACTSCENE"
 
 static const char scene_cmd_usage[] = "Usage:\n"
         "scene -l, show current default scene and user active scene.\n"
@@ -193,6 +193,7 @@ void scene_mng::get_active_scene(char *name)
     FIL file;
     FRESULT fres;
     char line[16];
+    uint16_t count;
 
     fres = f_open(&file, ACTIVE_SCENE_FILE, FA_READ | FA_OPEN_ALWAYS);
     if (fres != FR_OK) {
@@ -210,6 +211,14 @@ void scene_mng::get_active_scene(char *name)
     /* copy to name */
     memcpy(name, line, scene_max_name_chars_wout_folders - 1);
     name[scene_max_name_chars_wout_folders] = '\0';
+
+    /* remove ending '\n' */
+    for (count = 0; count < scene_max_name_chars_wout_folders; count++) {
+        if (name[count] == '\n') {
+            name[count] = '\0';
+            break;
+        }
+    }
 }
 
 /*------------------------ Inactive scene --------------------------------------*/
@@ -305,6 +314,8 @@ void scene_mng::get_inactive_scene_with_index(uint8_t index, char *name)
             name[scene_max_name_chars_wout_folders-1] = '\0';
             break;
         }
+
+        count++;
     }
 
     /* close dir */
