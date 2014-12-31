@@ -78,7 +78,8 @@ static uint8_t new_scene_timeout_counter = 0;
 static const uint8_t new_scene_timeout_max_counter = 25; /* in seconds */
 
 static uint16_t new_scene_set_rule_timeout_count = 0;
-static const uint16_t new_scene_set_rule_timeout_max_count = 10000; /* in ms */
+static uint16_t new_scene_num_rule = 0;
+static const uint16_t new_scene_set_rule_timeout_max_count_evrule = 500; /* in ms */
 static uint8_t new_scene_set_rule_resend_count = 0;
 static uint8_t new_scene_set_rule_resend_max_count = 1;
 
@@ -770,6 +771,9 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         HA_DEBUG("ble_gff_handler: Set num of rules (%hu) to user scene (%s)\n",
                 buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8]), scene_name);
 
+        /* Save num rules */
+        new_scene_num_rule = buf2uint16(&gff_frame[ha_ns::GFF_DATA_POS + 8]);
+
         /* Send GET_RULE_WITH_INDEXS */
         gff_frame[ha_ns::GFF_LEN_POS] = 10;
         uint162buf(ha_ns::GET_RULE_WITH_INDEXS, &gff_frame[ha_ns::GFF_CMD_POS]);
@@ -787,7 +791,8 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
                 scene_name, 0xFFFF);
 
         /* Turn on timeout */
-        new_scene_set_rule_timeout_count = new_scene_set_rule_timeout_max_count;
+        new_scene_set_rule_timeout_count = new_scene_num_rule *
+                new_scene_set_rule_timeout_max_count_evrule;
         new_scene_set_rule_resend_count = new_scene_set_rule_resend_max_count;
         HA_DEBUG("ble_gff_handler: turn on timeout counter for SET_RULE_WITH_INDEXS "
                 "(%hu ms, resend %hu)\n",
@@ -1158,7 +1163,8 @@ static void new_scene_set_rule_timeout_handler(uint8_t &resend_count, bool &new_
             while (scene_mng_p->get_user_scene_ptr()->find_invalid_rule(invalid_index, true));
 
             resend_count--;
-            new_scene_set_rule_timeout_count = new_scene_set_rule_timeout_max_count;
+            new_scene_set_rule_timeout_count = new_scene_num_rule *
+                    new_scene_set_rule_timeout_max_count_evrule;
         }
         else {
             /* No invalid rule, save new scene and send new scene back to ble */
