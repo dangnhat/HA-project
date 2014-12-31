@@ -23,6 +23,15 @@ enum ble_msg_type_id
         BLE_MSG_ACK,
     BLE_MSG_DATA,
 };
+
+const gpio_ns::gpio_params_t ble_reset_pin_param = {
+        gpio_ns::port_C,
+        10,
+        gpio_ns::out_push_pull,
+        gpio_ns::speed_2MHz,
+};
+
+extern gpio ble_reset_pin;
 }
 
 namespace ble_thread_ns {
@@ -68,4 +77,5 @@ void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf,
 
 /* send ack to mobile */
 void send_ack_to_mobile(uint8_t* ack_idx_buf);
+
 #endif /* BLE_TRANSACTION_H_ */

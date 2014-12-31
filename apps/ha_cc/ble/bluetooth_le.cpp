@@ -53,6 +53,11 @@ static void *ble_transaction(void *arg);
 static const uint16_t controller_to_ble_msg_queue_size = 1024;
 static uint8_t controller_to_ble_msg_queue_buf[controller_to_ble_msg_queue_size];
 
+/* ble reset pin */
+namespace ha_ble_ns {
+gpio ble_reset_pin;
+}
+
 namespace ble_thread_ns {
 kernel_pid_t ble_thread_pid;
 
@@ -107,6 +112,17 @@ void ble_thread_start(void)
             ble_thread_stack_size, ble_thread_prio, CREATE_STACKTEST,
             ble_transaction,
             NULL, "ble thread");
+
+    /* init and reset ble */
+    ha_ble_ns::ble_reset_pin.gpio_init(&ha_ble_ns::ble_reset_pin_param);
+
+    HA_NOTIFY("Reseting ble module...\n");
+    /* Reset */
+    ha_ble_ns::ble_reset_pin.gpio_reset();
+    /* Hold for 100 ms */
+    vtimer_usleep(100);
+    /* Release */
+    ha_ble_ns::ble_reset_pin.gpio_set();
 }
 
 /*******************************************************************************
