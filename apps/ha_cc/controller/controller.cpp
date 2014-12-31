@@ -619,7 +619,7 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         mesg.content.ptr = (char*) to_ble_queue;
         msg_send(&mesg, to_ble_pid, false);
 
-        HA_DEBUG("ble_gff_handler: sent SET_REMOVE_SCENE (%s) back to ble\n",
+        HA_DEBUG("ble_gff_handler: sent SET_ACT_SCENE_NAME_WITH_INDEXS (%s) back to ble\n",
                 scene_name);
 
         break;

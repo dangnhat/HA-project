@@ -220,6 +220,9 @@ int8_t scene::restore(void)
         return -1;
     }
 
+    /* new scene */
+    new_scene();
+
     /* open file */
     fres = f_open(&file, name, FA_READ | FA_OPEN_ALWAYS);
     if (fres != FR_OK) {
