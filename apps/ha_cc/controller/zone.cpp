@@ -112,6 +112,13 @@ int8_t zone::get_zone_name(uint8_t zone_id, uint8_t buf_size, char *zone_name)
     return 0;
 }
 
+/*----------------------------------------------------------------------------*/
+void zone::get_zone_folder_name(uint8_t buf_size, char *zone_folder_name)
+{
+    strncpy(zone_folder_name, ZONES_FOLDER, buf_size);
+    zone_folder_name[buf_size] = '\0';
+}
+
 /*----------------------------- Shell command --------------------------------*/
 void zone_cmd(zone &zone_obj, int argc, char **argv)
 {

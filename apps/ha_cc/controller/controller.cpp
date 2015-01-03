@@ -30,6 +30,8 @@ extern "C" {
 #include "ha_sixlowpan.h"
 #include "zone.h"
 #include "MB1_System.h"
+#include "ff.h"
+#include "shell_cmds_fatfs.h"
 
 /*----------------------------- Configurations -------------------------------*/
 #define HA_NOTIFICATION (1)
@@ -155,6 +157,9 @@ static void new_scene_set_rule_timeout_handler(uint8_t &resend_count, bool &new_
         scene_mng *scene_mng_p, kernel_pid_t ble_pid, cir_queue *to_ble_queue);
 
 static void new_scene_set_rule_1msTIM_ISR(void);
+
+static void set_zone_name_to_ble(uint8_t index,
+        zone *zone_p, kernel_pid_t ble_pid, cir_queue *to_ble_queue);
 
 /* Functions */
 static void *controller_func(void *)
@@ -318,15 +323,14 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
     msg_t mesg;
     uint16_t count;
 
-    char zone_name[zone_ns::zone_name_max_size];
-    uint8_t zone_id;
-
     uint8_t index, num_scene;
     char scene_name[scene_ns::scene_max_name_chars_wout_folders];
     char scene_name2[scene_ns::scene_max_name_chars_wout_folders];
 
     uint16_t num_rule, rule_index;
     scene_ns::rule_t a_rule;
+
+    uint8_t zone_id;
 
     /* Check data */
     data_len = from_ble_queue->preview_data(false);
@@ -396,27 +400,10 @@ static void ble_gff_handler(uint8_t *gff_frame, ha_device_mng *dev_mng,
         HA_DEBUG("ble_gff_handler: GET_ZONE_NAME (id %hu)\n",
                 gff_frame[ha_ns::GFF_DATA_POS]);
 
-        /* get zone name */
-        zone_id = gff_frame[ha_ns::GFF_DATA_POS];
-        controller_zone_mng.get_zone_name(zone_id, zone_ns::zone_name_max_size,
-                zone_name);
+        set_zone_name_to_ble(gff_frame[ha_ns::GFF_DATA_POS],
+                &controller_zone_mng,
+                ble_thread_ns::ble_thread_pid, &ble_thread_ns::controller_to_ble_msg_queue);
 
-        /* pack SET_ZONE_NAME gff frame to send to ble */
-        gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_ZONE_NAME_DATA_LEN;
-        uint162buf(ha_ns::SET_ZONE_NAME, &gff_frame[ha_ns::GFF_CMD_POS]);
-        gff_frame[ha_ns::GFF_DATA_POS] = zone_id;
-        memcpy(&gff_frame[ha_ns::GFF_DATA_POS + 1], zone_name,
-                zone_ns::zone_name_max_size);
-
-        to_ble_queue->add_data(gff_frame,
-                gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
-                        + ha_ns::GFF_LEN_SIZE);
-        mesg.type = ha_ns::GFF_PENDING;
-        mesg.content.ptr = (char*) to_ble_queue;
-        msg_send(&mesg, to_ble_pid, false);
-
-        HA_DEBUG("ble_gff_handler: sent SET_ZONE_NAME (%hu, %s) to ble\n",
-                zone_id, zone_name);
         break;
 
     case ha_ns::SET_ZONE_NAME:
@@ -1235,6 +1222,93 @@ static void new_scene_set_rule_timeout_handler(uint8_t &resend_count, bool &new_
     }
 
 }
+
+/*----------------------------------------------------------------------------*/
+static void set_zone_name_to_ble(uint8_t index,
+        zone *zone_p, kernel_pid_t ble_pid, cir_queue *to_ble_queue)
+{
+    char zone_name[zone_ns::zone_name_max_size];
+    uint8_t zone_id;
+    FRESULT fres;
+    DIR dir;
+    FILINFO finfo;
+    msg_t mesg;
+    uint8_t set_zone_name_gff_frame[ha_ns::SET_ZONE_NAME_DATA_LEN
+            + ha_ns::GFF_CMD_SIZE + ha_ns::GFF_LEN_SIZE];
+
+    if (index == 0xFF) {
+        /* Open zones folder to get all zone name */
+        fres = f_opendir(&dir, ZONES_FOLDER);
+        if (fres != FR_OK) {
+            print_ferr(fres);
+            return;
+        }
+
+        while (1) {
+            fres = f_readdir(&dir, &finfo);
+            if (fres != FR_OK) { /* error when read dir */
+                print_ferr(fres);
+                return;
+            }
+
+            if (finfo.fname[0] == 0) { /* end of dir */
+                break;
+            }
+
+            if (finfo.fname[0] == '.') {
+                continue;
+            }
+
+            /* pack gff frame */
+            zone_id = (uint8_t)atoi(finfo.fname);
+
+            set_zone_name_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_ZONE_NAME_DATA_LEN;
+            uint162buf(ha_ns::SET_ZONE_NAME, &set_zone_name_gff_frame[ha_ns::GFF_CMD_POS]);
+            set_zone_name_gff_frame[ha_ns::GFF_DATA_POS] = zone_id;
+            zone_p->get_zone_name(zone_id, zone_ns::zone_name_max_size,
+                    zone_name);
+            memcpy(&set_zone_name_gff_frame[ha_ns::GFF_DATA_POS + 1], zone_name,
+                       zone_ns::zone_name_max_size);
+
+            to_ble_queue->add_data(set_zone_name_gff_frame,
+                  set_zone_name_gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                         + ha_ns::GFF_LEN_SIZE);
+            mesg.type = ha_ns::GFF_PENDING;
+            mesg.content.ptr = (char*) to_ble_queue;
+            msg_send(&mesg, ble_pid, false);
+
+            HA_DEBUG("ble_gff_handler: sent SET_ZONE_NAME (%hu, %s) to ble\n",
+                   zone_id, zone_name);
+        }
+
+        /* close dir */
+        f_closedir(&dir);
+    }
+
+    /* normal index */
+    zone_id = index;
+    zone_p->get_zone_name(zone_id, zone_ns::zone_name_max_size,
+           zone_name);
+
+    /* pack SET_ZONE_NAME gff frame to send to ble */
+    set_zone_name_gff_frame[ha_ns::GFF_LEN_POS] = ha_ns::SET_ZONE_NAME_DATA_LEN;
+    uint162buf(ha_ns::SET_ZONE_NAME, &set_zone_name_gff_frame[ha_ns::GFF_CMD_POS]);
+    set_zone_name_gff_frame[ha_ns::GFF_DATA_POS] = zone_id;
+    memcpy(&set_zone_name_gff_frame[ha_ns::GFF_DATA_POS + 1], zone_name,
+           zone_ns::zone_name_max_size);
+
+    to_ble_queue->add_data(set_zone_name_gff_frame,
+            set_zone_name_gff_frame[ha_ns::GFF_LEN_POS] + ha_ns::GFF_CMD_SIZE
+                   + ha_ns::GFF_LEN_SIZE);
+    mesg.type = ha_ns::GFF_PENDING;
+    mesg.content.ptr = (char*) to_ble_queue;
+    msg_send(&mesg, ble_pid, false);
+
+    HA_DEBUG("ble_gff_handler: sent SET_ZONE_NAME (%hu, %s) to ble\n",
+           zone_id, zone_name);
+
+}
+
 
 /*----------------------- Scenes shell command -------------------------------*/
 void controller_scene_cmd(int argc, char** argv)

@@ -17,12 +17,12 @@
 
 #include <stdint.h>
 
+#define ZONES_FOLDER    "ZONES"
+
 namespace zone_ns {
-
-#define ZONES_FOLDER    "zones"
-
 const uint8_t zone_file_max_path_size = 16;
 const uint8_t zone_name_max_size = 16;
+const uint8_t zone_folder_name_max_size = 8 + 1;
 };
 
 class zone {
@@ -52,6 +52,17 @@ public:
      * @return      0 on success, -1 if fail.
      */
     int8_t get_zone_name(uint8_t zone_id, uint8_t buf_size, char *zone_name);
+
+    /**
+     * @brief   Get zone folder name.
+     *
+     * @param[in]   buf_size, size of the buffer for zone folder.
+     *              size of buffer for zone name should be >= zone_folder_name_max_size.
+     * @param[out]  zone_folder_name,
+     *
+     * @return      0 on success, -1 if fail.
+     */
+    void get_zone_folder_name(uint8_t buf_size, char *zone_folder_name);
 private:
 };
 
