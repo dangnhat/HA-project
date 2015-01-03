@@ -40,7 +40,7 @@ extern "C" {
 ble_ack_s ble_ack;
 
 /* ble message queue */
-static const uint16_t ble_message_queue_size = 64;
+static const uint16_t ble_message_queue_size = 128;
 static msg_t ble_message_queue[ble_message_queue_size];
 
 /* bluetooth thread stack */
@@ -50,7 +50,7 @@ static const char ble_thread_prio = PRIORITY_MAIN - 1;
 static void *ble_transaction(void *arg);
 
 /* circle queue to save data received from controller thread */
-static const uint16_t controller_to_ble_msg_queue_size = 1024;
+static const uint16_t controller_to_ble_msg_queue_size = 1280;
 static uint8_t controller_to_ble_msg_queue_buf[controller_to_ble_msg_queue_size];
 
 /* ble reset pin */

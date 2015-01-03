@@ -28,8 +28,8 @@ extern "C" {
 
 namespace scene_ns {
 
-const uint8_t rule_max_input = 3;
-const uint8_t rule_max_output = 3;
+const uint8_t rule_max_input = 2;
+const uint8_t rule_max_output = 2;
 
 const uint8_t scene_max_name_chars = 20;
 const uint8_t scene_max_name_chars_wout_folders = 8 + 1;
