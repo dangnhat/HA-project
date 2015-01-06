@@ -175,7 +175,8 @@ int8_t scene::save(void)
         for (count_io = 0; count_io < rules_list[count_rule].num_in; count_io++){
             f_printf(&file, save_line_i0, rules_list[count_rule].inputs[count_io].cond);
 
-            if (rules_list[count_rule].inputs[count_io].cond == COND_IN_RANGE) {
+            if (rules_list[count_rule].inputs[count_io].cond == COND_IN_RANGE ||
+                    rules_list[count_rule].inputs[count_io].cond == COND_IN_RANGE_EVDAY) {
                 f_printf(&file, save_line_i1_time,
                         rules_list[count_rule].inputs[count_io].time_range.start,
                         rules_list[count_rule].inputs[count_io].time_range.end);
