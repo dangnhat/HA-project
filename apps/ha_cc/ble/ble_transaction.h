@@ -15,6 +15,7 @@
 #include "cc_msg_id.h"
 
 #define ATT_WRITE_ADDR    	(0x08)
+#define ATT_WACK_ADDR       (0x0F)
 
 namespace ha_ble_ns {
 
@@ -76,6 +77,6 @@ void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf,
         uint8_t* payload, uint8_t bufLen);
 
 /* send ack to mobile */
-void send_ack_to_mobile(uint8_t* ack_idx_buf);
+void send_ack_to_mobile();
 
 #endif /* BLE_TRANSACTION_H_ */
