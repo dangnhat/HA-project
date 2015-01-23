@@ -81,7 +81,7 @@ static const uint8_t new_scene_timeout_max_counter = 25; /* in seconds */
 
 static uint16_t new_scene_set_rule_timeout_count = 0;
 static uint16_t new_scene_num_rule = 0;
-static const uint16_t new_scene_set_rule_timeout_max_count_evrule = 500; /* in ms */
+static const uint16_t new_scene_set_rule_timeout_max_count_evrule = 1000; /* in ms */
 static uint8_t new_scene_set_rule_resend_count = 0;
 static uint8_t new_scene_set_rule_resend_max_count = 1;
 

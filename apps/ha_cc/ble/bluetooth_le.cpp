@@ -66,7 +66,6 @@ cir_queue controller_to_ble_msg_queue(controller_to_ble_msg_queue_buf,
         controller_to_ble_msg_queue_size);
 }
 
-
 // timer 6 timeout
 volatile uint16_t ble_ack_timeout_count = 0;
 
@@ -77,7 +76,7 @@ volatile uint16_t ble_ack_timeout_count = 0;
 /**
  * @brief: write data to BLE
  */
-static void ble_write_att(uint8_t *dataBuf, uint8_t len);
+static void ble_write_att(uint16_t handle, uint8_t *dataBuf, uint8_t len);
 /**
  * @brief:  process message from controller
  */
@@ -92,15 +91,15 @@ void wait_mobile_ack(uint16_t mSec);
  * Public functions
  ******************************************************************************/
 
-void ble_timeout_TIM6_ISR(void) {
+void ble_timeout_TIM6_ISR(void)
+{
     if (ble_ack_timeout_count > 0) {
         ble_ack_timeout_count--;
-        if(ble_ack_timeout_count == 0){
+        if (ble_ack_timeout_count == 0) {
             thread_wakeup(ble_thread_ns::ble_thread_pid);
         }
     }
 }
-
 
 /*
  * @brief: Initial ble thread
@@ -115,7 +114,6 @@ void ble_thread_start(void)
 
     /* init and reset ble */
     ha_ble_ns::ble_reset_pin.gpio_init(&ha_ble_ns::ble_reset_pin_param);
-
     HA_NOTIFY("Reseting ble module...\n");
     /* Reset */
     ha_ble_ns::ble_reset_pin.gpio_reset();
@@ -138,7 +136,7 @@ void *ble_transaction(void *arg)
 
     msg_t msg;
     bool mConnect = false;
-    uint8_t usart_msg_len;
+    uint16_t usart_msg_len;
     uint8_t usartBuf[ha_ns::GFF_MAX_FRAME_SIZE];
     cir_queue* usartQueue;
 
@@ -170,14 +168,22 @@ void *ble_transaction(void *arg)
             usartQueue = (cir_queue*) (msg.content.ptr);
             usart_msg_len = usartQueue->preview_data(false)
                     + ha_ns::GFF_LEN_SIZE + ha_ns::GFF_CMD_SIZE;
-            if (usart_msg_len == usartQueue->get_size()) {
+
+            if(usartQueue->get_size() > 30){
+                usartQueue->get_data(usartBuf, usartQueue->get_size());
+                break;
+            }
+
+            if (usart_msg_len <= usartQueue->get_size()) {
                 usartQueue->get_data(usartBuf, usart_msg_len);
+
+                /* send ACK to mobile*/
+//                send_ack_to_mobile();
 
                 //DEBUG
                 for (uint8_t i = 0; i < usart_msg_len; i++) {
                     HA_DEBUG("%d ", usartBuf[i]);
-                }
-                HA_DEBUG("\n");
+                }HA_DEBUG("\n");
 
                 /* put data to controller's queue */
                 controller_ns::ble_to_controller_queue.add_data(usartBuf,
@@ -221,19 +227,18 @@ bool mMoblieConnected)
 
     uint162buf(msgIndex, indexBuf);
     qBufSize = mCirQueue->get_size();
-    HA_DEBUG("len = %d\n", bufLen);
-    HA_DEBUG("qsize = %d\n", qBufSize);
+    HA_DEBUG("len = %d\n", bufLen);HA_DEBUG("qsize = %d\n", qBufSize);
     if (bufLen <= qBufSize) {
         mCirQueue->get_data(dataBuf, bufLen);
         // add header(msg type + index) to message
         add_hdr_to_ble_msg(ha_ble_ns::BLE_MSG_DATA, indexBuf, dataBuf, bufLen);
         if (mMoblieConnected) {
             HA_DEBUG("packet index START\n");
-            ble_write_att(dataBuf, bufLen + 3);
+            ble_write_att(ATT_WRITE_ADDR, dataBuf, bufLen + 3);
             // sleep to wait ack from mobile
-            if(bufLen >= 27){
+            if (bufLen >= 27) {
                 wait_mobile_ack(400); // 150ms
-            }else{
+            } else {
                 wait_mobile_ack(300);
             }
             ble_ack.packet_index++;
@@ -260,9 +265,9 @@ void wait_mobile_ack(uint16_t mSec)
 /**
  * @brief: Write data to bluetooth LE attribute
  */
-void ble_write_att(uint8_t *dataBuf, uint8_t len)
+void ble_write_att(uint16_t handle, uint8_t *dataBuf, uint8_t len)
 {
-    ble_cmd_attributes_write(ATT_WRITE_ADDR, 0, len, dataBuf);
+    ble_cmd_attributes_write(handle, 0, len, dataBuf);
 }
 
 void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf, uint8_t* payload,
@@ -277,12 +282,19 @@ void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf, uint8_t* payload,
     mempcpy(payload, header, sizeof(header));
 }
 
-void send_ack_to_mobile(uint8_t* ack_idx_buf)
+void send_ack_to_mobile()
 {
+    uint32_t timeout = 100000;
     uint8_t msgBuf[4];
+
     msgBuf[0] = ha_ble_ns::BLE_MSG_ACK;
-    msgBuf[1] = ack_idx_buf[0];
-    msgBuf[2] = ack_idx_buf[1];
-    msgBuf[3] = 0;
-    ble_write_att(msgBuf, 4);
+    msgBuf[1] = 0;
+    msgBuf[2] = 0;
+
+//    vtimer_usleep(timeout/2);
+    ble_write_att(ATT_WRITE_ADDR, msgBuf, 4);
+    vtimer_usleep(timeout);
+//    thread_sleep();
+
+
 }

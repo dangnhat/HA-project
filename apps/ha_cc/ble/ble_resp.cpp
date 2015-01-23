@@ -27,8 +27,8 @@ extern ble_ack_s ble_ack;
  * Private variables and buffers
  ******************************************************************************/
 static uint8_t numOfMsg = 0;
-static uint8_t msgLen;
-static uint8_t totalMsgLen = 0;
+static uint16_t msgLen = 0;
+static uint16_t totalMsgLen = 0;
 
 /* usart receive queue*/
 static const uint8_t usart_queue_size = 255;
@@ -92,36 +92,33 @@ void ble_evt_connection_disconnected(
 void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
 {
     msg_t msg_ble_thread;
-    uint8_t ack_index_buf[2];
-    numOfMsg++;
-    totalMsgLen += msg->value.len;
     HA_DEBUG("client write \n");
 
-//    if ((numOfMsg > 2) && (totalMsgLen != msgLen)) {
-//        numOfMsg = 0;                      // reset counter
-//        totalMsgLen = 0;
-//    }
-    if (1 == numOfMsg) {
+    if(msg->handle == 0x13){
+        numOfMsg = 0;                      // reset counter
+        ble_ack_timeout_count = 0;
+        totalMsgLen = 0;
+        thread_wakeup(ble_thread_ns::ble_thread_pid);
+        return;
+    }
 
-        ack_index_buf[0] = msg->value.data[1];      // get 2 byte index
-        ack_index_buf[1] = msg->value.data[2];      //
+    numOfMsg++;
+    totalMsgLen += msg->value.len;
+
+    if (1 == numOfMsg) {
         if (msg->value.data[0] == ha_ble_ns::BLE_MSG_ACK) { //if message is ACK
             /* get index, if true wake-up ble_thread */
             HA_DEBUG(" receive ACK %d\n", ble_ack.packet_index);
             numOfMsg = 0;                      // reset counter
-            totalMsgLen = 0;                   //
-
             ble_ack_timeout_count = 0;
-            thread_wakeup(ble_thread_ns::ble_thread_pid);
-//            if ((buf2uint16(ack_index_buf) == ble_ack.packet_index)
-//                    && ble_ack.need_to_wait_ack){
-//            }
+            totalMsgLen = 0;
+            if(ble_ack.need_to_wait_ack == true){
+                thread_wakeup(ble_thread_ns::ble_thread_pid);
+            }
             return;
         } else {                                    // case message is data
             msgLen = msg->value.data[3] + ha_ns::GFF_CMD_SIZE
                     + ha_ns::GFF_LEN_SIZE + 3;      //plus 3 bytes of header
-            /* if message from mobile is data, then send ACK back to mobile */
-//            send_ack_to_mobile(ack_index_buf);
         }
     }
     usart_queue.add_data((uint8_t*) msg->value.data, msg->value.len);
@@ -138,7 +135,8 @@ void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
         /* send message to ble_thread */
         msg_ble_thread.type = ha_cc_ns::BLE_CLIENT_WRITE;
         msg_ble_thread.content.ptr = (char*) (&usart_queue);
-        msg_send(&msg_ble_thread, ble_thread_ns::ble_thread_pid, false);
+//        msg_send(&msg_ble_thread, ble_thread_ns::ble_thread_pid, false);
+        msg_send_int(&msg_ble_thread, ble_thread_ns::ble_thread_pid);
     }
 }
 
