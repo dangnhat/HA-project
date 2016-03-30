@@ -11,3 +11,5 @@ https://drive.google.com/file/d/0B7idR0mbHSqzM0FNc254bGgyRlE/view?usp=sharing
 
 Final project video:
 https://www.youtube.com/watch?v=3W_C0G6DxqU
+
+The idea in the project has been published in "Towards an Open Framework for Home Automation Development" paper for ACOMP2015 conference. It could easily be found on IEEEXplore.
